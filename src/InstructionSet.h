@@ -1,5 +1,6 @@
 #pragma once
 
+// Includes
 //--------------------------------------------------------------------------------
 // System
 #include <vector>
@@ -62,7 +63,6 @@ struct InstructionDef
     uint16_t mMask;
     uint16_t mPattern;
     std::vector<InstructionArgDef> mArgs;
-    size_t mArgCount = 0;
 };
 
 //--------------------------------------------------------------------------------

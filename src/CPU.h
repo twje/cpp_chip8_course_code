@@ -3,7 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Chip 8
-#include "Bus.h"
+#include "Bus.h  "
 
 // System
 #include <array>
@@ -20,8 +20,3 @@ public:
 private:
 	Bus& mBus;
 };
-
-int main()
-{
-	return 0;
-}
