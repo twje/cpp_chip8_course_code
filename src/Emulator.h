@@ -19,7 +19,7 @@ class Emulator
 public:
 	Emulator();
 
-	void LoadRom();
+	bool LoadRom(const std::string& filename);
 	void Run();
 
 private:

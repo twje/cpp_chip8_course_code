@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Toggle production build
+option(PRODUCTION_BUILD "Make this a production build" OFF)
+
 # Use folders in IDEs (like Visual Studio)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -30,6 +33,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 # Link libraries (if needed later, e.g., SDL2 or SFML)
 # target_link_libraries(${PROJECT_NAME} PRIVATE some_library)
+
+# Resource Management
+if(PRODUCTION_BUILD)
+    # TODO: implement
+else()
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ROMS_PATH="${PROJECT_SOURCE_DIR}/roms/")
+endif()
 
 # Enable testing
 include(CTest)
