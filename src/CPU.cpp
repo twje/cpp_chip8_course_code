@@ -10,13 +10,6 @@
 #include <iostream>
 #include <cassert>
 
-// Macros
-//--------------------------------------------------------------------------------
-#define DEFINE_OPCODE_HANDLER(name) \
-    void CPU::Execute_##name(const Instruction& instruction) { \
-        std::cout << "[UNIMPLEMENTED] Execute_" #name << std::endl; \
-    }
-
 //--------------------------------------------------------------------------------
 CPU::CPU(Bus& bus)
 	: mBus{ bus }
@@ -106,37 +99,206 @@ void CPU::Execute(const Instruction& instruction)
     }
 }
 
-DEFINE_OPCODE_HANDLER(CLS)
-DEFINE_OPCODE_HANDLER(RET)
-DEFINE_OPCODE_HANDLER(JP_ADDR)
-DEFINE_OPCODE_HANDLER(CALL_ADDR)
-DEFINE_OPCODE_HANDLER(SE_VX_KK)
-DEFINE_OPCODE_HANDLER(SNE_VX_KK)
-DEFINE_OPCODE_HANDLER(SE_VX_VY)
-DEFINE_OPCODE_HANDLER(LD_VX_KK)
-DEFINE_OPCODE_HANDLER(ADD_VX_KK)
-DEFINE_OPCODE_HANDLER(LD_VX_VY)
-DEFINE_OPCODE_HANDLER(OR_VX_VY)
-DEFINE_OPCODE_HANDLER(AND_VX_VY)
-DEFINE_OPCODE_HANDLER(XOR_VX_VY)
-DEFINE_OPCODE_HANDLER(ADD_VX_VY)
-DEFINE_OPCODE_HANDLER(SUB_VX_VY)
-DEFINE_OPCODE_HANDLER(SHR_VX_VY)
-DEFINE_OPCODE_HANDLER(SUBN_VX_VY)
-DEFINE_OPCODE_HANDLER(SHL_VX_VY)
-DEFINE_OPCODE_HANDLER(SNE_VX_VY)
-DEFINE_OPCODE_HANDLER(LD_I_ADDR)
-DEFINE_OPCODE_HANDLER(JP_V0_ADDR)
-DEFINE_OPCODE_HANDLER(RND_VX_KK)
-DEFINE_OPCODE_HANDLER(DRW_VX_VY_N)
-DEFINE_OPCODE_HANDLER(SKP_VX)
-DEFINE_OPCODE_HANDLER(SKNP_VX)
-DEFINE_OPCODE_HANDLER(LD_VX_DT)
-DEFINE_OPCODE_HANDLER(LD_VX_K)
-DEFINE_OPCODE_HANDLER(LD_DT_VX)
-DEFINE_OPCODE_HANDLER(LD_ST_VX)
-DEFINE_OPCODE_HANDLER(ADD_I_VX)
-DEFINE_OPCODE_HANDLER(LD_F_VX)
-DEFINE_OPCODE_HANDLER(LD_B_VX)
-DEFINE_OPCODE_HANDLER(LD_I_VX)
-DEFINE_OPCODE_HANDLER(LD_VX_I)
+//--------------------------------------------------------------------------------
+void CPU::Execute_CLS(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_CLS" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_RET(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_RET" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_JP_ADDR(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_JP_ADDR" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_CALL_ADDR(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_CALL_ADDR" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_SE_VX_KK(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_SE_VX_KK" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_SNE_VX_KK(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_SNE_VX_KK" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_SE_VX_VY(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_SE_VX_VY" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_LD_VX_KK(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_LD_VX_KK" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_ADD_VX_KK(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_ADD_VX_KK" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_LD_VX_VY(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_LD_VX_VY" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_OR_VX_VY(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_OR_VX_VY" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_AND_VX_VY(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_AND_VX_VY" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_XOR_VX_VY(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_XOR_VX_VY" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_ADD_VX_VY(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_ADD_VX_VY" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_SUB_VX_VY(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_SUB_VX_VY" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_SHR_VX_VY(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_SHR_VX_VY" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_SUBN_VX_VY(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_SUBN_VX_VY" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_SHL_VX_VY(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_SHL_VX_VY" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_SNE_VX_VY(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_SNE_VX_VY" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_LD_I_ADDR(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_LD_I_ADDR" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_JP_V0_ADDR(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_JP_V0_ADDR" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_RND_VX_KK(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_RND_VX_KK" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_DRW_VX_VY_N(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_DRW_VX_VY_N" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_SKP_VX(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_SKP_VX" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_SKNP_VX(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_SKNP_VX" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_LD_VX_DT(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_LD_VX_DT" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_LD_VX_K(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_LD_VX_K" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_LD_DT_VX(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_LD_DT_VX" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_LD_ST_VX(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_LD_ST_VX" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_ADD_I_VX(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_ADD_I_VX" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_LD_F_VX(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_LD_F_VX" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_LD_B_VX(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_LD_B_VX" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_LD_I_VX(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_LD_I_VX" << std::endl;
+}
+
+//--------------------------------------------------------------------------------
+void CPU::Execute_LD_VX_I(const Instruction& instruction)
+{
+    std::cout << "[UNIMPLEMENTED] Execute_LD_VX_I" << std::endl;
+}
