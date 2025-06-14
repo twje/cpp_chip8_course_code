@@ -7,17 +7,15 @@
 
 // System
 #include <vector>
+#include <ostream>
 
 //--------------------------------------------------------------------------------
-class Instruction
+struct Instruction
 {
-public:
-    Instruction(OpcodeId id, std::vector<uint16_t>&& arguments);
-
-    OpcodeId GetId() const { return mId; }
-    const std::vector<uint16_t>& GetArguments() const { return mArguments; }
-
-private:
-    OpcodeId mId;
+    OpcodeId mOpcodeId;
     std::vector<uint16_t> mArguments;
+    uint16_t mAddress;    
 };
+
+//--------------------------------------------------------------------------------
+std::ostream& operator<<(std::ostream& os, const Instruction& instrction);

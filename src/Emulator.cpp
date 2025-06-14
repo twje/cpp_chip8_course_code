@@ -17,6 +17,9 @@ Emulator::Emulator()
 //--------------------------------------------------------------------------------
 bool Emulator::LoadRom(const fs::path& romPath)
 {
+	// Clear program memory only (preserve fontset in lower RAM)
+	std::fill(mRAM.begin() + PROGRAM_START_ADDRESS, mRAM.end(), 0);
+
 	std::ifstream file(romPath, std::ios::binary);
 	if (!file)
 	{

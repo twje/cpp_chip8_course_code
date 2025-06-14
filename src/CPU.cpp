@@ -19,7 +19,8 @@ CPU::CPU(Bus& bus)
 //--------------------------------------------------------------------------------
 void CPU::Step()
 {
-    uint16_t opcode = Fetch();
+    const uint16_t address = mPC;
+    const uint16_t opcode = Fetch(address);
 
     // Advance PC early (some instructions override it)
     mPC += 2;
@@ -31,7 +32,7 @@ void CPU::Step()
     }
 
     // Decode
-    std::optional<Instruction> instructionOpt = mDisassembler.TryGetInstruction(opcode);
+    std::optional<Instruction> instructionOpt = mDisassembler.TryGetInstruction(opcode, address);
     if (!instructionOpt.has_value())
     {
         throw std::runtime_error("Unknown or invalid opcode: " + std::to_string(opcode));
@@ -41,19 +42,20 @@ void CPU::Step()
 }
 
 //--------------------------------------------------------------------------------
-uint16_t CPU::Fetch()
+uint16_t CPU::Fetch(uint16_t address)
 {
-    assert(mPC % 2 == 0);
-    const uint8_t hByte = mBus.Read8(mPC);
-    const uint8_t lByte = mBus.Read8(mPC + 1);
+    assert(address % 2 == 0);
+    const uint8_t hByte = mBus.Read8(address);
+    const uint8_t lByte = mBus.Read8(address + 1);
 
-    // CHIP-8 opcodes are big-endian: high byte comes first. Convert 
-    // to host-endian (little-endian on x86) for execution.
+    // CHIP-8 opcodes are stored big-endian: high byte first in memory.
     return (static_cast<uint16_t>(hByte) << 8) | lByte;
 }
 
 //--------------------------------------------------------------------------------
 void CPU::Execute(const Instruction& instruction)
 {
-    
+    std::cout << instruction << std::endl;
+
+    //std::cout << std::hex << instruction.mAddress << ": " << OpCodeIdToString(instruction.mOpcodeId) << std::endl;
 }

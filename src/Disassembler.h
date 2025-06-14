@@ -12,5 +12,5 @@
 class Disassembler
 {
 public:
-	std::optional<Instruction> TryGetInstruction(uint16_t opcode);
+	std::optional<Instruction> TryGetInstruction(uint16_t opcode, uint16_t address);
 };

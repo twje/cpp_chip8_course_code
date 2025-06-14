@@ -18,7 +18,7 @@ public:
 	void Step();
 
 private:
-	uint16_t Fetch();
+	uint16_t Fetch(uint16_t address);
 	void Execute(const Instruction& instruction);
 	
 	Bus& mBus;

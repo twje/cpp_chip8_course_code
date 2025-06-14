@@ -6,7 +6,7 @@
 #include "InstructionSet.h"
 
 //--------------------------------------------------------------------------------
-std::optional<Instruction> Disassembler::TryGetInstruction(uint16_t opcode)
+std::optional<Instruction> Disassembler::TryGetInstruction(uint16_t opcode, uint16_t address)
 {
     for (const InstructionDef& instructionDef : INSTRUCTION_SET)
     {
@@ -20,7 +20,7 @@ std::optional<Instruction> Disassembler::TryGetInstruction(uint16_t opcode)
                 arguments.push_back(value);
             }
 
-            return Instruction{ instructionDef.mId, std::move(arguments) };
+            return Instruction{ instructionDef.mId, std::move(arguments), address };
         }
     }
 
