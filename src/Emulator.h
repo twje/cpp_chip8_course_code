@@ -19,6 +19,7 @@ class Emulator
 public:
 	Emulator();
 
+	void LoadRom();
 	void Run();
 
 private:

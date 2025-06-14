@@ -4,10 +4,12 @@
 Emulator::Emulator()
 	: mBus({ mRAM, mDisplay, mKeypad, mDelayTimer, mSoundTimer })
 	, mCPU(mBus)
-{ }
+{ 
+	// Add RAM
+}
 
 //--------------------------------------------------------------------------------
 void Emulator::Run()
 {
-	//1nnn
+	mCPU.Step();
 }
