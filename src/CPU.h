@@ -17,6 +17,11 @@ public:
 		: mBus{ bus }
 	{ }
 
+	void Step(uint16_t opcode)
+	{
+
+	}
+
 private:
 	Bus& mBus;
 };

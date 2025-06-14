@@ -2,11 +2,15 @@
 
 // Includes
 //--------------------------------------------------------------------------------
-// Chip 8
+// Emulator
 #include "InstructionSet.h"
 
 // System
-#include <string>
+#include <optional>
 
 //--------------------------------------------------------------------------------
-std::string OpCodeIdToString(OpCodeId id);
+class Disassembler
+{
+public:
+	std::optional<
+};

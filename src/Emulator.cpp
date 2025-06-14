@@ -1,13 +1,13 @@
-#include "Chip8.h"
+#include "Emulator.h"
 
 //--------------------------------------------------------------------------------
-Chip8::Chip8()
+Emulator::Emulator()
 	: mBus({ mRAM, mDisplay, mKeypad, mDelayTimer, mSoundTimer })
 	, mCPU(mBus)
 { }
 
 //--------------------------------------------------------------------------------
-void Chip8::Run()
+void Emulator::Run()
 {
 
 }

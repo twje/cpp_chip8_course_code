@@ -14,10 +14,10 @@
 #include <array>
 
 //--------------------------------------------------------------------------------
-class Chip8
+class Emulator
 {
 public:
-	Chip8();
+	Emulator();
 
 	void Run();
 
