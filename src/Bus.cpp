@@ -20,11 +20,11 @@ Bus::Bus(const BusConfig& config)
 //--------------------------------------------------------------------------------
 uint8_t Bus::Read8(uint16_t address) const
 {
-    return 0;
+    return mRam.at(static_cast<size_t>(address));
 }
 
 //--------------------------------------------------------------------------------
 void Bus::Write8(uint16_t address, uint8_t value)
 {
-
+    mRam.at(static_cast<size_t>(address)) = value;
 }

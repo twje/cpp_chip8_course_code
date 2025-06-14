@@ -3,6 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Chip 8
+#include "Common.h"
 #include "Display.h"
 #include "Keypad.h"
 #include "DelayTimer.h"
@@ -19,7 +20,7 @@ class Emulator
 public:
 	Emulator();
 
-	bool LoadRom(const std::string& filename);
+	bool LoadRom(const fs::path& romPath);
 	void Run();
 
 private:

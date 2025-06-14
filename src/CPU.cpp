@@ -55,5 +55,5 @@ uint16_t CPU::Fetch()
 //--------------------------------------------------------------------------------
 void CPU::Execute(const Instruction& instruction)
 {
-    std::cout << "ABC";
+    
 }

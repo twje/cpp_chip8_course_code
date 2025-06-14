@@ -2,6 +2,9 @@
 
 // Includes
 //--------------------------------------------------------------------------------
+// Emulator
+#include "Config.h"
+
 // System
 #include <fstream>
 
@@ -9,32 +12,47 @@
 Emulator::Emulator()
 	: mBus({ mRAM, mDisplay, mKeypad, mDelayTimer, mSoundTimer })
 	, mCPU(mBus)
-{ 
-	// Add RAM
-}
+{ }
 
 //--------------------------------------------------------------------------------
-bool Emulator::LoadRom(const std::string& filename)
+bool Emulator::LoadRom(const fs::path& romPath)
 {
-	std::ifstream file(filename, std::ios::binary);
-
+	std::ifstream file(romPath, std::ios::binary);
 	if (!file)
-	{		
-		std::cerr << "Could not open file : " + filename << std::endl;
+	{
+		std::cerr << "Could not open file: " << romPath << std::endl;
 		return false;
 	}
 
-	// Seek to the end to determine the file size
+	// Determine size
 	file.seekg(0, std::ios::end);
 	std::streamsize fileSize = file.tellg();
 	file.seekg(0, std::ios::beg);
 
-	// TODO: implement
+	if (fileSize <= 0)
+	{
+		std::cerr << "ROM file is empty." << std::endl;
+		return false;
+	}
 
+	if (fileSize > (RAM_SIZE - PROGRAM_START_ADDRESS))
+	{
+		std::cerr << "ROM too large to fit in memory." << std::endl;
+		return false;
+	}
+
+	file.read(reinterpret_cast<char*>(&mRAM[PROGRAM_START_ADDRESS]), fileSize);
+	if (!file)
+	{
+		std::cerr << "Failed to read full ROM into memory." << std::endl;
+		return false;
+	}
+
+	return true;
 }
 
 //--------------------------------------------------------------------------------
 void Emulator::Run()
-{
+{	
 	mCPU.Step();
 }
