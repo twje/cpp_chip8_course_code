@@ -3,7 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
-#include "InstructionSet.h"
+#include "Instruction.h"
 
 // System
 #include <optional>
@@ -12,5 +12,5 @@
 class Disassembler
 {
 public:
-	std::optional<
+	std::optional<Instruction> TryGetInstruction(uint16_t opcode);
 };

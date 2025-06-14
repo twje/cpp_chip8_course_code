@@ -1,13 +1,12 @@
-#include "Emulator.h"
+#include "CPU.h"
 
 //--------------------------------------------------------------------------------
-Emulator::Emulator()
-	: mBus({ mRAM, mDisplay, mKeypad, mDelayTimer, mSoundTimer })
-	, mCPU(mBus)
+CPU::CPU(Bus& bus)
+	: mBus{ bus }
 { }
 
 //--------------------------------------------------------------------------------
-void Emulator::Run()
+void CPU::Step(uint16_t opcode)
 {
-	//1nnn
+
 }
