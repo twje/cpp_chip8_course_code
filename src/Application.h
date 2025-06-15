@@ -7,7 +7,6 @@
 #include "Emulator.h"
 
 // Third Party
-#define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
 
 //--------------------------------------------------------------------------------
@@ -22,11 +21,10 @@ public:
 	bool OnUserCreate() override
 	{
 		RomManager romManager(ROMS_PATH);
-	
-		Emulator emulator;
-		if (emulator.LoadRom(romManager.ResolveRom("test_rom/test_opcode.8o")))
+		if (!mEmulator.LoadRom(romManager.ResolveRom("test_rom/test_opcode.8o")))
 		{
-			emulator.Run();
+			std::cerr << "Unable to load ROM" << std::endl;
+			return false;
 		}
 
 		return true;
@@ -34,15 +32,17 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-		// called once per frame
-		for (int x = 0; x < ScreenWidth(); x++)
+		if (GetKey(olc::Key::SPACE).bPressed)
 		{
-			for (int y = 0; y < ScreenHeight(); y++)
-			{
-				Draw(x, y, olc::Pixel(rand() % 255, rand() % 255, rand() % 255));
-			}
+			mEmulator.Step();
 		}
-			
+
+		Clear(olc::DARK_BLUE);
+		DrawLine(10, 10, ScreenWidth() - 10, 10, olc::YELLOW);			
+
 		return true;
 	}
+
+private:
+	Emulator mEmulator;
 };

@@ -26,7 +26,7 @@ public:
 	Emulator();
 
 	bool LoadRom(const fs::path& romPath);
-	void Run();	
+	void Step();
 
 private:
 	RAM mRAM;

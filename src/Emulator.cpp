@@ -15,6 +15,7 @@ Emulator::Emulator()
 { 
 	// Load CHIP-8 character fontset into memory
 	mRAM.WriteRange(0x000, CHAR_SET);
+	mDisplay.SetBus(mBus);
 }
 
 //--------------------------------------------------------------------------------
@@ -65,7 +66,7 @@ bool Emulator::LoadRom(const fs::path& romPath)
 }
 
 //--------------------------------------------------------------------------------
-void Emulator::Run()
+void Emulator::Step()
 {	
 	mCPU.Step();
 }
