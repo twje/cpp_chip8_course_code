@@ -19,14 +19,14 @@
 class Emulator
 {
 #ifdef UNIT_TESTING
-	friend class TestEmulator;
+	friend class CPUOpcodeTest;
 #endif
 
 public:
 	Emulator();
 
 	bool LoadRom(const fs::path& romPath);
-	void Run();
+	void Run();	
 
 private:
 	RAM mRAM;

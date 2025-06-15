@@ -16,6 +16,10 @@
 //--------------------------------------------------------------------------------
 class CPU
 {
+#ifdef UNIT_TESTING
+	friend class CPUOpcodeTest;
+#endif
+
 public:
 	CPU(Bus& bus);
 

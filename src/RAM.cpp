@@ -19,7 +19,7 @@ void RAM::Write(uint16_t address, uint8_t value)
 }
 
 //--------------------------------------------------------------------------------
-bool RAM::WriteRange(size_t start, const std::vector<uint8_t>& data)
+bool RAM::WriteRange(size_t start, std::span<const uint8_t> data)
 {
     if (start + data.size() > mData.size()) 
     {

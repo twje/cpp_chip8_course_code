@@ -3,13 +3,18 @@
 #include "Emulator.h"
 
 //--------------------------------------------------------------------------------
-class TestEmulator 
+class CPUOpcodeTest : public ::testing::Test 
 {
-public:    
+protected:
+    Emulator mEmulator;
+
     CPU& cpu() { return mEmulator.mCPU; }
     RAM& ram() { return mEmulator.mRAM; }
     Display& display() { return mEmulator.mDisplay; }
-
-private:
-    Emulator mEmulator;
 };
+
+//--------------------------------------------------------------------------------
+TEST_F(CPUOpcodeTest, CLS_ClearsTheDisplay) 
+{
+
+}
