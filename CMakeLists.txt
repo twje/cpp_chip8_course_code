@@ -31,6 +31,9 @@ add_executable(${PROJECT_NAME} ${SRC_FILES})
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
+# Mark vendor directory as system include (suppresses warnings)
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/vendor/PGE)
+
 # Link libraries (if needed later, e.g., SDL2 or SFML)
 # target_link_libraries(${PROJECT_NAME} PRIVATE some_library)
 
