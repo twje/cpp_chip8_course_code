@@ -1,49 +1,80 @@
 cmake_minimum_required(VERSION 3.20)
 project(Chip8Emulator VERSION 0.1.0 LANGUAGES CXX)
 
-# Use C++20
+#-------------------------------------------------------------------------------
+# Compiler Configuration
+#-------------------------------------------------------------------------------
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Toggle production build
 option(PRODUCTION_BUILD "Make this a production build" OFF)
-
-# Use folders in IDEs (like Visual Studio)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Enable warnings (adjust as needed for cross-platform use)
 if (MSVC)
     add_compile_options(/W4 /permissive-)
 else()
     add_compile_options(-Wall -Wextra -pedantic -Wconversion)
 endif()
 
-# Add source files (recursive if needed)
-file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
-    src/*.cpp
-    src/*.h
+#-------------------------------------------------------------------------------
+# Dependencies
+#-------------------------------------------------------------------------------
+
+include(FetchContent)
+
+# GoogleTest
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest
+    GIT_TAG        v1.17.0
 )
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
 
-# Define the executable
-add_executable(${PROJECT_NAME} ${SRC_FILES})
+#-------------------------------------------------------------------------------
+# Vendor Includes
+#-------------------------------------------------------------------------------
 
-# Include directories
-target_include_directories(${PROJECT_NAME} PRIVATE src)
-
-# Mark vendor directory as system include (suppresses warnings)
+# Suppress warnings for olcPixelGameEngine
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/vendor/PGE)
 
-# Link libraries (if needed later, e.g., SDL2 or SFML)
-# target_link_libraries(${PROJECT_NAME} PRIVATE some_library)
+#-------------------------------------------------------------------------------
+# Source and Core Library
+#-------------------------------------------------------------------------------
 
-# Resource Management
-if(PRODUCTION_BUILD)
-    # TODO: implement
-else()
-    target_compile_definitions(${PROJECT_NAME} PUBLIC ROMS_PATH="${PROJECT_SOURCE_DIR}/roms/")
+# Gather all source files under src/
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp src/*.h)
+
+# Build core logic as a static library
+add_library(Chip8Core STATIC ${SRC_FILES})
+target_include_directories(Chip8Core PUBLIC src)
+
+# Optional: define ROMS_PATH for dev builds
+if(NOT PRODUCTION_BUILD)
+    target_compile_definitions(Chip8Core PUBLIC ROMS_PATH="${PROJECT_SOURCE_DIR}/roms/")
 endif()
 
-# Enable testing
-include(CTest)
-enable_testing()
+#-------------------------------------------------------------------------------
+# Application Executable
+#-------------------------------------------------------------------------------
+
+add_executable(${PROJECT_NAME} src/main.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE Chip8Core)
+
+#-------------------------------------------------------------------------------
+# Unit Tests
+#-------------------------------------------------------------------------------
+
+file(GLOB_RECURSE TEST_FILES CONFIGURE_DEPENDS tests/*.cpp)
+
+if(TEST_FILES)
+    add_executable(${PROJECT_NAME}_tests ${TEST_FILES})
+    target_link_libraries(${PROJECT_NAME}_tests PRIVATE Chip8Core gtest_main)
+    target_include_directories(${PROJECT_NAME}_tests PRIVATE src)
+
+    include(CTest)
+    enable_testing()
+    add_test(NAME AllTests COMMAND ${PROJECT_NAME}_tests)
+endif()
