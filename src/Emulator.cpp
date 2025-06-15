@@ -18,7 +18,7 @@ Emulator::Emulator()
 bool Emulator::LoadRom(const fs::path& romPath)
 {
 	// Clear program memory only (preserve fontset in lower RAM)
-	std::fill(mRAM.begin() + PROGRAM_START_ADDRESS, mRAM.end(), 0);
+	mRAM.ClearProgramMemory();
 
 	std::ifstream file(romPath, std::ios::binary);
 	if (!file)
@@ -44,10 +44,17 @@ bool Emulator::LoadRom(const fs::path& romPath)
 		return false;
 	}
 
-	file.read(reinterpret_cast<char*>(&mRAM[PROGRAM_START_ADDRESS]), fileSize);
-	if (!file)
+
+	std::vector<uint8_t> buffer(static_cast<size_t>(fileSize));
+	if (!file.read(reinterpret_cast<char*>(buffer.data()), fileSize))
 	{
 		std::cerr << "Failed to read full ROM into memory." << std::endl;
+		return false;
+	}
+
+	if (!mRAM.WriteRange(PROGRAM_START_ADDRESS, buffer)) 
+	{
+		std::cerr << "ROM too large to fit into memory." << std::endl;
 		return false;
 	}
 

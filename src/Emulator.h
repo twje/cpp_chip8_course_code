@@ -4,6 +4,7 @@
 //--------------------------------------------------------------------------------
 // Chip 8
 #include "Common.h"
+#include "RAM.h"
 #include "Display.h"
 #include "Keypad.h"
 #include "DelayTimer.h"
@@ -17,6 +18,10 @@
 //--------------------------------------------------------------------------------
 class Emulator
 {
+#ifdef UNIT_TESTING
+	friend class TestEmulator;
+#endif
+
 public:
 	Emulator();
 
@@ -24,7 +29,7 @@ public:
 	void Run();
 
 private:
-	std::array<uint8_t, RAM_SIZE> mRAM;
+	RAM mRAM;
 	Display mDisplay;
 	Keypad mKeypad;
 	DelayTimer mDelayTimer;

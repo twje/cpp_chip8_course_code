@@ -10,6 +10,7 @@
 #include <array>
 
 //--------------------------------------------------------------------------------
+class RAM;
 class Display;
 class Keypad;
 class DelayTimer;
@@ -18,7 +19,7 @@ class SoundTimer;
 //--------------------------------------------------------------------------------
 struct BusConfig 
 {
-    std::array<uint8_t, RAM_SIZE>& mRam;
+    RAM& mRAM;
     Display& mDisplay;
     Keypad& mKeypad;
     DelayTimer& mDelayTimer;
@@ -35,7 +36,7 @@ public:
     void Write8(uint16_t address, uint8_t value);
 
 private:
-    std::array<uint8_t, RAM_SIZE>& mRam;
+    RAM& mRAM;
     Display& mDisplay;
     Keypad& mKeypad;
     DelayTimer& mDelayTimer;

@@ -3,6 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Chip 8
+#include "RAM.h"
 #include "Display.h"
 #include "Keypad.h"
 #include "DelayTimer.h"
@@ -10,7 +11,7 @@
 
 //--------------------------------------------------------------------------------
 Bus::Bus(const BusConfig& config)
-    : mRam(config.mRam)
+    : mRAM(config.mRAM)
     , mDisplay(config.mDisplay)
     , mKeypad(config.mKeypad)
     , mDelayTimer(config.mDelayTimer)
@@ -20,11 +21,11 @@ Bus::Bus(const BusConfig& config)
 //--------------------------------------------------------------------------------
 uint8_t Bus::Read8(uint16_t address) const
 {
-    return mRam.at(static_cast<size_t>(address));
+    return mRAM.Read(address);
 }
 
 //--------------------------------------------------------------------------------
 void Bus::Write8(uint16_t address, uint8_t value)
 {
-    mRam.at(static_cast<size_t>(address)) = value;
+    mRAM.Write(address, value);
 }
