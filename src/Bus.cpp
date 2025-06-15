@@ -11,12 +11,12 @@
 #include "SoundTimer.h"
 
 //--------------------------------------------------------------------------------
-Bus::Bus(const BusConfig& config)
-    : mRAM(config.mRAM)
-    , mDisplay(config.mDisplay)
-    , mKeypad(config.mKeypad)
-    , mDelayTimer(config.mDelayTimer)
-    , mSoundTimer(config.mSoundTimer)
+Bus::Bus(const Subsystems& systems)
+    : mRAM(systems.mRAM)
+    , mDisplay(systems.mDisplay)
+    , mKeypad(systems.mKeypad)
+    , mDelayTimer(systems.mDelayTimer)
+    , mSoundTimer(systems.mSoundTimer)
 { }
 
 //--------------------------------------------------------------------------------

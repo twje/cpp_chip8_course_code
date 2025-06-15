@@ -17,7 +17,7 @@ class DelayTimer;
 class SoundTimer;
 
 //--------------------------------------------------------------------------------
-struct BusConfig 
+struct Subsystems
 {
     RAM& mRAM;
     Display& mDisplay;
@@ -30,7 +30,7 @@ struct BusConfig
 class Bus
 {
 public:
-    Bus(const BusConfig& config);
+    Bus(const Subsystems& systems);
 
     uint8_t Read8(uint16_t address) const;
     void Write8(uint16_t address, uint8_t value);
