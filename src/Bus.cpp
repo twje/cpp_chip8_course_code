@@ -1,7 +1,8 @@
 #include "Bus.h"
 
 // Includes
-//--------------------------------------------------------------------------------
+#include "Bus.h"
+
 // Chip 8
 #include "RAM.h"
 #include "Display.h"
