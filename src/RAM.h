@@ -3,7 +3,6 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
-#include "Common.h"
 #include "Config.h"
 
 // System

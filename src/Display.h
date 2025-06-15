@@ -4,7 +4,7 @@
 //--------------------------------------------------------------------------------
 // Emulator
 #include "Config.h"
-#include "Bus.h"
+#include "RAM.h"
 
 // System
 #include <array>
@@ -14,18 +14,18 @@
 class Display
 {
 public:
-    void SetBus(Bus& bus) { mBus = &bus; }
+    void SetRAM(RAM& ram) { mRAM = &ram; }
 
     // Draws a CHIP-8 sprite from memory and returns 1 if any pixels were erased (for VF register)
-    uint8_t DrawSprite(uint32_t px, uint32_t py, size_t spriteAddress, uint32_t height)
+    uint8_t DrawSprite(uint32_t px, uint32_t py, uint16_t spriteAddress, uint32_t height)
     {
-        assert(mBus && "Bus must be set before drawing");
+        assert(mRAM && "Bus must be set before drawing");
 
         uint8_t collision = 0;
 
-        for (uint32_t row = 0; row < height; ++row)
+        for (uint16_t row = 0; row < height; ++row)
         {
-            uint8_t byte = mBus->Read8(spriteAddress + row);
+            uint8_t byte = mRAM->Read(spriteAddress + row);
             for (uint8_t bit = 0; bit < 8; ++bit)
             {
                 // Skip if the current bit (pixel) is not set
@@ -34,8 +34,8 @@ public:
                     continue;
                 }
 
-                uint32_t x = (px + bit) % DISPLAY_WIDTH;
-                uint32_t y = (py + row) % DISPLAY_HEIGHT;
+                uint16_t x = (px + bit) % DISPLAY_WIDTH;
+                uint16_t y = (py + row) % DISPLAY_HEIGHT;
 
                 bool current = IsPixelSet(x, y);
                 if (current)
@@ -75,6 +75,6 @@ private:
     }
 
 private:
-    Bus* mBus = nullptr;
+    RAM* mRAM = nullptr;
     std::array<uint32_t, DISPLAY_PIXEL_COUNT> mBuffer;
 };

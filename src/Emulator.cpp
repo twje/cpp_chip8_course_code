@@ -12,10 +12,9 @@
 Emulator::Emulator()
 	: mBus({ mRAM, mDisplay, mKeypad, mDelayTimer, mSoundTimer })
 	, mCPU(mBus)
-{ 
-	// Load CHIP-8 character fontset into memory
-	mRAM.WriteRange(0x000, CHAR_SET);
-	mDisplay.SetBus(mBus);
+{
+	mRAM.WriteRange(0x000, CHAR_SET); // Load CHIP-8 character fontset into memory
+	mDisplay.SetRAM(mRAM);
 }
 
 //--------------------------------------------------------------------------------

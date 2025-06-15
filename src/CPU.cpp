@@ -3,7 +3,13 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
+#include "Config.h"
 #include "Instruction.h"
+#include "RAM.h"
+#include "Display.h"
+#include "Keypad.h"
+#include "DelayTimer.h"
+#include "SoundTimer.h"
 
 // System
 #include <optional>
@@ -45,8 +51,8 @@ void CPU::Step()
 uint16_t CPU::Fetch(uint16_t address)
 {
     assert(address % 2 == 0);
-    const uint8_t hByte = mBus.Read8(address);
-    const uint8_t lByte = mBus.Read8(address + 1);
+    const uint8_t hByte = mBus.mRAM.Read(address);
+    const uint8_t lByte = mBus.mRAM.Read(address + 1);
 
     // CHIP-8 opcodes are stored big-endian: high byte first in memory.
     return (static_cast<uint16_t>(hByte) << 8) | lByte;
