@@ -65,7 +65,7 @@ bool Emulator::LoadRom(const fs::path& romPath)
 }
 
 //--------------------------------------------------------------------------------
-void Emulator::Step()
+StepResult Emulator::Step()
 {	
-	mCPU.Step();
+	return mCPU.Step();
 }

@@ -23,7 +23,7 @@ CPU::CPU(Bus& bus)
 { }
 
 //--------------------------------------------------------------------------------
-void CPU::Step()
+StepResult CPU::Step()
 {
     const uint16_t address = mPC;
     const uint16_t opcode = Fetch(address);
@@ -34,17 +34,23 @@ void CPU::Step()
     // Ignore 0nnn (RCA 1802 call) — obsolete on modern interpreters
     if ((opcode & 0xF000) == 0x0000)
     {
-        return;
+        return StepResult::Ignored();
     }
 
     // Decode
     std::optional<Instruction> instructionOpt = mDisassembler.TryGetInstruction(opcode, address);
-    if (!instructionOpt.has_value())
+    if (!instructionOpt)
     {
-        throw std::runtime_error("Unknown or invalid opcode: " + std::to_string(opcode));
+        return StepResult::DecodeError(opcode, address);
     }
 
-    Execute(*instructionOpt);
+    bool isImplemented = Execute(*instructionOpt);
+    if (isImplemented)
+    {
+        return StepResult::Executed(*instructionOpt);
+    }
+
+    return StepResult::Unimplemented(*instructionOpt);
 }
 
 //--------------------------------------------------------------------------------
@@ -59,10 +65,8 @@ uint16_t CPU::Fetch(uint16_t address)
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute(const Instruction& instruction)
+bool CPU::Execute(const Instruction& instruction)
 {
-    std::cout << instruction << std::endl;
-
     switch (instruction.mOpcodeId) // TODO: think about changing to ID?
     {
         case OpcodeId::CLS:           return Execute_CLS(instruction);
@@ -99,212 +103,246 @@ void CPU::Execute(const Instruction& instruction)
         case OpcodeId::LD_B_VX:       return Execute_LD_B_VX(instruction);
         case OpcodeId::LD_I_VX:       return Execute_LD_I_VX(instruction);
         case OpcodeId::LD_VX_I:       return Execute_LD_VX_I(instruction);
-
-        default:
-            throw std::runtime_error("Unimplemented opcode: " + OpCodeIdToString(instruction.mOpcodeId));
     }
+
+    std::cerr << "Unimplemented opcode: " + OpCodeIdToString(instruction.mOpcodeId) << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_CLS(const Instruction& instruction)
+bool CPU::Execute_CLS(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_CLS" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_RET(const Instruction& instruction)
+bool CPU::Execute_RET(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_RET" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_JP_ADDR(const Instruction& instruction)
+bool CPU::Execute_JP_ADDR(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_JP_ADDR" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_CALL_ADDR(const Instruction& instruction)
+bool CPU::Execute_CALL_ADDR(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_CALL_ADDR" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_SE_VX_KK(const Instruction& instruction)
+bool CPU::Execute_SE_VX_KK(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_SE_VX_KK" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_SNE_VX_KK(const Instruction& instruction)
+bool CPU::Execute_SNE_VX_KK(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_SNE_VX_KK" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_SE_VX_VY(const Instruction& instruction)
+bool CPU::Execute_SE_VX_VY(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_SE_VX_VY" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_LD_VX_KK(const Instruction& instruction)
+bool CPU::Execute_LD_VX_KK(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_LD_VX_KK" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_ADD_VX_KK(const Instruction& instruction)
+bool CPU::Execute_ADD_VX_KK(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_ADD_VX_KK" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_LD_VX_VY(const Instruction& instruction)
+bool CPU::Execute_LD_VX_VY(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_LD_VX_VY" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_OR_VX_VY(const Instruction& instruction)
+bool CPU::Execute_OR_VX_VY(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_OR_VX_VY" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_AND_VX_VY(const Instruction& instruction)
+bool CPU::Execute_AND_VX_VY(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_AND_VX_VY" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_XOR_VX_VY(const Instruction& instruction)
+bool CPU::Execute_XOR_VX_VY(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_XOR_VX_VY" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_ADD_VX_VY(const Instruction& instruction)
+bool CPU::Execute_ADD_VX_VY(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_ADD_VX_VY" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_SUB_VX_VY(const Instruction& instruction)
+bool CPU::Execute_SUB_VX_VY(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_SUB_VX_VY" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_SHR_VX_VY(const Instruction& instruction)
+bool CPU::Execute_SHR_VX_VY(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_SHR_VX_VY" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_SUBN_VX_VY(const Instruction& instruction)
+bool CPU::Execute_SUBN_VX_VY(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_SUBN_VX_VY" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_SHL_VX_VY(const Instruction& instruction)
+bool CPU::Execute_SHL_VX_VY(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_SHL_VX_VY" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_SNE_VX_VY(const Instruction& instruction)
+bool CPU::Execute_SNE_VX_VY(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_SNE_VX_VY" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_LD_I_ADDR(const Instruction& instruction)
+bool CPU::Execute_LD_I_ADDR(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_LD_I_ADDR" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_JP_V0_ADDR(const Instruction& instruction)
+bool CPU::Execute_JP_V0_ADDR(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_JP_V0_ADDR" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_RND_VX_KK(const Instruction& instruction)
+bool CPU::Execute_RND_VX_KK(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_RND_VX_KK" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_DRW_VX_VY_N(const Instruction& instruction)
+bool CPU::Execute_DRW_VX_VY_N(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_DRW_VX_VY_N" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_SKP_VX(const Instruction& instruction)
+bool CPU::Execute_SKP_VX(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_SKP_VX" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_SKNP_VX(const Instruction& instruction)
+bool CPU::Execute_SKNP_VX(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_SKNP_VX" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_LD_VX_DT(const Instruction& instruction)
+bool CPU::Execute_LD_VX_DT(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_LD_VX_DT" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_LD_VX_K(const Instruction& instruction)
+bool CPU::Execute_LD_VX_K(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_LD_VX_K" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_LD_DT_VX(const Instruction& instruction)
+bool CPU::Execute_LD_DT_VX(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_LD_DT_VX" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_LD_ST_VX(const Instruction& instruction)
+bool CPU::Execute_LD_ST_VX(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_LD_ST_VX" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_ADD_I_VX(const Instruction& instruction)
+bool CPU::Execute_ADD_I_VX(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_ADD_I_VX" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_LD_F_VX(const Instruction& instruction)
+bool CPU::Execute_LD_F_VX(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_LD_F_VX" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_LD_B_VX(const Instruction& instruction)
+bool CPU::Execute_LD_B_VX(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_LD_B_VX" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_LD_I_VX(const Instruction& instruction)
+bool CPU::Execute_LD_I_VX(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_LD_I_VX" << std::endl;
+    return false;
 }
 
 //--------------------------------------------------------------------------------
-void CPU::Execute_LD_VX_I(const Instruction& instruction)
+bool CPU::Execute_LD_VX_I(const Instruction& instruction)
 {
     std::cout << "[UNIMPLEMENTED] Execute_LD_VX_I" << std::endl;
+    return false;
 }

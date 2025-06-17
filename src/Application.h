@@ -40,8 +40,6 @@ public:
 		Clear(olc::DARK_BLUE);
 		DrawLine(10, 10, ScreenWidth() - 10, 10, olc::YELLOW);			
 
-
-
 		return true;
 	}
 

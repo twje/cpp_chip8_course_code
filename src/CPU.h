@@ -5,13 +5,14 @@
 // Emulator
 #include "Bus.h"
 #include "Disassembler.h"
+#include "StepResult.h"
 
 // System
 #include <array>
 
 // Macros
 //--------------------------------------------------------------------------------
-#define DECLARE_OPCODE_HANDLER(name) void Execute_##name(const Instruction& instruction);
+#define DECLARE_OPCODE_HANDLER(name) bool Execute_##name(const Instruction& instruction);
 
 //--------------------------------------------------------------------------------
 class CPU
@@ -23,11 +24,11 @@ class CPU
 public:
 	CPU(Bus& bus);
 
-	void Step();
+	StepResult Step();
 
 private:
 	uint16_t Fetch(uint16_t address);
-	void Execute(const Instruction& instruction);
+	bool Execute(const Instruction& instruction);	
 	
 	// One method per opcode
 	DECLARE_OPCODE_HANDLER(CLS)
