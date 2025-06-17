@@ -17,7 +17,7 @@ std::ostream& operator<<(std::ostream& os, const Instruction& instr)
 	os << std::setfill(' ') << " | ";
 
 	// Print opcode ID, left-aligned and padded
-	os << "Opcode: " << std::left << std::setw(12) << OpCodeIdToString(instr.mOpcodeId) << " | ";
+	os << "Opcode: " << std::left << std::setw(12) << ToString(instr.mInstructionPatternId) << " | ";
 
 	// Print arguments
 	os << "Args: ";

@@ -5,6 +5,7 @@
 // Emulator
 #include "RomManager.h"
 #include "Emulator.h"
+#include "StepResult.h"
 
 // Third Party
 #include "olcPixelGameEngine.h"
@@ -32,13 +33,23 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-		if (GetKey(olc::Key::SPACE).bPressed)
+		//while (true)
 		{
-			mEmulator.Step();
+			StepResult result = mEmulator.Step();
+
+			switch (result.mStatus)
+			{
+
+			}
 		}
 
-		Clear(olc::DARK_BLUE);
-		DrawLine(10, 10, ScreenWidth() - 10, 10, olc::YELLOW);			
+		//if (GetKey(olc::Key::SPACE).bPressed)
+		//{
+		//	mEmulator.Step();
+		//}
+
+		//Clear(olc::DARK_BLUE);
+		//DrawLine(10, 10, ScreenWidth() - 10, 10, olc::YELLOW);			
 
 		return true;
 	}

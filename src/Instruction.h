@@ -3,7 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
-#include "OpcodeId.h"
+#include "InstructionPatternId.h"
 
 // System
 #include <vector>
@@ -12,7 +12,7 @@
 //--------------------------------------------------------------------------------
 struct Instruction
 {
-    OpcodeId mOpcodeId;
+    InstructionPatternId mInstructionPatternId;
     std::vector<uint16_t> mArguments;
     uint16_t mAddress;    
 };

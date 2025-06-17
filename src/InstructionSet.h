@@ -3,7 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
-#include "OpcodeId.h"
+#include "InstructionPatternId.h"
 
 // System
 #include <vector>
@@ -20,7 +20,7 @@ struct InstructionArgDef
 //--------------------------------------------------------------------------------
 struct InstructionDef
 {
-    OpcodeId mId;
+    InstructionPatternId mId;
     uint16_t mMask;
     uint16_t mPattern;
     std::vector<InstructionArgDef> mArgs;

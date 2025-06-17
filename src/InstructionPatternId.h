@@ -10,7 +10,7 @@
 // NOTE: 0nnn (SYS addr) is omitted as it's not required for modern interpreters.
 // This enum only covers the 3.1 base CHIP-8 instruction set.
 //--------------------------------------------------------------------------------
-enum class OpcodeId : uint8_t
+enum class InstructionPatternId : uint8_t
 {
     CLS,           // 00E0
     RET,           // 00EE
@@ -49,4 +49,4 @@ enum class OpcodeId : uint8_t
 };
 
 //--------------------------------------------------------------------------------
-std::string OpCodeIdToString(OpcodeId id);
+std::string ToString(InstructionPatternId id);
