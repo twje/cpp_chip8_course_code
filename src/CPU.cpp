@@ -68,11 +68,11 @@ Instruction CPU::Fetch()
 //--------------------------------------------------------------------------------
 bool CPU::Decode(Instruction& outInstruction)
 {
-    for (const InstructionDef& instructionDef : OPCODE_PATTERN_TABLE)
+    for (const OpcodePatternDef& opcodeDef : OPCODE_PATTERN_TABLE)
     {
-        if (outInstruction.MatchesPattern(instructionDef))
+        if (outInstruction.MatchesPattern(opcodeDef))
         {
-            outInstruction.ApplyDefinition(instructionDef);
+            outInstruction.DecodeFrom(opcodeDef);
             return true;
         }
     }
@@ -84,7 +84,7 @@ bool CPU::Decode(Instruction& outInstruction)
 bool CPU::IsLegacyInstruction(Instruction& instruction)
 {
     // Ignore 0nnn (RCA 1802 call) — obsolete on modern interpreters
-    if (instruction.GetOpcodePatternId() == OpcodePatternId::SYS_ADDR)
+    if (instruction.GetPatternId() == OpcodePatternId::SYS_ADDR)
     {
         return true;
     }
@@ -95,7 +95,7 @@ bool CPU::IsLegacyInstruction(Instruction& instruction)
 //--------------------------------------------------------------------------------
 bool CPU::Execute(const Instruction& instruction)
 {
-    switch (instruction.GetOpcodePatternId()) // TODO: think about changing to ID?
+    switch (instruction.GetPatternId())
     {
         case OpcodePatternId::CLS:           return Execute_CLS(instruction);
         case OpcodePatternId::RET:           return Execute_RET(instruction);

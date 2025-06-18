@@ -1,14 +1,14 @@
 #include "OpcodePatternTable.h"
 
 //--------------------------------------------------------------------------------
-constexpr InstructionArgDef ARG_NNN = { 0x0FFF, 0 };
-constexpr InstructionArgDef ARG_KK  = { 0x00FF, 0 };
-constexpr InstructionArgDef ARG_N   = { 0x000F, 0 };
-constexpr InstructionArgDef ARG_X   = { 0x0F00, 8 };
-constexpr InstructionArgDef ARG_Y   = { 0x00F0, 4 };
+constexpr OpcodeArgDef ARG_NNN = { 0x0FFF, 0 };
+constexpr OpcodeArgDef ARG_KK  = { 0x00FF, 0 };
+constexpr OpcodeArgDef ARG_N   = { 0x000F, 0 };
+constexpr OpcodeArgDef ARG_X   = { 0x0F00, 8 };
+constexpr OpcodeArgDef ARG_Y   = { 0x00F0, 4 };
 
 //--------------------------------------------------------------------------------
-const std::vector<InstructionDef> OPCODE_PATTERN_TABLE = {
+const std::vector<OpcodePatternDef> OPCODE_PATTERN_TABLE = {
     { OpcodePatternId::CLS,         0xFFFF, 0x00E0, { } },
     { OpcodePatternId::RET,         0xFFFF, 0x00EE, { } },
     { OpcodePatternId::JP_ADDR,     0xF000, 0x1000, { ARG_NNN } },

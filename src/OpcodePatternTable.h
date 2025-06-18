@@ -11,20 +11,20 @@
 #include <string>
 
 //--------------------------------------------------------------------------------
-struct InstructionArgDef
+struct OpcodeArgDef
 {
     uint16_t mMask;
     uint8_t mShift;
 };
 
 //--------------------------------------------------------------------------------
-struct InstructionDef
+struct OpcodePatternDef
 {
-    OpcodePatternId mOpcodePatternId;
+    OpcodePatternId mPatternId;
     uint16_t mMask;
-    uint16_t mOpcodePattern;
-    std::vector<InstructionArgDef> mArgs;
+    uint16_t mPattern;
+    std::vector<OpcodeArgDef> mArgs;
 };
 
 //--------------------------------------------------------------------------------
-extern const std::vector<InstructionDef> OPCODE_PATTERN_TABLE;
+extern const std::vector<OpcodePatternDef> OPCODE_PATTERN_TABLE;
