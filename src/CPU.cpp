@@ -22,46 +22,58 @@ CPU::CPU(Bus& bus)
     , mPC(PROGRAM_START_ADDRESS)
 { }
 
+// Fetch, decode and execute an opcode
 //--------------------------------------------------------------------------------
 StepResult CPU::Step()
-{
-    const uint16_t address = mPC;
-    const uint16_t opcode = Fetch(address);
+{    
+    Instruction instruction = Fetch();
 
     // Advance PC early (some instructions override it)
     mPC += 2;
-
-    // Ignore 0nnn (RCA 1802 call) — obsolete on modern interpreters
-    if ((opcode & 0xF000) == 0x0000)
+        
+    // Decode instruction
+    if (!mDisassembler.Decode(instruction))
     {
-        return StepResult::Ignored();
+        return { StepResultStatus::DecodeError, instruction };
     }
 
-    // Decode
-    std::optional<Instruction> instructionOpt = mDisassembler.TryGetInstruction(opcode, address);
-    if (!instructionOpt)
+    if (IsLegacyInstruction(instruction))
     {
-        return StepResult::DecodeError(opcode, address);
+        return { StepResultStatus::Ignored, instruction };
     }
 
-    bool isImplemented = Execute(*instructionOpt);
-    if (isImplemented)
+    bool wasExecuted = Execute(instruction);
+    if (wasExecuted)
     {
-        return StepResult::Executed(*instructionOpt);
+        return { StepResultStatus::Executed, instruction };
     }
 
-    return StepResult::Unimplemented(*instructionOpt);
+    return { StepResultStatus::Unimplemented, instruction };
 }
 
 //--------------------------------------------------------------------------------
-uint16_t CPU::Fetch(uint16_t address)
+Instruction CPU::Fetch()
 {
+    const uint16_t address = mPC;
     assert(address % 2 == 0);
+
     const uint8_t hByte = mBus.mRAM.Read(address);
     const uint8_t lByte = mBus.mRAM.Read(address + 1);
 
-    // CHIP-8 opcodes are stored big-endian: high byte first in memory.
-    return (static_cast<uint16_t>(hByte) << 8) | lByte;
+    const uint16_t opcode = (static_cast<uint16_t>(hByte) << 8) | lByte;
+    return Instruction(opcode, address);
+}
+
+//--------------------------------------------------------------------------------
+bool CPU::IsLegacyInstruction(Instruction& instruction)
+{
+    // Ignore 0nnn (RCA 1802 call) — obsolete on modern interpreters
+    if (instruction.mInstructionPatternId == InstructionPatternId::SYS_ADDR)
+    {
+        return true;
+    }
+    
+    return false;
 }
 
 //--------------------------------------------------------------------------------

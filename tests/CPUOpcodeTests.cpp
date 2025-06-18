@@ -12,9 +12,3 @@ protected:
     RAM& ram() { return mEmulator.mRAM; }
     Display& display() { return mEmulator.mDisplay; }
 };
-
-//--------------------------------------------------------------------------------
-TEST_F(CPUOpcodeTest, CLS_ClearsTheDisplay) 
-{
-
-}

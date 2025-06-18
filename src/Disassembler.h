@@ -5,12 +5,13 @@
 // Emulator
 #include "Instruction.h"
 
-// System
-#include <optional>
+// Forward Declaration
+//--------------------------------------------------------------------------------
+struct Instruction;
 
 //--------------------------------------------------------------------------------
 class Disassembler
 {
 public:
-	std::optional<Instruction> TryGetInstruction(uint16_t opcode, uint16_t address);
+	bool Decode(Instruction& outInstruction);
 };

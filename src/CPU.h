@@ -6,6 +6,7 @@
 #include "Bus.h"
 #include "Disassembler.h"
 #include "StepResult.h"
+#include "Instruction.h"
 
 // System
 #include <array>
@@ -27,9 +28,10 @@ public:
 	StepResult Step();
 
 private:
-	uint16_t Fetch(uint16_t address);
+	Instruction Fetch();
+	bool IsLegacyInstruction(Instruction& instruction);
 	bool Execute(const Instruction& instruction);	
-	
+
 	// One method per opcode
 	DECLARE_OPCODE_HANDLER(CLS)
 	DECLARE_OPCODE_HANDLER(RET)

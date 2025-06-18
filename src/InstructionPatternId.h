@@ -7,13 +7,13 @@
 #include <string>
 
 // Reference: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#4xkk (mapping)
-// NOTE: 0nnn (SYS addr) is omitted as it's not required for modern interpreters.
 // This enum only covers the 3.1 base CHIP-8 instruction set.
 //--------------------------------------------------------------------------------
 enum class InstructionPatternId : uint8_t
 {
     CLS,           // 00E0
     RET,           // 00EE
+    SYS_ADDR,      // 0nnn (opcode is not required for modern interpreters)
     JP_ADDR,       // 1nnn
     CALL_ADDR,     // 2nnn
     SE_VX_KK,      // 3xkk
@@ -45,8 +45,10 @@ enum class InstructionPatternId : uint8_t
     LD_F_VX,       // Fx29
     LD_B_VX,       // Fx33
     LD_I_VX,       // Fx55
-    LD_VX_I        // Fx65
+    LD_VX_I,       // Fx65
+    
+    UNASSIGNED,    // Default value until pattern is decoded
 };
 
 //--------------------------------------------------------------------------------
-std::string ToString(InstructionPatternId id);
+std::string ToString(InstructionPatternId id);  // TODO: overload ostream

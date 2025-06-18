@@ -34,14 +34,14 @@ public:
 	bool OnUserUpdate(float fElapsedTime) override
 	{
 		//while (true)
+		
+		StepResult result = mEmulator.Step();
+
+		switch (result.mStatus)
 		{
-			StepResult result = mEmulator.Step();
 
-			switch (result.mStatus)
-			{
-
-			}
 		}
+		
 
 		//if (GetKey(olc::Key::SPACE).bPressed)
 		//{
