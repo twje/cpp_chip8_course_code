@@ -31,11 +31,16 @@ public:
 		return true;
 	}
 
-
-
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-		mEmulator.Step();
+		CPU& cpu = mEmulator.GetCPU();		
+		
+		Instruction instruction = cpu.Fetch();
+		if (cpu.Decode(instruction))
+		{
+			cpu.Execute(instruction);
+		}
+
 
 		//while (true)
 		

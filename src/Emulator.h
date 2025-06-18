@@ -19,15 +19,19 @@
 //--------------------------------------------------------------------------------
 class Emulator
 {
-#ifdef UNIT_TESTING
-	friend class CPUOpcodeTest;
-#endif
-
 public:
 	Emulator();
 
 	bool LoadRom(const fs::path& romPath);
+	
+	// Convenience method for unit tests or headless execution
 	ExecutionStatus Step();
+		
+	CPU& GetCPU() { return mCPU; }
+	const CPU& GetCPU() const { return mCPU; }
+	
+	Bus& GetBus() { return mBus; }
+	const Bus& GetBus() const { return mBus; }
 
 private:
 	RAM mRAM;
