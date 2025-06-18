@@ -29,6 +29,7 @@ public:
 
 private:
 	Instruction Fetch();
+	bool Decode(Instruction& outInstruction);
 	bool IsLegacyInstruction(Instruction& instruction);
 	bool Execute(const Instruction& instruction);	
 
@@ -69,6 +70,5 @@ private:
 	DECLARE_OPCODE_HANDLER(LD_VX_I)
 
 	Bus& mBus;
-	Disassembler mDisassembler;	
 	uint16_t mPC;
 };

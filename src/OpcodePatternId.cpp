@@ -1,4 +1,4 @@
-#include "InstructionPatternId.h"
+#include "OpcodePatternId.h"
 
 // Includes
 //--------------------------------------------------------------------------------
@@ -6,12 +6,12 @@
 
 // Macros
 //--------------------------------------------------------------------------------
-#define OPCODE_ID_STRING_ENTRY(name) { InstructionPatternId::name, #name }
+#define OPCODE_ID_STRING_ENTRY(name) { OpcodePatternId::name, #name }
 
 //--------------------------------------------------------------------------------
-std::string ToString(InstructionPatternId id)
+std::string ToString(OpcodePatternId id)
 {
-    static const std::unordered_map<InstructionPatternId, std::string> map = {
+    static const std::unordered_map<OpcodePatternId, std::string> map = {
         OPCODE_ID_STRING_ENTRY(CLS),
         OPCODE_ID_STRING_ENTRY(RET),
         OPCODE_ID_STRING_ENTRY(JP_ADDR),

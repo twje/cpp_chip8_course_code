@@ -30,9 +30,8 @@ StepResult CPU::Step()
 
     // Advance PC early (some instructions override it)
     mPC += 2;
-        
-    // Decode instruction
-    if (!mDisassembler.Decode(instruction))
+    
+    if (!Decode(instruction))
     {
         return { StepResultStatus::DecodeError, instruction };
     }
@@ -51,6 +50,8 @@ StepResult CPU::Step()
     return { StepResultStatus::Unimplemented, instruction };
 }
 
+// CHIP-8 stores opcodes as two consecutive bytes in big-endian format.
+// Read and combine the two bytes into a single 16-bit opcode.
 //--------------------------------------------------------------------------------
 Instruction CPU::Fetch()
 {
@@ -59,16 +60,31 @@ Instruction CPU::Fetch()
 
     const uint8_t hByte = mBus.mRAM.Read(address);
     const uint8_t lByte = mBus.mRAM.Read(address + 1);
-
+    
     const uint16_t opcode = (static_cast<uint16_t>(hByte) << 8) | lByte;
-    return Instruction(opcode, address);
+    return Instruction(address, opcode);
+}
+
+//--------------------------------------------------------------------------------
+bool CPU::Decode(Instruction& outInstruction)
+{
+    for (const InstructionDef& instructionDef : INSTRUCTION_SET)
+    {
+        if (outInstruction.MatchesPattern(instructionDef))
+        {
+            outInstruction.ApplyDefinition(instructionDef);
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 //--------------------------------------------------------------------------------
 bool CPU::IsLegacyInstruction(Instruction& instruction)
 {
     // Ignore 0nnn (RCA 1802 call) — obsolete on modern interpreters
-    if (instruction.mInstructionPatternId == InstructionPatternId::SYS_ADDR)
+    if (instruction.GetOpcodePatternId() == OpcodePatternId::SYS_ADDR)
     {
         return true;
     }
@@ -79,42 +95,42 @@ bool CPU::IsLegacyInstruction(Instruction& instruction)
 //--------------------------------------------------------------------------------
 bool CPU::Execute(const Instruction& instruction)
 {
-    switch (instruction.mInstructionPatternId) // TODO: think about changing to ID?
+    switch (instruction.GetOpcodePatternId()) // TODO: think about changing to ID?
     {
-        case InstructionPatternId::CLS:           return Execute_CLS(instruction);
-        case InstructionPatternId::RET:           return Execute_RET(instruction);
-        case InstructionPatternId::JP_ADDR:       return Execute_JP_ADDR(instruction);
-        case InstructionPatternId::CALL_ADDR:     return Execute_CALL_ADDR(instruction);
-        case InstructionPatternId::SE_VX_KK:      return Execute_SE_VX_KK(instruction);
-        case InstructionPatternId::SNE_VX_KK:     return Execute_SNE_VX_KK(instruction);
-        case InstructionPatternId::SE_VX_VY:      return Execute_SE_VX_VY(instruction);
-        case InstructionPatternId::LD_VX_KK:      return Execute_LD_VX_KK(instruction);
-        case InstructionPatternId::ADD_VX_KK:     return Execute_ADD_VX_KK(instruction);
-        case InstructionPatternId::LD_VX_VY:      return Execute_LD_VX_VY(instruction);
-        case InstructionPatternId::OR_VX_VY:      return Execute_OR_VX_VY(instruction);
-        case InstructionPatternId::AND_VX_VY:     return Execute_AND_VX_VY(instruction);
-        case InstructionPatternId::XOR_VX_VY:     return Execute_XOR_VX_VY(instruction);
-        case InstructionPatternId::ADD_VX_VY:     return Execute_ADD_VX_VY(instruction);
-        case InstructionPatternId::SUB_VX_VY:     return Execute_SUB_VX_VY(instruction);
-        case InstructionPatternId::SHR_VX_VY:     return Execute_SHR_VX_VY(instruction);
-        case InstructionPatternId::SUBN_VX_VY:    return Execute_SUBN_VX_VY(instruction);
-        case InstructionPatternId::SHL_VX_VY:     return Execute_SHL_VX_VY(instruction);
-        case InstructionPatternId::SNE_VX_VY:     return Execute_SNE_VX_VY(instruction);
-        case InstructionPatternId::LD_I_ADDR:     return Execute_LD_I_ADDR(instruction);
-        case InstructionPatternId::JP_V0_ADDR:    return Execute_JP_V0_ADDR(instruction);
-        case InstructionPatternId::RND_VX_KK:     return Execute_RND_VX_KK(instruction);
-        case InstructionPatternId::DRW_VX_VY_N:   return Execute_DRW_VX_VY_N(instruction);
-        case InstructionPatternId::SKP_VX:        return Execute_SKP_VX(instruction);
-        case InstructionPatternId::SKNP_VX:       return Execute_SKNP_VX(instruction);
-        case InstructionPatternId::LD_VX_DT:      return Execute_LD_VX_DT(instruction);
-        case InstructionPatternId::LD_VX_K:       return Execute_LD_VX_K(instruction);
-        case InstructionPatternId::LD_DT_VX:      return Execute_LD_DT_VX(instruction);
-        case InstructionPatternId::LD_ST_VX:      return Execute_LD_ST_VX(instruction);
-        case InstructionPatternId::ADD_I_VX:      return Execute_ADD_I_VX(instruction);
-        case InstructionPatternId::LD_F_VX:       return Execute_LD_F_VX(instruction);
-        case InstructionPatternId::LD_B_VX:       return Execute_LD_B_VX(instruction);
-        case InstructionPatternId::LD_I_VX:       return Execute_LD_I_VX(instruction);
-        case InstructionPatternId::LD_VX_I:       return Execute_LD_VX_I(instruction);
+        case OpcodePatternId::CLS:           return Execute_CLS(instruction);
+        case OpcodePatternId::RET:           return Execute_RET(instruction);
+        case OpcodePatternId::JP_ADDR:       return Execute_JP_ADDR(instruction);
+        case OpcodePatternId::CALL_ADDR:     return Execute_CALL_ADDR(instruction);
+        case OpcodePatternId::SE_VX_KK:      return Execute_SE_VX_KK(instruction);
+        case OpcodePatternId::SNE_VX_KK:     return Execute_SNE_VX_KK(instruction);
+        case OpcodePatternId::SE_VX_VY:      return Execute_SE_VX_VY(instruction);
+        case OpcodePatternId::LD_VX_KK:      return Execute_LD_VX_KK(instruction);
+        case OpcodePatternId::ADD_VX_KK:     return Execute_ADD_VX_KK(instruction);
+        case OpcodePatternId::LD_VX_VY:      return Execute_LD_VX_VY(instruction);
+        case OpcodePatternId::OR_VX_VY:      return Execute_OR_VX_VY(instruction);
+        case OpcodePatternId::AND_VX_VY:     return Execute_AND_VX_VY(instruction);
+        case OpcodePatternId::XOR_VX_VY:     return Execute_XOR_VX_VY(instruction);
+        case OpcodePatternId::ADD_VX_VY:     return Execute_ADD_VX_VY(instruction);
+        case OpcodePatternId::SUB_VX_VY:     return Execute_SUB_VX_VY(instruction);
+        case OpcodePatternId::SHR_VX_VY:     return Execute_SHR_VX_VY(instruction);
+        case OpcodePatternId::SUBN_VX_VY:    return Execute_SUBN_VX_VY(instruction);
+        case OpcodePatternId::SHL_VX_VY:     return Execute_SHL_VX_VY(instruction);
+        case OpcodePatternId::SNE_VX_VY:     return Execute_SNE_VX_VY(instruction);
+        case OpcodePatternId::LD_I_ADDR:     return Execute_LD_I_ADDR(instruction);
+        case OpcodePatternId::JP_V0_ADDR:    return Execute_JP_V0_ADDR(instruction);
+        case OpcodePatternId::RND_VX_KK:     return Execute_RND_VX_KK(instruction);
+        case OpcodePatternId::DRW_VX_VY_N:   return Execute_DRW_VX_VY_N(instruction);
+        case OpcodePatternId::SKP_VX:        return Execute_SKP_VX(instruction);
+        case OpcodePatternId::SKNP_VX:       return Execute_SKNP_VX(instruction);
+        case OpcodePatternId::LD_VX_DT:      return Execute_LD_VX_DT(instruction);
+        case OpcodePatternId::LD_VX_K:       return Execute_LD_VX_K(instruction);
+        case OpcodePatternId::LD_DT_VX:      return Execute_LD_DT_VX(instruction);
+        case OpcodePatternId::LD_ST_VX:      return Execute_LD_ST_VX(instruction);
+        case OpcodePatternId::ADD_I_VX:      return Execute_ADD_I_VX(instruction);
+        case OpcodePatternId::LD_F_VX:       return Execute_LD_F_VX(instruction);
+        case OpcodePatternId::LD_B_VX:       return Execute_LD_B_VX(instruction);
+        case OpcodePatternId::LD_I_VX:       return Execute_LD_I_VX(instruction);
+        case OpcodePatternId::LD_VX_I:       return Execute_LD_VX_I(instruction);
     }
         
     return false; // Unimplemented instruction

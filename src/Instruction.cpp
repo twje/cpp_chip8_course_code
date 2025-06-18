@@ -6,8 +6,10 @@
 #include <iomanip>
 
 //--------------------------------------------------------------------------------
-std::ostream& operator<<(std::ostream& os, const Instruction& instr)
+std::ostream& operator<<(std::ostream& os, const Instruction& instruction)
 {
+	// TODO: fix
+	/*
 	os << std::hex << std::uppercase;
 
 	// Print address with zero-padding
@@ -17,7 +19,7 @@ std::ostream& operator<<(std::ostream& os, const Instruction& instr)
 	os << std::setfill(' ') << " | ";
 
 	// Print opcode ID, left-aligned and padded
-	os << "Opcode: " << std::left << std::setw(12) << ToString(instr.mInstructionPatternId) << " | ";
+	os << "Opcode: " << std::left << std::setw(12) << ToString(instr.mOpcodePatternId) << " | ";
 
 	// Print arguments
 	os << "Args: ";
@@ -37,6 +39,7 @@ std::ostream& operator<<(std::ostream& os, const Instruction& instr)
 		}
 		os << std::setfill(' '); // Reset after args
 	}
+	*/
 
 	return os;
 }

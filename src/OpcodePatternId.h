@@ -9,7 +9,7 @@
 // Reference: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#4xkk (mapping)
 // This enum only covers the 3.1 base CHIP-8 instruction set.
 //--------------------------------------------------------------------------------
-enum class InstructionPatternId : uint8_t
+enum class OpcodePatternId : uint8_t
 {
     CLS,           // 00E0
     RET,           // 00EE
@@ -51,4 +51,4 @@ enum class InstructionPatternId : uint8_t
 };
 
 //--------------------------------------------------------------------------------
-std::string ToString(InstructionPatternId id);  // TODO: overload ostream
+std::string ToString(OpcodePatternId id);  // TODO: overload ostream
