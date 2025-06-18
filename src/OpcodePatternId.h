@@ -51,4 +51,4 @@ enum class OpcodePatternId : uint8_t
 };
 
 //--------------------------------------------------------------------------------
-std::string ToString(OpcodePatternId id);  // TODO: overload ostream
+std::string ToString(OpcodePatternId id);

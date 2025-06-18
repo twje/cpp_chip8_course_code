@@ -22,9 +22,11 @@ public:
 	bool OnUserCreate() override
 	{
 		RomManager romManager(ROMS_PATH);
-		if (!mEmulator.LoadRom(romManager.ResolveRom("test_rom/test_opcode.8o")))
+		const auto romPath = romManager.ResolveRom("test_rom/test_opcode.8o");
+
+		if (!mEmulator.LoadRom(romPath))
 		{
-			std::cerr << "Unable to load ROM" << std::endl;
+			std::cerr << "Unable to load ROM: " << romPath << std::endl;
 			return false;
 		}
 
@@ -33,34 +35,77 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-		CPU& cpu = mEmulator.GetCPU();		
-		
+		CPU& cpu = mEmulator.GetCPU();
 		Instruction instruction = cpu.Fetch();
-		if (cpu.Decode(instruction))
+
+		LogCycle(instruction);
+
+		if (!cpu.Decode(instruction))
 		{
-			cpu.Execute(instruction);
+			std::cerr << "Decode error: " << instruction << std::endl;
+			return false;
 		}
 
+		const ExecutionStatus status = cpu.Execute(instruction);
+		LogExecution(instruction, status);
 
-		//while (true)
-		
-		/*StepResult result = mEmulator.Step();
+		return ShouldContinue(status);
+	}
 
-		switch (result.mStatus)
+private:
+	bool ShouldContinue(ExecutionStatus status)
+	{
+		switch (status)
 		{
+			case ExecutionStatus::Executed:
+			case ExecutionStatus::Ignored:
+				return true;
+			default:
+				return false;
+		}
+	}
 
-		}*/
-		
+	void LogHex(std::ostream& os, uint16_t value, int width = 4)
+	{
+		os << "0x"
+			<< std::uppercase << std::hex << std::setw(width) << std::setfill('0') << value
+			<< std::dec << std::nouppercase << std::setfill(' ');
+	}
 
-		//if (GetKey(olc::Key::SPACE).bPressed)
-		//{
-		//	mEmulator.Step();
-		//}
+	void LogCycle(const Instruction& instruction)
+	{
+		static int cycle = 0;
+		if (cycle > 0) { std::cout << std::endl; }
 
-		//Clear(olc::DARK_BLUE);
-		//DrawLine(10, 10, ScreenWidth() - 10, 10, olc::YELLOW);			
+		std::cout << "--- Cycle " << cycle++ << " -----------------------------------" << std::endl;
+		std::cout << "Fetch and decode opcode ";
+		LogHex(std::cout, instruction.GetOpcode());
+		std::cout << " at ";
+		LogHex(std::cout, instruction.GetAddress());
+		std::cout << std::endl;
+	}
 
-		return true;
+	void LogExecution(const Instruction& instruction, ExecutionStatus status)
+	{
+		std::cout << "Execute opcode ";
+		LogHex(std::cout, instruction.GetOpcode());
+		std::cout << " (" << ToString(instruction.GetPatternId()) << ")" << std::endl;
+
+		switch (status)
+		{
+			case ExecutionStatus::Executed:
+				std::cout << "Executed" << std::endl; 
+				break;
+			case ExecutionStatus::Ignored:
+				std::cout << "Ignored" << std::endl; 
+				break;
+			case ExecutionStatus::NotImplemented:
+				std::cout << "Not implemented" << std::endl;
+				break;
+			case ExecutionStatus::MissingHandler:
+				std::cout << "Missing handler" << std::endl;
+				break;
+		}
 	}
 
 private:

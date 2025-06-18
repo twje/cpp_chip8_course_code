@@ -121,237 +121,203 @@ bool CPU::IsLegacyInstruction(const Instruction& instruction) const
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_CLS(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_CLS" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_RET(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_RET" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_JP_ADDR(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_JP_ADDR" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_CALL_ADDR(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_CALL_ADDR" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_SE_VX_KK(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_SE_VX_KK" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_SNE_VX_KK(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_SNE_VX_KK" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_SE_VX_VY(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_SE_VX_VY" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_LD_VX_KK(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_LD_VX_KK" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_ADD_VX_KK(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_ADD_VX_KK" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_LD_VX_VY(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_LD_VX_VY" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_OR_VX_VY(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_OR_VX_VY" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_AND_VX_VY(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_AND_VX_VY" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_XOR_VX_VY(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_XOR_VX_VY" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_ADD_VX_VY(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_ADD_VX_VY" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_SUB_VX_VY(const Instruction& instruction)
-{
-    std::cout << "[UNIMPLEMENTED] Execute_SUB_VX_VY" << std::endl;
+{    
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_SHR_VX_VY(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_SHR_VX_VY" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_SUBN_VX_VY(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_SUBN_VX_VY" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_SHL_VX_VY(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_SHL_VX_VY" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_SNE_VX_VY(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_SNE_VX_VY" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_LD_I_ADDR(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_LD_I_ADDR" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_JP_V0_ADDR(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_JP_V0_ADDR" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_RND_VX_KK(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_RND_VX_KK" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_DRW_VX_VY_N(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_DRW_VX_VY_N" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_SKP_VX(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_SKP_VX" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_SKNP_VX(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_SKNP_VX" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_LD_VX_DT(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_LD_VX_DT" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_LD_VX_K(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_LD_VX_K" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_LD_DT_VX(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_LD_DT_VX" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_LD_ST_VX(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_LD_ST_VX" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_ADD_I_VX(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_ADD_I_VX" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_LD_F_VX(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_LD_F_VX" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_LD_B_VX(const Instruction& instruction)
 {
-    std::cout << "[UNIMPLEMENTED] Execute_LD_B_VX" << std::endl;
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_LD_I_VX(const Instruction& instruction)
-{
-    std::cout << "[UNIMPLEMENTED] Execute_LD_I_VX" << std::endl;
+{ 
     return ExecutionStatus::NotImplemented;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_LD_VX_I(const Instruction& instruction)
-{
-    std::cout << "[UNIMPLEMENTED] Execute_LD_VX_I" << std::endl;
+{    
     return ExecutionStatus::NotImplemented;
 }
