@@ -18,7 +18,7 @@ struct Instruction
         , mAddress(address)
         , mOpcode(opcode)
         , mMask(0)
-        , mOpcodePattern(0)
+        , mPattern(0)
     { }
 
     bool MatchesPattern(const OpcodePatternDef& def) const
@@ -32,7 +32,7 @@ struct Instruction
     {
         mPatternId = def.mPatternId;
         mMask = def.mMask;
-        mOpcodePattern = def.mPattern;
+        mPattern = def.mPattern;
 
         mArguments.clear();
         for (const auto& argDef : def.mArgs)
@@ -48,7 +48,7 @@ struct Instruction
     uint16_t GetAddress() const { return mAddress; }
     uint16_t GetOpcode() const { return mOpcode; }
     uint16_t GetMask() const { return mMask; }
-    uint16_t GetPattern() const { return mOpcodePattern; }
+    uint16_t GetPattern() const { return mPattern; }
 
 private:
     OpcodePatternId mPatternId;
@@ -60,7 +60,7 @@ private:
     
     // Set during decoding (e.g., XOR_VX_VY -> mask: 0xF00F, pattern: 0x8003)
     uint16_t mMask;
-    uint16_t mOpcodePattern;
+    uint16_t mPattern;
 };
 
 //--------------------------------------------------------------------------------
