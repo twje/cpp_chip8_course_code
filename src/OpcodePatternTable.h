@@ -27,4 +27,4 @@ struct InstructionDef
 };
 
 //--------------------------------------------------------------------------------
-extern const std::vector<InstructionDef> INSTRUCTION_SET;
+extern const std::vector<InstructionDef> OPCODE_PATTERN_TABLE;

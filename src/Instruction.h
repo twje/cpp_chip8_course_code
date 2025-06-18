@@ -3,7 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
-#include "InstructionSet.h"
+#include "OpcodePatternTable.h"
 #include "OpcodePatternId.h"
 
 // System

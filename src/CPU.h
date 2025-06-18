@@ -4,7 +4,6 @@
 //--------------------------------------------------------------------------------
 // Emulator
 #include "Bus.h"
-#include "Disassembler.h"
 #include "StepResult.h"
 #include "Instruction.h"
 
