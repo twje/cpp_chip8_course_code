@@ -3,7 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Chip 8
-#include "StepResult.h"
+#include "ExecutionStatus.h"
 #include "Common.h"
 #include "RAM.h"
 #include "Display.h"
@@ -27,7 +27,7 @@ public:
 	Emulator();
 
 	bool LoadRom(const fs::path& romPath);
-	StepResult Step();
+	ExecutionStatus Step();
 
 private:
 	RAM mRAM;

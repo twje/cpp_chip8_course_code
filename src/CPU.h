@@ -4,7 +4,7 @@
 //--------------------------------------------------------------------------------
 // Emulator
 #include "Bus.h"
-#include "StepResult.h"
+#include "ExecutionStatus.h"
 #include "Instruction.h"
 
 // System
@@ -12,7 +12,7 @@
 
 // Macros
 //--------------------------------------------------------------------------------
-#define DECLARE_OPCODE_HANDLER(name) bool Execute_##name(const Instruction& instruction);
+#define DECLARE_OPCODE_HANDLER(name) ExecutionStatus Execute_##name(const Instruction& instruction);
 
 //--------------------------------------------------------------------------------
 class CPU
@@ -24,13 +24,12 @@ class CPU
 public:
 	CPU(Bus& bus);
 
-	StepResult Step();
-
-private:
 	Instruction Fetch();
-	bool Decode(Instruction& outInstruction);
-	bool IsLegacyInstruction(Instruction& instruction);
-	bool Execute(const Instruction& instruction);	
+	bool Decode(Instruction& outInstruction);	
+	ExecutionStatus Execute(const Instruction& instruction);
+
+private:	
+	bool IsLegacyInstruction(const Instruction& instruction) const;
 
 	// One method per opcode
 	DECLARE_OPCODE_HANDLER(CLS)

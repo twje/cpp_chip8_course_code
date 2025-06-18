@@ -65,7 +65,13 @@ bool Emulator::LoadRom(const fs::path& romPath)
 }
 
 //--------------------------------------------------------------------------------
-StepResult Emulator::Step()
-{	
-	return mCPU.Step();
+ExecutionStatus Emulator::Step()
+{
+	Instruction instruction = mCPU.Fetch();
+	if (!mCPU.Decode(instruction))
+	{
+		return ExecutionStatus::DecodeError;
+	}
+	
+	return mCPU.Execute(instruction);
 }
