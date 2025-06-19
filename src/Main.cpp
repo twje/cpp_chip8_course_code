@@ -9,7 +9,7 @@
 int main()
 {
 	Application app;
-	app.Construct(256, 240, 4, 4);
+	app.Construct(256, 240, 2, 2);
 	app.Start();
 
 	return 0;

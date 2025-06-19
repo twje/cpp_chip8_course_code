@@ -3,6 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
+#include "Config.h"
 #include "Bus.h"
 #include "ExecutionStatus.h"
 #include "Instruction.h"
@@ -24,9 +25,12 @@ class CPU
 public:
 	CPU(Bus& bus);
 
+	uint16_t GetStackValueAt(size_t index) const;
+	size_t GetStackPointer() const { return mStackPointer; }
+	
 	Instruction Fetch();
 	bool Decode(Instruction& outInstruction);	
-	ExecutionStatus Execute(const Instruction& instruction);
+	ExecutionStatus Execute(const Instruction& instruction);		
 
 private:	
 	bool IsLegacyInstruction(const Instruction& instruction) const;
@@ -68,5 +72,17 @@ private:
 	DECLARE_OPCODE_HANDLER(LD_VX_I)
 
 	Bus& mBus;
-	uint16_t mPC;
+
+	// Core CPU State
+	size_t mProgramCounter;
+	uint16_t mIndexRegister;
+	std::array<uint16_t, NUM_REGISTERS> mRegisters; // V0–VF
+
+	// Stack
+	size_t mStackPointer;
+	std::array<uint16_t, STACK_SIZE> mStack;
+
+	// Timers
+	uint8_t mDelayTimer;
+	uint8_t mSoundTimer;
 };

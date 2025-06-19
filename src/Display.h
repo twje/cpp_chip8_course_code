@@ -49,29 +49,23 @@ public:
 
         return collision;
     }
-    
-    bool GetPixel(size_t index) const
-    {
-        assert(index < mBuffer.size());
-        return mBuffer[index] != 0;
-    }
 
-    size_t GetPixelCount() const
+    bool IsPixelSet(uint32_t px, uint32_t py) const
     {
-        return mBuffer.size();
+        assert(px < DISPLAY_WIDTH && py < DISPLAY_HEIGHT);
+        return mBuffer[PixelToIndex(px, py)] != 0;
     }
 
 private:
     void SetPixel(uint32_t px, uint32_t py, bool value)
     {
         assert(px < DISPLAY_WIDTH && py < DISPLAY_HEIGHT);
-        mBuffer[px + py * DISPLAY_WIDTH] = value ? 1 : 0;
+        mBuffer[PixelToIndex(px, py)] = value ? 1 : 0;
     }
 
-    bool IsPixelSet(uint32_t px, uint32_t py) const
+    size_t PixelToIndex(uint32_t px, uint32_t py) const
     {
-        assert(px < DISPLAY_WIDTH && py < DISPLAY_HEIGHT);
-        return mBuffer[px + py * DISPLAY_WIDTH] != 0;
+        return px + py * DISPLAY_WIDTH;
     }
 
 private:

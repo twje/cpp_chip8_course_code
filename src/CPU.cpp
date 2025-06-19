@@ -18,16 +18,28 @@
 
 //--------------------------------------------------------------------------------
 CPU::CPU(Bus& bus)
-	: mBus{ bus }
-    , mPC(PROGRAM_START_ADDRESS)
+    : mBus{ bus }
+    , mProgramCounter{ PROGRAM_START_ADDRESS }
+    , mIndexRegister{ 0 }
+    , mRegisters{}        // std::array — zero-initialized
+    , mStackPointer{ 0 }
+    , mStack{}            // std::array — zero-initialized
+    , mDelayTimer{ 0 }
+    , mSoundTimer{ 0 }
 { }
+
+//--------------------------------------------------------------------------------
+uint16_t CPU::GetStackValueAt(size_t index) const
+{
+    return mStack.at(index);
+}
 
 // CHIP-8 stores opcodes as two consecutive bytes in big-endian format.
 // Read and combine the two bytes into a single 16-bit opcode.
 //--------------------------------------------------------------------------------
 Instruction CPU::Fetch()
 {
-    const uint16_t address = mPC;
+    const uint16_t address = mProgramCounter;
     assert(address % 2 == 0);
 
     const uint8_t hByte = mBus.mRAM.Read(address);
@@ -37,7 +49,7 @@ Instruction CPU::Fetch()
     Instruction instruction(address, opcode);
 
     // Advance PC early (some instructions override it)
-    mPC += 2;
+    mProgramCounter += 2;
 
     return instruction;
 }
