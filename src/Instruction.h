@@ -24,7 +24,8 @@ struct Instruction
     bool MatchesPattern(const OpcodePatternDef& def) const
     {
         // Apply the mask to isolate pattern-relevant bits, then compare to expected pattern
-        // e.g., (0x8123 & 0xF00F) == 0x8003 for XOR_VX_VY
+        // e.g. (0x8123 & 0xF00F) == 0x8003 for XOR_VX_VY
+        // See http://devernay.free.fr/hacks/chip8/C8TECH10.HTM (3.1 - Standard Chip-8 Instructions)
         return (mOpcode & def.mMask) == def.mPattern;
     }
 
@@ -55,7 +56,7 @@ private:
     std::vector<uint16_t> mArguments;
 
     // Core decode metadata
-    uint16_t mAddress;
+    uint16_t mAddress; // Memory address the opcode was read from.
     uint16_t mOpcode;
     
     // Set during decoding (e.g., XOR_VX_VY -> mask: 0xF00F, pattern: 0x8003)

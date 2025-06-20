@@ -187,6 +187,13 @@ private:
 	CPU& mCPU;
 	olc::vi2d mPosition;
 };
+
+//--------------------------------------------------------------------------------
+class CPUStateDisplay
+{
+
+};
+
 //--------------------------------------------------------------------------------
 class Application : public olc::PixelGameEngine
 {
