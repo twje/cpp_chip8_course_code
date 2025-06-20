@@ -61,19 +61,21 @@ public:
 
 		if (!mTitle.empty())
 		{
-			const olc::vi2d titlePos = mPosition + kBorder + kPadding;
+			const olc::vi2d contentArea = GetSize() - kBorder * 2 - kPadding * 2;
+			const int32_t titleWidth = static_cast<int32_t>(mTitle.length()) * 8; // 8 pixels per character
+			const int32_t centeredX = mPosition.x + kBorder.x + kPadding.x + (contentArea.x - titleWidth) * 0.5f;
+
+			const olc::vi2d titlePos{ centeredX, mPosition.y + kBorder.y + kPadding.y };
 			pge.DrawString(titlePos, mTitle, UIStyle::kColorAccent);
 
-			// One pixel gap after title, then line
 			const int32_t underlineY = titlePos.y + kTextHeight + kGap;
-			
 			pge.DrawLine(
 				{ mPosition.x, underlineY },
 				{ mPosition.x + GetSize().x - 1, underlineY },
 				UIStyle::kColorBorder
 			);
 		}
-
+		
 		pge.DrawRect(mPosition, GetSize() - olc::vi2d{ 1, 1 }, UIStyle::kColorBorder);
 	}
 
