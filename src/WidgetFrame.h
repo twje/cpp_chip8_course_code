@@ -8,18 +8,28 @@
 // Third Party
 #include "olcPixelGameEngine.h"
 
+/*
+	Adds a title, padding, and border for a widget.
+	- Call SetContentSize() with the inner content's size.
+	- Use GetContentOffset() as the top-left for drawing content.
+	- GetSize() returns the full frame size including decorations.
+*/
 //--------------------------------------------------------------------------------
 class WidgetFrame
 {
 	inline static const olc::vi2d kBorder{ UIStyle::kBorderSize, UIStyle::kBorderSize };
 	inline static const olc::vi2d kPadding{ UIStyle::kPaddingSize, UIStyle::kPaddingSize };
 	inline static constexpr int32_t kTextHeight = 8;
+	inline static constexpr int32_t kLineHeight = 1;
 	inline static constexpr int32_t kGap = 1;
 
 public:
-	WidgetFrame(std::string title = { }, olc::vi2d contentSize = { })
-		: mTitle(std::move(title))
-		, mContentSize(contentSize)
+	WidgetFrame()
+		: mTitle("")
+	{ }
+
+	WidgetFrame(const std::string& title)
+		: mTitle(title)		
 	{ }
 
 	void SetPosition(const olc::vi2d& position)
@@ -30,11 +40,6 @@ public:
 	void SetContentSize(const olc::vi2d& size)
 	{
 		mContentSize = size;
-	}
-
-	void SetTitle(std::string title)
-	{
-		mTitle = std::move(title);
 	}
 
 	olc::vi2d GetSize() const
@@ -79,13 +84,17 @@ public:
 
 private:
 	olc::vi2d GetTitleSize() const
-	{
-		return mTitle.empty() ? olc::vi2d{ 0, 0 } : olc::vi2d{ 0, kTextHeight + kGap * 2 };
+	{	
+		return mTitle.empty() 
+			? olc::vi2d{ 0, 0 } 
+			: olc::vi2d{ 0, kTextHeight + kGap * 2 + kLineHeight };
 	}
 
 	olc::vi2d GetTitleOffset() const
-	{
-		return mTitle.empty() ? olc::vi2d{ 0, 0 } : olc::vi2d{ 0, kTextHeight + kGap * 2 };
+	{		
+		return mTitle.empty() 
+			? olc::vi2d{ 0, 0 } 
+			: olc::vi2d{ 0, kTextHeight + kGap * 2 + kLineHeight };
 	}
 
 private:

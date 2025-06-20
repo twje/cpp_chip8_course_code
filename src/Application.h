@@ -226,6 +226,7 @@ public:
 	virtual void Draw(olc::PixelGameEngine& pge) const override
 	{
 		mFrame.Draw(pge);
+		
 		const olc::vi2d start = mFrame.GetContentOffset();
 		pge.DrawString(start, "text", UIStyle::kColorText);
 	}
@@ -233,10 +234,10 @@ public:
 private:
 	olc::vi2d GetInternalContentSize() const
 	{
-		const int32_t lineHeight = 8;
+		const int32_t lineHeight = 1;
 		const int32_t lineCount = 5;
 		const int32_t textWidth = 18 * 8; // longest line: "Opcode: 0xFFFF"
-		return { textWidth, lineCount * lineHeight };
+		return { textWidth, 8 };
 	}
 
 	const CPU& mCPU;
