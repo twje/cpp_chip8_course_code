@@ -211,7 +211,7 @@ public:
 
 
 		mStackDisplay = MakeStyledWidget<StackDisplay>("Stack", mEmulator.GetCPU());
-		mRegisterDisplay = MakeStyledWidget<RegisterDisplay>("RegisterH", mEmulator.GetCPU());
+		mRegisterDisplay = MakeStyledWidget<RegisterDisplay>("Registers", mEmulator.GetCPU());
 		
 		return true;
 	}
@@ -223,10 +223,11 @@ public:
 
 		// Apply decorators in reverse order (innermost first)
 		auto titled = std::make_unique<TitleDecorator>(std::move(base), title);
-		auto background = std::make_unique<BackgroundDecorator>(std::move(titled));
-		//auto bordered = std::make_unique<BorderDecorator>(std::move(background));
+		auto padding = std::make_unique<PaddingDecorator>(std::move(titled));
+		auto background = std::make_unique<BackgroundDecorator>(std::move(padding));
+		auto bordered = std::make_unique<BorderDecorator>(std::move(background));
 
-		return background;
+		return bordered;
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override

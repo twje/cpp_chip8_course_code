@@ -10,7 +10,8 @@
 struct UIStyle
 {
 	// Spacing and sizing
-	static constexpr int32_t kBorderSize = 1;	
+	static constexpr int32_t kBorderSize = 1;
+	static constexpr int32_t kPaddingSize = 1;
 	static constexpr int32_t kWidgetSpacing = 4;
 
 	// Colors

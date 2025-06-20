@@ -96,6 +96,42 @@ private:
 	olc::vi2d mPosition;
 };
 
+// Adds fixed padding around the widget.
+//--------------------------------------------------------------------------------
+class PaddingDecorator : public IWidget
+{
+	inline static const olc::vi2d kPadding{ UIStyle::kPaddingSize, UIStyle::kPaddingSize };
+
+public:
+	PaddingDecorator(std::unique_ptr<IWidget> inner)
+		: mInner(std::move(inner))
+	{
+		SetPosition(mInner->GetPosition());
+	}
+
+	virtual olc::vi2d GetSize() const override
+	{
+		return mInner->GetSize() + kPadding * 2;
+	}
+
+	virtual olc::vi2d GetPosition() const override { return mPosition; }
+
+	virtual void SetPosition(const olc::vi2d& position) override
+	{
+		mPosition = position;
+		mInner->SetPosition(position + kPadding);
+	}
+
+	virtual void Draw(olc::PixelGameEngine& pge) const override
+	{
+		mInner->Draw(pge);
+	}
+
+private:
+	std::unique_ptr<IWidget> mInner;
+	olc::vi2d mPosition;
+};
+
 //--------------------------------------------------------------------------------
 class BorderDecorator : public IWidget
 {
