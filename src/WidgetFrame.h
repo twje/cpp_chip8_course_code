@@ -14,22 +14,6 @@
 	- Use GetContentOffset() as the top-left for drawing content.
 	- GetSize() returns the full frame size including decorations.
 */
-#pragma once
-
-// Includes
-//--------------------------------------------------------------------------------
-// Emulator
-#include "UIStyle.h"
-
-// Third Party
-#include "olcPixelGameEngine.h"
-
-/*
-	Adds a title, padding, and border for a widget.
-	- Call SetContentSize() with the inner content's size.
-	- Use GetContentOffset() as the top-left for drawing content.
-	- GetSize() returns the full frame size including decorations.
-*/
 //--------------------------------------------------------------------------------
 class WidgetFrame
 {

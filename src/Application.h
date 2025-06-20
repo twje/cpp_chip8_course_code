@@ -20,31 +20,33 @@
 class DisplayUI : public IWidget
 {
 public:
-	DisplayUI(Display& display)
+	DisplayUI(const Display& display)
 		: mDisplay(display)
-		, mPixelScale(1) // TODO: remove scale
-	{ }
+		, mPixelScale(4)
+		, mFrame("Display")
+	{ 
+		mFrame.SetContentSize(GetInternalContentSize());
+	}
 
 	virtual olc::vi2d GetSize() const override
 	{
-		return {
-			static_cast<int32_t>(DISPLAY_WIDTH) * mPixelScale,
-			static_cast<int32_t>(DISPLAY_HEIGHT) * mPixelScale
-		};
+		return mFrame.GetSize();
 	}
 
 	virtual olc::vi2d GetPosition() const override
 	{
-		return mPosition;
+		return mFrame.GetPosition();
 	}
 
 	virtual void SetPosition(const olc::vi2d& position) override
 	{
-		mPosition = position;
+		mFrame.SetPosition(position);
 	}
 
 	virtual void Draw(olc::PixelGameEngine& pge) const override
 	{
+		mFrame.Draw(pge);
+
 		const olc::vi2d pixelSize{ mPixelScale, mPixelScale };
 
 		for (int y = 0; y < DISPLAY_HEIGHT; ++y)
@@ -54,17 +56,23 @@ public:
 				olc::Pixel color = mDisplay.IsPixelSet(x, y)
 					? UIStyle::kColorScreenOn
 					: UIStyle::kColorScreenOff;
-
-				const olc::vi2d position = mPosition + olc::vi2d{ x, y } *mPixelScale;
+								
+				olc::vi2d position = mFrame.GetContentOffset() +  olc::vi2d{ x, y } * mPixelScale;
 				pge.FillRect(position, pixelSize, color);
 			}
 		}
 	}
 
 private:
-	Display& mDisplay;
-	olc::vi2d mPosition;
-	const int32_t mPixelScale;
+	olc::vi2d GetInternalContentSize() const
+	{
+		olc::vi2d baseSize{ static_cast<int32_t>(DISPLAY_WIDTH), static_cast<int32_t>(DISPLAY_HEIGHT) };
+		return baseSize * mPixelScale;
+	}
+
+	const Display& mDisplay;		
+	WidgetFrame mFrame;
+	int32_t mPixelScale;
 };
 
 //--------------------------------------------------------------------------------
@@ -314,15 +322,19 @@ private:
 class UIManager
 {
 public:
-	UIManager(const CPU& cpu)
+	UIManager(const CPU& cpu, const Bus& bus)
 		: mCPUStateUI(cpu)
 		, mRegisterUI(cpu)
 		, mStackUI(cpu)
+		, mDisplayUI(bus.mDisplay)
 	{
 		const olc::vi2d start{ 4, 4 };
 		const int spacing = 4;  // TODO: reference style for spacing
 
 		olc::vi2d foo = start;
+		mDisplayUI.SetPosition(start);
+		
+		foo.x += mDisplayUI.GetSize().x + spacing;
 		mCPUStateUI.SetPosition(foo);
 
 		foo.x += mCPUStateUI.GetSize().x + spacing;
@@ -330,19 +342,6 @@ public:
 		
 		foo.x += mRegisterUI.GetSize().x + spacing;
 		mStackUI.SetPosition(foo);
-
-
-		//// Layout widgets with spacing
-		//const olc::vi2d start{ 4, 4 };
-		//const int spacing = 4;  // TODO: reference style for spacing
-
-		//mCPUStateUI.SetPosition(start);
-
-		//const olc::vi2d cpuEnd = mCPUStateUI.GetPosition() + mCPUStateUI.GetSize();
-		//mRegisterUI.SetPosition(cpuEnd + olc::vi2d{ 0, spacing });
-
-		//const olc::vi2d regEnd = mRegisterUI.GetPosition() + mRegisterUI.GetSize();
-		//mStackUI.SetPosition(regEnd + olc::vi2d{ 0, spacing });
 	}
 
 	void SetCurrentInstruction(const Instruction& instruction)
@@ -352,6 +351,7 @@ public:
 
 	void Draw(olc::PixelGameEngine& pge) const
 	{
+		mDisplayUI.Draw(pge);
 		mCPUStateUI.Draw(pge);
 		mRegisterUI.Draw(pge);
 		mStackUI.Draw(pge);
@@ -361,6 +361,7 @@ private:
 	CPUStateUI mCPUStateUI;
 	RegisterUI mRegisterUI;
 	StackUI mStackUI;
+	DisplayUI mDisplayUI;
 };
 
 //--------------------------------------------------------------------------------
@@ -369,7 +370,7 @@ class Application : public olc::PixelGameEngine
 public:
 	Application()
 		: mIsHalted(false)
-		, mUIManager(mEmulator.GetCPU())		
+		, mUIManager(mEmulator.GetCPU(), mEmulator.GetBus())
 	{
 		sAppName = "Chip8 Emulator";		
 	}
@@ -485,9 +486,4 @@ private:
 	bool mIsHalted;
 
 	UIManager mUIManager;
-
-	//DisplayUI mDisplayUI;
-	//StackUI mStackUI;
-	//RegisterUI mRegisterUI;
-	//CPUStateUI mCPUStateUI;
 };
