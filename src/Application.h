@@ -131,13 +131,69 @@ private:
 };
 
 //--------------------------------------------------------------------------------
+class RegisterDisplay : public IWidget
+{
+public:
+	RegisterDisplay(CPU& cpu)
+		: mCPU(cpu)
+	{ }
+
+	virtual olc::vi2d GetSize() const override
+	{
+		const std::string sampleLabel = "F: 0xFF  "; // Longest possible line
+		const int32_t charWidth = 8;
+		const int32_t charHeight = 8;
+
+		return {
+			static_cast<int32_t>(sampleLabel.size()) * charWidth,
+			STACK_SIZE * charHeight
+		};
+	}
+
+	virtual olc::vi2d GetPosition() const override
+	{
+		return mPosition;
+	}
+
+	virtual void SetPosition(const olc::vi2d& position) override
+	{
+		mPosition = position;
+	}
+
+	virtual void Draw(olc::PixelGameEngine& pge) const override
+	{
+		constexpr int32_t lineHeight = 8;  // TODO: Move to UI style
+
+		for (size_t i = 0; i < NUM_REGISTERS; ++i)
+		{
+			olc::vi2d pos = mPosition + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
+			std::string text = Hex(i, 1) + ": 0x" + Hex(mCPU.GetStackValueAt(i), 2);
+
+			pge.DrawString(pos, text, UIStyle::kColorText);
+		}
+	}
+
+private:
+	std::string Hex(uint32_t value, uint8_t width) const  // TODO: reused
+	{
+		std::string s(width, '0');
+		for (int i = width - 1; i >= 0; --i, value >>= 4)
+		{
+			s[i] = "0123456789ABCDEF"[value & 0xF];
+		}
+		return s;
+	}
+
+	CPU& mCPU;
+	olc::vi2d mPosition;
+};
+//--------------------------------------------------------------------------------
 class Application : public olc::PixelGameEngine
 {
 public:
 	Application()
 		: mIsHalted(false)
 		, mScreen(mEmulator.GetBus().mDisplay)
-		, mStackDisplay(mEmulator.GetCPU())
 	{
 		sAppName = "Chip8 Emulator";		
 	}
@@ -153,23 +209,29 @@ public:
 			return false;
 		}		
 
-/*		auto stackDisplayer = std::make_unique<StackDisplay>(mEmulator.GetCPU());
-		mStackDisplayV2 = std::make_unique<TitleDecorator>(std::move(stackDisplayer), "FOO");*/
 
-		auto widget = std::make_unique<StackDisplay>(mEmulator.GetCPU());
-		auto widget1 = std::make_unique<TitleDecorator>(std::move(widget), "Stack");
-		auto widget2 = std::make_unique<BackgroundDecorator>(std::move(widget1));
-		mStackDisplayV2 = std::make_unique<BorderDecorator>(std::move(widget2));
+		mStackDisplay = MakeStyledWidget<StackDisplay>("Stack", mEmulator.GetCPU());
+		mRegisterDisplay = MakeStyledWidget<RegisterDisplay>("Registers", mEmulator.GetCPU());
 		
-		
-		//widget = std::make_unique<WidgetBorder>(std::move(widget));
-
 		return true;
+	}
+
+	template <typename TWidget, typename... TArgs>
+	std::unique_ptr<IWidget> MakeStyledWidget(const std::string& title, TArgs&&... args)
+	{
+		auto base = std::make_unique<TWidget>(std::forward<TArgs>(args)...);
+
+		// Apply decorators in reverse order (innermost first)
+		auto titled = std::make_unique<TitleDecorator>(std::move(base), title);
+		auto background = std::make_unique<BackgroundDecorator>(std::move(titled));
+		auto bordered = std::make_unique<BorderDecorator>(std::move(background));
+
+		return bordered;
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{		
-		mStackDisplayV2->Draw(*this);
+		mRegisterDisplay->Draw(*this);
 
 		if (mIsHalted)
 		{
@@ -254,7 +316,7 @@ private:
 	Emulator mEmulator;
 	bool mIsHalted;
 	Screen mScreen;
-	StackDisplay mStackDisplay;
-
-	std::unique_ptr<IWidget> mStackDisplayV2;
+	
+	std::unique_ptr<IWidget> mStackDisplay;
+	std::unique_ptr<IWidget> mRegisterDisplay;
 };
