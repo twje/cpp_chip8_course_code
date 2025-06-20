@@ -116,17 +116,14 @@ public:
 		const int32_t lineHeight = 8;
 
 		for (size_t i = 0; i < STACK_SIZE; ++i)
-		{
-			size_t index = STACK_SIZE - 1 - i; // Flip: index 0 at bottom
-			const bool isTop = (index == mCPU.GetStackPointer());
-
-			const olc::Pixel color = isTop ? UIStyle::kColorActive : UIStyle::kColorText;
+		{			
+			const bool isTop = (i == mCPU.GetStackPointer());			
 			const std::string cursor = isTop ? ">" : " ";
 
 			olc::vi2d pos = mFrame.GetContentOffset() + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
-			std::string text = cursor + Hex(index, 1) + ": 0x" + Hex(mCPU.GetStackValueAt(index), 4);
+			std::string text = cursor + Hex(i, 1) + ": 0x" + Hex(mCPU.GetStackValueAt(i), 4);
 
-			pge.DrawString(pos, text, color);
+			pge.DrawString(pos, text, UIStyle::kColorText);
 		}
 	}
 

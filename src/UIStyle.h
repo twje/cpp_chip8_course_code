@@ -17,7 +17,6 @@ struct UIStyle
 	// Colors
 	inline static const olc::Pixel kColorText = olc::WHITE;					// USED
 	inline static const olc::Pixel kColorAccent = olc::YELLOW;				// USED
-	inline static const olc::Pixel kColorActive = olc::RED;					// USED
 	inline static const olc::Pixel kColorInactive = olc::DARK_GREY;
 	inline static const olc::Pixel kColorBorder = olc::GREY;				// USED
 	inline static const olc::Pixel kColorBG = olc::VERY_DARK_GREY;			// Used
