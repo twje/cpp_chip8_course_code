@@ -224,7 +224,7 @@ public:
 	{
 		mCurrentPC = instruction.GetAddress();
 		mCurrentOpcode = instruction.GetOpcode();
-		mCurrentMnemonic = ToString(instruction.GetPatternId());
+		mCurrentPattern = GetOpcodePatternString(instruction.GetPatternId());
 	}
 
 	virtual olc::vi2d GetSize() const override  
@@ -255,12 +255,12 @@ public:
 			pge.DrawString(pos, text, UIStyle::kColorText);
 		};
 
-		const int labelWidth = 9;
+		const int labelWidth = 8;
 
 		DrawLine(0, RightAlign("PC:", labelWidth) + " 0x" + Hex(mCurrentPC, 4));
 		DrawLine(1, RightAlign("I:", labelWidth) + " 0x" + Hex(mCPU.GetIndexRegister(), 4));
 		DrawLine(2, RightAlign("Opcode:", labelWidth) + " 0x" + Hex(mCurrentOpcode, 4));
-		DrawLine(3, RightAlign("Mnemonic:", labelWidth) + " " + mCurrentMnemonic);
+		DrawLine(3, RightAlign("Pattern:", labelWidth) + " " + mCurrentPattern);
 		DrawLine(4, RightAlign("Delay:", labelWidth) + " 0x" + Hex(mCPU.GetDelayTimer(), 2));
 		DrawLine(5, RightAlign("Sound:", labelWidth) + " 0x" + Hex(mCPU.GetSoundTimer(), 2));
 	}
@@ -268,7 +268,7 @@ public:
 private:
 	olc::vi2d GetInternalContentSize() const
 	{
-		std::string longestSample = "Mnemonic: DRW_VX_VY_N";
+		std::string longestSample = "Pattern: 0xFFFF";
 
 		const int32_t lineHeight = 8;
 		const int32_t lineCount = 6;
@@ -295,7 +295,7 @@ private:
 	const CPU& mCPU;
 	uint16_t mCurrentPC;
 	uint16_t mCurrentOpcode;
-	std::string mCurrentMnemonic;
+	std::string mCurrentPattern;
 	olc::vi2d mPosition;
 	WidgetFrame mFrame;
 };
@@ -400,7 +400,7 @@ private:
 	{
 		std::cout << "Execute opcode ";
 		LogHex(std::cout, instruction.GetOpcode());
-		std::cout << " (" << ToString(instruction.GetPatternId()) << ")" << std::endl;
+		std::cout << " (" << GetOpcodePatternString(instruction.GetPatternId()) << ")" << std::endl;
 
 		switch (status)
 		{

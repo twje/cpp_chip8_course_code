@@ -4,50 +4,46 @@
 //--------------------------------------------------------------------------------
 #include <unordered_map>
 
-// Macros
 //--------------------------------------------------------------------------------
-#define OPCODE_ID_STRING_ENTRY(name) { OpcodePatternId::name, #name }
-
-//--------------------------------------------------------------------------------
-std::string ToString(OpcodePatternId id)
+std::string GetOpcodePatternString(OpcodePatternId id)
 {
-    static const std::unordered_map<OpcodePatternId, std::string> map = {
-        OPCODE_ID_STRING_ENTRY(CLS),
-        OPCODE_ID_STRING_ENTRY(RET),
-        OPCODE_ID_STRING_ENTRY(JP_ADDR),
-        OPCODE_ID_STRING_ENTRY(CALL_ADDR),
-        OPCODE_ID_STRING_ENTRY(SE_VX_KK),
-        OPCODE_ID_STRING_ENTRY(SNE_VX_KK),
-        OPCODE_ID_STRING_ENTRY(SE_VX_VY),
-        OPCODE_ID_STRING_ENTRY(LD_VX_KK),
-        OPCODE_ID_STRING_ENTRY(ADD_VX_KK),
-        OPCODE_ID_STRING_ENTRY(LD_VX_VY),
-        OPCODE_ID_STRING_ENTRY(OR_VX_VY),
-        OPCODE_ID_STRING_ENTRY(AND_VX_VY),
-        OPCODE_ID_STRING_ENTRY(XOR_VX_VY),
-        OPCODE_ID_STRING_ENTRY(ADD_VX_VY),
-        OPCODE_ID_STRING_ENTRY(SUB_VX_VY),
-        OPCODE_ID_STRING_ENTRY(SHR_VX_VY),
-        OPCODE_ID_STRING_ENTRY(SUBN_VX_VY),
-        OPCODE_ID_STRING_ENTRY(SHL_VX_VY),
-        OPCODE_ID_STRING_ENTRY(SNE_VX_VY),
-        OPCODE_ID_STRING_ENTRY(LD_I_ADDR),
-        OPCODE_ID_STRING_ENTRY(JP_V0_ADDR),
-        OPCODE_ID_STRING_ENTRY(RND_VX_KK),
-        OPCODE_ID_STRING_ENTRY(DRW_VX_VY_N),
-        OPCODE_ID_STRING_ENTRY(SKP_VX),
-        OPCODE_ID_STRING_ENTRY(SKNP_VX),
-        OPCODE_ID_STRING_ENTRY(LD_VX_DT),
-        OPCODE_ID_STRING_ENTRY(LD_VX_K),
-        OPCODE_ID_STRING_ENTRY(LD_DT_VX),
-        OPCODE_ID_STRING_ENTRY(LD_ST_VX),
-        OPCODE_ID_STRING_ENTRY(ADD_I_VX),
-        OPCODE_ID_STRING_ENTRY(LD_F_VX),
-        OPCODE_ID_STRING_ENTRY(LD_B_VX),
-        OPCODE_ID_STRING_ENTRY(LD_I_VX),
-        OPCODE_ID_STRING_ENTRY(LD_VX_I)
+    static const std::unordered_map<OpcodePatternId, std::string> patternMap = {
+        { OpcodePatternId::CLS,         "00E0" },
+        { OpcodePatternId::RET,         "00EE" },
+        { OpcodePatternId::JP_ADDR,     "1nnn" },
+        { OpcodePatternId::CALL_ADDR,   "2nnn" },
+        { OpcodePatternId::SE_VX_KK,    "3xkk" },
+        { OpcodePatternId::SNE_VX_KK,   "4xkk" },
+        { OpcodePatternId::SE_VX_VY,    "5xy0" },
+        { OpcodePatternId::LD_VX_KK,    "6xkk" },
+        { OpcodePatternId::ADD_VX_KK,   "7xkk" },
+        { OpcodePatternId::LD_VX_VY,    "8xy0" },
+        { OpcodePatternId::OR_VX_VY,    "8xy1" },
+        { OpcodePatternId::AND_VX_VY,   "8xy2" },
+        { OpcodePatternId::XOR_VX_VY,   "8xy3" },
+        { OpcodePatternId::ADD_VX_VY,   "8xy4" },
+        { OpcodePatternId::SUB_VX_VY,   "8xy5" },
+        { OpcodePatternId::SHR_VX_VY,   "8xy6" },
+        { OpcodePatternId::SUBN_VX_VY,  "8xy7" },
+        { OpcodePatternId::SHL_VX_VY,   "8xyE" },
+        { OpcodePatternId::SNE_VX_VY,   "9xy0" },
+        { OpcodePatternId::LD_I_ADDR,   "Annn" },
+        { OpcodePatternId::JP_V0_ADDR,  "Bnnn" },
+        { OpcodePatternId::RND_VX_KK,   "Cxkk" },
+        { OpcodePatternId::DRW_VX_VY_N, "Dxyn" },
+        { OpcodePatternId::SKP_VX,      "Ex9E" },
+        { OpcodePatternId::SKNP_VX,     "ExA1" },
+        { OpcodePatternId::LD_VX_DT,    "Fx07" },
+        { OpcodePatternId::LD_VX_K,     "Fx0A" },
+        { OpcodePatternId::LD_DT_VX,    "Fx15" },
+        { OpcodePatternId::LD_ST_VX,    "Fx18" },
+        { OpcodePatternId::ADD_I_VX,    "Fx1E" },
+        { OpcodePatternId::LD_F_VX,     "Fx29" },
+        { OpcodePatternId::LD_B_VX,     "Fx33" },
+        { OpcodePatternId::LD_I_VX,     "Fx55" },
+        { OpcodePatternId::LD_VX_I,     "Fx65" }
     };
 
-    auto it = map.find(id);
-    return it != map.end() ? it->second : "UNKNOWN";
+    auto it = patternMap.find(id);
+    return it != patternMap.end() ? it->second : "UNKNOWN";
 }
