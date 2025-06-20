@@ -73,7 +73,10 @@ class StackUI : public IWidget
 public:
 	StackUI(CPU& cpu)
 		: mCPU(cpu)
-	{ }
+		, mFrame("Stack")
+	{ 
+		mFrame.SetContentSize(GetInternalContentSize());
+	}
 
 	virtual olc::vi2d GetSize() const override
 	{
@@ -89,17 +92,20 @@ public:
 
 	virtual olc::vi2d GetPosition() const override
 	{
-		return mPosition;
+		return mFrame.GetPosition();
 	}
 
 	virtual void SetPosition(const olc::vi2d& position) override
 	{
-		mPosition = position;
+		mFrame.SetPosition(position);
 	}
 
+	// TODO: simplify
 	virtual void Draw(olc::PixelGameEngine& pge) const override
-	{
-		constexpr int32_t lineHeight = 8;
+	{		
+		mFrame.Draw(pge);
+
+		const int32_t lineHeight = 8;
 
 		for (size_t i = 0; i < STACK_SIZE; ++i)
 		{
@@ -109,7 +115,7 @@ public:
 			const olc::Pixel color = isTop ? UIStyle::kColorActive : UIStyle::kColorText;
 			const std::string cursor = isTop ? ">" : " ";
 
-			olc::vi2d pos = mPosition + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
+			olc::vi2d pos = mFrame.GetContentOffset() + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
 			std::string text = cursor + Hex(index, 1) + ": 0x" + Hex(mCPU.GetStackValueAt(index), 4);
 
 			pge.DrawString(pos, text, color);
@@ -117,6 +123,18 @@ public:
 	}
 
 private:
+	olc::vi2d GetInternalContentSize() const
+	{
+		const std::string sampleLabel = " F: 0xFFFF"; // Longest possible line
+		const int32_t charWidth = 8;
+		const int32_t charHeight = 8;
+
+		return {
+			static_cast<int32_t>(sampleLabel.size()) * charWidth,
+			STACK_SIZE * charHeight
+		};
+	}
+
 	std::string Hex(uint32_t value, uint8_t width) const
 	{
 		std::string s(width, '0');
@@ -127,8 +145,8 @@ private:
 		return s;
 	}
 
-	CPU& mCPU;
-	olc::vi2d mPosition;
+	CPU& mCPU;	
+	WidgetFrame mFrame;
 };
 
 //--------------------------------------------------------------------------------
@@ -202,10 +220,11 @@ public:
 		mFrame.SetContentSize(GetInternalContentSize());
 	}
 	
-	void SetCurrentInstruction(uint16_t pc, uint16_t opcode)
+	void SetCurrentInstruction(const Instruction& instruction)
 	{
-		mCurrentPC = pc;
-		mCurrentOpcode = opcode;
+		mCurrentPC = instruction.GetAddress();
+		mCurrentOpcode = instruction.GetOpcode();
+		mCurrentMnemonic = ToString(instruction.GetPatternId());
 	}
 
 	virtual olc::vi2d GetSize() const override  
@@ -228,21 +247,55 @@ public:
 		mFrame.Draw(pge);
 		
 		const olc::vi2d start = mFrame.GetContentOffset();
-		pge.DrawString(start, "text", UIStyle::kColorText);
+		const int32_t lineHeight = 8;
+
+		auto DrawLine = [&](int lineIndex, const std::string& text)
+		{
+			olc::vi2d pos = start + olc::vi2d{ 0, lineIndex * lineHeight };
+			pge.DrawString(pos, text, UIStyle::kColorText);
+		};
+
+		const int labelWidth = 9;
+
+		DrawLine(0, RightAlign("PC:", labelWidth) + " 0x" + Hex(mCurrentPC, 4));
+		DrawLine(1, RightAlign("I:", labelWidth) + " 0x" + Hex(mCPU.GetIndexRegister(), 4));
+		DrawLine(2, RightAlign("Opcode:", labelWidth) + " 0x" + Hex(mCurrentOpcode, 4));
+		DrawLine(3, RightAlign("Mnemonic:", labelWidth) + " " + mCurrentMnemonic);
+		DrawLine(4, RightAlign("Delay:", labelWidth) + " 0x" + Hex(mCPU.GetDelayTimer(), 2));
+		DrawLine(5, RightAlign("Sound:", labelWidth) + " 0x" + Hex(mCPU.GetSoundTimer(), 2));
 	}
 
 private:
 	olc::vi2d GetInternalContentSize() const
 	{
-		const int32_t lineHeight = 1;
-		const int32_t lineCount = 5;
-		const int32_t textWidth = 18 * 8; // longest line: "Opcode: 0xFFFF"
-		return { textWidth, 8 };
+		std::string longestSample = "Mnemonic: DRW_VX_VY_N";
+
+		const int32_t lineHeight = 8;
+		const int32_t lineCount = 6;
+		const int32_t textWidth = longestSample.size() * 8;
+		return { textWidth, lineCount * lineHeight };
+	}
+
+	std::string Hex(uint32_t value, uint8_t width) const
+	{
+		std::string s(width, '0');
+		for (int i = width - 1; i >= 0; --i, value >>= 4)
+		{
+			s[i] = "0123456789ABCDEF"[value & 0xF];
+		}
+		return s;
+	}
+
+	std::string RightAlign(const std::string& label, size_t width) const
+	{
+		if (label.size() >= width) return label;
+		return std::string(width - label.size(), ' ') + label;
 	}
 
 	const CPU& mCPU;
 	uint16_t mCurrentPC;
 	uint16_t mCurrentOpcode;
+	std::string mCurrentMnemonic;
 	olc::vi2d mPosition;
 	WidgetFrame mFrame;
 };
@@ -287,7 +340,9 @@ public:
 		CPU& cpu = mEmulator.GetCPU();
 		Instruction instruction = cpu.Fetch();
 				
-		//mCPUStateDisplay->SetCurrentInstruction();  // ISSUE
+		// UI displays the address the instruction was read from (before PC was incremented),
+		// not the current PC value after fetch.
+		mCPUStateUI.SetCurrentInstruction(instruction);
 
 		LogCycle(instruction);
 
@@ -295,8 +350,12 @@ public:
 		{
 			std::cerr << "Decode error" << std::endl;
 			mIsHalted = true;
+			return true;
 		}
 			
+		// After decode — update mnemonic
+		mCPUStateUI.SetCurrentInstruction(instruction);
+
 		const ExecutionStatus status = cpu.Execute(instruction);
 		LogExecution(instruction, status);
 		mIsHalted = !ShouldContinue(status);

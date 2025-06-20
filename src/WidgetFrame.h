@@ -66,8 +66,7 @@ public:
 
 			// One pixel gap after title, then line
 			const int32_t underlineY = titlePos.y + kTextHeight + kGap;
-
-			// DrawLine is inclusive — subtract 1 to avoid overshooting the width
+			
 			pge.DrawLine(
 				{ mPosition.x, underlineY },
 				{ mPosition.x + GetSize().x - 1, underlineY },
