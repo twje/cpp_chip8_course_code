@@ -84,7 +84,7 @@ private:
 		// Title + 1px gap + 1px underline + 1px gap
 		return mTitle.empty()
 			? olc::vi2d{ 0, 0 }
-		: olc::vi2d{ 0, kTextHeight + kGap * 2 + kLineHeight };
+			: olc::vi2d{ 0, kTextHeight + kGap * 2 + kLineHeight };
 	}
 
 private:

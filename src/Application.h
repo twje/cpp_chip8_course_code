@@ -17,10 +17,10 @@
 #include <string>
 
 //--------------------------------------------------------------------------------
-class Screen : public IWidget
+class DisplayUI : public IWidget
 {
 public:
-	Screen(Display& display)
+	DisplayUI(Display& display)
 		: mDisplay(display)
 		, mPixelScale(1) // TODO: remove scale
 	{ }
@@ -68,10 +68,10 @@ private:
 };
 
 //--------------------------------------------------------------------------------
-class StackDisplay : public IWidget
+class StackUI : public IWidget
 {
 public:
-	StackDisplay(CPU& cpu)
+	StackUI(CPU& cpu)
 		: mCPU(cpu)
 	{ }
 
@@ -132,11 +132,11 @@ private:
 };
 
 //--------------------------------------------------------------------------------
-class RegisterDisplay : public IWidget
+class RegisterUI : public IWidget
 {
 public:
-	RegisterDisplay(CPU& cpu)
-		: mCPU(cpu)
+	RegisterUI(CPU& cpu)
+		: mCPU(cpu)		
 	{ }
 
 	virtual olc::vi2d GetSize() const override
@@ -190,10 +190,10 @@ private:
 };
 
 //--------------------------------------------------------------------------------
-class CPUStateDisplay : public IWidget
+class CPUStateUI : public IWidget
 {
 public:
-	CPUStateDisplay(const CPU& cpu)
+	CPUStateUI(const CPU& cpu)
 		: mCPU(cpu)
 		, mCurrentPC(0)
 		, mCurrentOpcode(0)
@@ -253,7 +253,10 @@ class Application : public olc::PixelGameEngine
 public:
 	Application()
 		: mIsHalted(false)
-		, mScreen(mEmulator.GetBus().mDisplay)
+		, mDisplayUI(mEmulator.GetBus().mDisplay)
+		, mStackUI(mEmulator.GetCPU())
+		, mRegisterUI(mEmulator.GetCPU())
+		, mCPUStateUI(mEmulator.GetCPU())
 	{
 		sAppName = "Chip8 Emulator";		
 	}
@@ -269,27 +272,12 @@ public:
 			return false;
 		}		
 
-		mStackDisplay = MakeStyledWidget<StackDisplay>("Stack", mEmulator.GetCPU());
-		mRegisterDisplay = MakeStyledWidget<RegisterDisplay>("Registers", mEmulator.GetCPU());
-		mCPUStateDisplay = MakeStyledWidget<CPUStateDisplay>("CPU State", mEmulator.GetCPU());
-
 		return true;
-	}
-
-	template <typename TWidget, typename... TArgs>
-	std::unique_ptr<IWidget> MakeStyledWidget(const std::string& title, TArgs&&... args)
-	{
-		auto base = std::make_unique<TWidget>(std::forward<TArgs>(args)...);
-		return base;
-		//auto titled = std::make_unique<TitleDecorator>(std::move(base), std::move(title));
-		//auto padded = std::make_unique<PaddingDecorator>(std::move(titled));
-		//auto background = std::make_unique<BackgroundDecorator>(std::move(padded));
-		//return std::make_unique<BorderDecorator>(std::move(background));
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{		
-		mCPUStateDisplay->Draw(*this);
+		mCPUStateUI.Draw(*this);
 
 		if (mIsHalted)
 		{
@@ -375,9 +363,9 @@ private:
 private:	
 	Emulator mEmulator;
 	bool mIsHalted;
-	Screen mScreen;
 	
-	std::unique_ptr<IWidget> mStackDisplay;
-	std::unique_ptr<IWidget> mRegisterDisplay;
-	std::unique_ptr<IWidget> mCPUStateDisplay;	
+	DisplayUI mDisplayUI;
+	StackUI mStackUI;
+	RegisterUI mRegisterUI;
+	CPUStateUI mCPUStateUI;
 };
