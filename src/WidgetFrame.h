@@ -14,6 +14,22 @@
 	- Use GetContentOffset() as the top-left for drawing content.
 	- GetSize() returns the full frame size including decorations.
 */
+#pragma once
+
+// Includes
+//--------------------------------------------------------------------------------
+// Emulator
+#include "UIStyle.h"
+
+// Third Party
+#include "olcPixelGameEngine.h"
+
+/*
+	Adds a title, padding, and border for a widget.
+	- Call SetContentSize() with the inner content's size.
+	- Use GetContentOffset() as the top-left for drawing content.
+	- GetSize() returns the full frame size including decorations.
+*/
 //--------------------------------------------------------------------------------
 class WidgetFrame
 {
@@ -22,37 +38,28 @@ class WidgetFrame
 	inline static constexpr int32_t kTextHeight = 8;
 	inline static constexpr int32_t kLineHeight = 1;
 	inline static constexpr int32_t kGap = 1;
+	inline static constexpr int32_t kCharWidth = 8;
 
 public:
 	WidgetFrame() = default;
 
-	WidgetFrame(const std::string& title)
+	explicit WidgetFrame(const std::string& title)
 		: mTitle(title)
 	{ }
 
-	void SetPosition(const olc::vi2d& position)
-	{
-		mPosition = position;
-	}
-
-	void SetContentSize(const olc::vi2d& size)
-	{
-		mContentSize = size;
-	}
+	void SetPosition(const olc::vi2d& position) { mPosition = position; }
+	void SetContentSize(const olc::vi2d& size) { mContentSize = size; }
 
 	olc::vi2d GetSize() const
 	{
-		return kBorder * 2 + kPadding * 2 + GetTitleSize() + mContentSize;
+		return kBorder * 2 + kPadding * 2 + olc::vi2d{ 0, GetTitleBlockHeight() } + mContentSize;
 	}
 
-	olc::vi2d GetPosition() const
-	{
-		return mPosition;
-	}
+	olc::vi2d GetPosition() const { return mPosition; }
 
 	olc::vi2d GetContentOffset() const
 	{
-		return mPosition + kBorder + kPadding + GetTitleSize();
+		return mPosition + kBorder + kPadding + olc::vi2d{ 0, GetTitleBlockHeight() };
 	}
 
 	void Draw(olc::PixelGameEngine& pge) const
@@ -61,11 +68,7 @@ public:
 
 		if (!mTitle.empty())
 		{
-			const olc::vi2d contentArea = GetSize() - kBorder * 2 - kPadding * 2;
-			const int32_t titleWidth = static_cast<int32_t>(mTitle.length()) * 8; // 8 pixels per character
-			const int32_t centeredX = mPosition.x + kBorder.x + kPadding.x + (contentArea.x - titleWidth) * 0.5f;
-
-			const olc::vi2d titlePos{ centeredX, mPosition.y + kBorder.y + kPadding.y };
+			const olc::vi2d titlePos = GetCenteredTitlePosition();
 			pge.DrawString(titlePos, mTitle, UIStyle::kColorAccent);
 
 			const int32_t underlineY = titlePos.y + kTextHeight + kGap;
@@ -80,12 +83,19 @@ public:
 	}
 
 private:
-	olc::vi2d GetTitleSize() const
+	int32_t GetTitleBlockHeight() const
 	{
-		// Title + 1px gap + 1px underline + 1px gap
-		return mTitle.empty()
-			? olc::vi2d{ 0, 0 }
-			: olc::vi2d{ 0, kTextHeight + kGap * 2 + kLineHeight };
+		// Text + gap + underline + gap to content
+		return mTitle.empty() ? 0 : kTextHeight + kGap + kLineHeight + kGap;
+	}
+
+	olc::vi2d GetCenteredTitlePosition() const
+	{
+		const int32_t titleWidth = static_cast<int32_t>(mTitle.length()) * kCharWidth;
+		const int32_t contentWidth = GetSize().x - (kBorder.x + kPadding.x) * 2;
+		const int32_t centeredX = mPosition.x + kBorder.x + kPadding.x + (contentWidth - titleWidth) / 2;
+		const int32_t y = mPosition.y + kBorder.y + kPadding.y;
+		return { centeredX, y };
 	}
 
 private:
