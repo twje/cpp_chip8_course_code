@@ -71,7 +71,7 @@ private:
 class StackUI : public IWidget
 {
 public:
-	StackUI(CPU& cpu)
+	StackUI(const CPU& cpu)
 		: mCPU(cpu)
 		, mFrame("Stack")
 	{ 
@@ -145,7 +145,7 @@ private:
 		return s;
 	}
 
-	CPU& mCPU;	
+	const CPU& mCPU;	
 	WidgetFrame mFrame;
 };
 
@@ -153,7 +153,7 @@ private:
 class RegisterUI : public IWidget
 {
 public:
-	RegisterUI(CPU& cpu)
+	RegisterUI(const CPU& cpu)
 		: mCPU(cpu)		
 		, mFrame("Registers")
 	{ 
@@ -213,7 +213,7 @@ private:
 		return s;
 	}
 
-	CPU& mCPU;	
+	const CPU& mCPU;	
 	WidgetFrame mFrame;
 };
 
@@ -311,15 +311,65 @@ private:
 };
 
 //--------------------------------------------------------------------------------
+class UIManager
+{
+public:
+	UIManager(const CPU& cpu)
+		: mCPUStateUI(cpu)
+		, mRegisterUI(cpu)
+		, mStackUI(cpu)
+	{
+		const olc::vi2d start{ 4, 4 };
+		const int spacing = 4;  // TODO: reference style for spacing
+
+		olc::vi2d foo = start;
+		mCPUStateUI.SetPosition(foo);
+
+		foo.x += mCPUStateUI.GetSize().x + spacing;
+		mRegisterUI.SetPosition(foo + olc::vi2d{ 0, 0 });
+		
+		foo.x += mRegisterUI.GetSize().x + spacing;
+		mStackUI.SetPosition(foo);
+
+
+		//// Layout widgets with spacing
+		//const olc::vi2d start{ 4, 4 };
+		//const int spacing = 4;  // TODO: reference style for spacing
+
+		//mCPUStateUI.SetPosition(start);
+
+		//const olc::vi2d cpuEnd = mCPUStateUI.GetPosition() + mCPUStateUI.GetSize();
+		//mRegisterUI.SetPosition(cpuEnd + olc::vi2d{ 0, spacing });
+
+		//const olc::vi2d regEnd = mRegisterUI.GetPosition() + mRegisterUI.GetSize();
+		//mStackUI.SetPosition(regEnd + olc::vi2d{ 0, spacing });
+	}
+
+	void SetCurrentInstruction(const Instruction& instruction)
+	{
+		mCPUStateUI.SetCurrentInstruction(instruction);
+	}	
+
+	void Draw(olc::PixelGameEngine& pge) const
+	{
+		mCPUStateUI.Draw(pge);
+		mRegisterUI.Draw(pge);
+		mStackUI.Draw(pge);
+	}
+
+private:
+	CPUStateUI mCPUStateUI;
+	RegisterUI mRegisterUI;
+	StackUI mStackUI;
+};
+
+//--------------------------------------------------------------------------------
 class Application : public olc::PixelGameEngine
 {
 public:
 	Application()
 		: mIsHalted(false)
-		, mDisplayUI(mEmulator.GetBus().mDisplay)
-		, mStackUI(mEmulator.GetCPU())
-		, mRegisterUI(mEmulator.GetCPU())
-		, mCPUStateUI(mEmulator.GetCPU())
+		, mUIManager(mEmulator.GetCPU())		
 	{
 		sAppName = "Chip8 Emulator";		
 	}
@@ -340,7 +390,7 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{		
-		mRegisterUI.Draw(*this);
+		mUIManager.Draw(*this);
 		//mCPUStateUI.Draw(*this);
 
 		if (mIsHalted)
@@ -353,7 +403,7 @@ public:
 				
 		// UI displays the address the instruction was read from (before PC was incremented),
 		// not the current PC value after fetch.
-		mCPUStateUI.SetCurrentInstruction(instruction);
+		mUIManager.SetCurrentInstruction(instruction);
 
 		LogCycle(instruction);
 
@@ -365,7 +415,7 @@ public:
 		}
 			
 		// After decode — update mnemonic
-		mCPUStateUI.SetCurrentInstruction(instruction);
+		mUIManager.SetCurrentInstruction(instruction);
 
 		const ExecutionStatus status = cpu.Execute(instruction);
 		LogExecution(instruction, status);
@@ -433,9 +483,11 @@ private:
 private:	
 	Emulator mEmulator;
 	bool mIsHalted;
-	
-	DisplayUI mDisplayUI;
-	StackUI mStackUI;
-	RegisterUI mRegisterUI;
-	CPUStateUI mCPUStateUI;
+
+	UIManager mUIManager;
+
+	//DisplayUI mDisplayUI;
+	//StackUI mStackUI;
+	//RegisterUI mRegisterUI;
+	//CPUStateUI mCPUStateUI;
 };
