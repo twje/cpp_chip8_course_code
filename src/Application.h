@@ -4,6 +4,7 @@
 //--------------------------------------------------------------------------------
 // Emulator
 #include "IWidget.h"
+#include "WidgetFrame.h"
 #include "WidgetDecorators.h"
 #include "RomManager.h"
 #include "Emulator.h"
@@ -189,9 +190,60 @@ private:
 };
 
 //--------------------------------------------------------------------------------
-class CPUStateDisplay
+class CPUStateDisplay : public IWidget
 {
+public:
+	CPUStateDisplay(const CPU& cpu)
+		: mCPU(cpu)
+		, mCurrentPC(0)
+		, mCurrentOpcode(0)
+		, mFrame("CPU State")
+	{ 
+		mFrame.SetContentSize(GetInternalContentSize());
+	}
+	
+	void SetCurrentInstruction(uint16_t pc, uint16_t opcode)
+	{
+		mCurrentPC = pc;
+		mCurrentOpcode = opcode;
+	}
 
+	virtual olc::vi2d GetSize() const override  
+	{ 
+		return mFrame.GetSize();
+	}
+	
+	virtual olc::vi2d GetPosition() const override
+	{
+		return mFrame.GetPosition();
+	}
+
+	virtual void SetPosition(const olc::vi2d& position) override
+	{
+		mFrame.SetPosition(position);
+	}
+	
+	virtual void Draw(olc::PixelGameEngine& pge) const override
+	{
+		mFrame.Draw(pge);
+		const olc::vi2d start = mFrame.GetContentOffset();
+		pge.DrawString(start, "text", UIStyle::kColorText);
+	}
+
+private:
+	olc::vi2d GetInternalContentSize() const
+	{
+		const int32_t lineHeight = 8;
+		const int32_t lineCount = 5;
+		const int32_t textWidth = 18 * 8; // longest line: "Opcode: 0xFFFF"
+		return { textWidth, lineCount * lineHeight };
+	}
+
+	const CPU& mCPU;
+	uint16_t mCurrentPC;
+	uint16_t mCurrentOpcode;
+	olc::vi2d mPosition;
+	WidgetFrame mFrame;
 };
 
 //--------------------------------------------------------------------------------
@@ -218,7 +270,8 @@ public:
 
 		mStackDisplay = MakeStyledWidget<StackDisplay>("Stack", mEmulator.GetCPU());
 		mRegisterDisplay = MakeStyledWidget<RegisterDisplay>("Registers", mEmulator.GetCPU());
-		
+		mCPUStateDisplay = MakeStyledWidget<CPUStateDisplay>("CPU State", mEmulator.GetCPU());
+
 		return true;
 	}
 
@@ -226,15 +279,16 @@ public:
 	std::unique_ptr<IWidget> MakeStyledWidget(const std::string& title, TArgs&&... args)
 	{
 		auto base = std::make_unique<TWidget>(std::forward<TArgs>(args)...);
-		auto titled = std::make_unique<TitleDecorator>(std::move(base), std::move(title));
-		auto padded = std::make_unique<PaddingDecorator>(std::move(titled));
-		auto background = std::make_unique<BackgroundDecorator>(std::move(padded));
-		return std::make_unique<BorderDecorator>(std::move(background));
+		return base;
+		//auto titled = std::make_unique<TitleDecorator>(std::move(base), std::move(title));
+		//auto padded = std::make_unique<PaddingDecorator>(std::move(titled));
+		//auto background = std::make_unique<BackgroundDecorator>(std::move(padded));
+		//return std::make_unique<BorderDecorator>(std::move(background));
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{		
-		mRegisterDisplay->Draw(*this);
+		mCPUStateDisplay->Draw(*this);
 
 		if (mIsHalted)
 		{
@@ -243,6 +297,8 @@ public:
 
 		CPU& cpu = mEmulator.GetCPU();
 		Instruction instruction = cpu.Fetch();
+				
+		//mCPUStateDisplay->SetCurrentInstruction();  // ISSUE
 
 		LogCycle(instruction);
 
@@ -322,4 +378,5 @@ private:
 	
 	std::unique_ptr<IWidget> mStackDisplay;
 	std::unique_ptr<IWidget> mRegisterDisplay;
+	std::unique_ptr<IWidget> mCPUStateDisplay;	
 };
