@@ -129,57 +129,6 @@ private:
 	olc::vi2d mPosition;
 };
 
-/*
-//--------------------------------------------------------------------------------
-class WidgetDecorator : public IWidget
-{
-public:
-	WidgetDecorator(std::unique_ptr<IWidget> inner, std::string title)
-		: mInner(std::move(inner)), mTitle(std::move(title))
-	{ }
-
-	virtual olc::vi2d GetSize() const override
-	{
-		// Add border thickness and title spacing
-		return mInner->GetSize() + olc::vi2d{ 2 * mBorder, mTitleHeight };
-	}
-
-	virtual olc::vi2d GetPosition() const override
-	{
-		return mPosition;
-	}
-
-	virtual void SetPosition(const olc::vi2d& position) override
-	{
-		mPosition = position;
-
-		// Inner widget is inset
-		olc::vi2d innerPos = position + olc::vi2d{ mBorder, mBorder + mTitleHeight };
-		mInner->SetPosition(innerPos);
-	}
-
-	virtual void Draw(olc::PixelGameEngine& pge) const override
-	{
-		pge.DrawRect(mPosition, GetSize(), olc::DARK_GREY);
-		
-		if (!mTitle.empty())
-		{
-			pge.DrawString(mPosition + olc::vi2d{ 2, 0 }, mTitle, olc::YELLOW);
-		}
-	
-		mInner->Draw(pge);
-	}
-
-private:
-	std::unique_ptr<IWidget> mInner;
-	std::string mTitle;
-	olc::vi2d mPosition;
-
-	static constexpr int32_t mBorder = 1;
-	static constexpr int32_t mTitleHeight = 10;
-};
-*/
-
 //--------------------------------------------------------------------------------
 class Application : public olc::PixelGameEngine
 {
@@ -208,7 +157,8 @@ public:
 
 		auto widget = std::make_unique<StackDisplay>(mEmulator.GetCPU());
 		auto widget1 = std::make_unique<TitleDecorator>(std::move(widget), "Stack");
-		mStackDisplayV2 = std::make_unique<BackgroundDecorator>(std::move(widget1));
+		auto widget2 = std::make_unique<BackgroundDecorator>(std::move(widget1));
+		mStackDisplayV2 = std::make_unique<BorderDecorator>(std::move(widget2));
 		
 		
 		//widget = std::make_unique<WidgetBorder>(std::move(widget));

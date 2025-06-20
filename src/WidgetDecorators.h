@@ -9,6 +9,9 @@
 // Third Party
 #include "olcPixelGameEngine.h"
 
+// System
+#include <memory>
+
 //--------------------------------------------------------------------------------
 class BackgroundDecorator : public IWidget
 {
@@ -71,20 +74,61 @@ public:
 
 	virtual void Draw(olc::PixelGameEngine& pge) const override
 	{
-		// Draw the title string
+		// Draw title text
 		pge.DrawString(mPosition, mTitle, UIStyle::kColorAccent);
 
-		// Draw a horizontal line beneath the title (inclusive width)
+		// Draw underline (DrawLine is inclusive, so subtract 1 from width)
 		const olc::vi2d lineStart = mPosition + olc::vi2d{ 0, kTitleHeight - 1 };
 		const olc::vi2d lineEnd = lineStart + olc::vi2d{ GetSize().x - 1, 0 };
 		pge.DrawLine(lineStart, lineEnd, UIStyle::kColorBorder);
-
-		// Draw the wrapped widget
+		
 		mInner->Draw(pge);
 	}
 
 private:
 	std::unique_ptr<IWidget> mInner;
 	std::string mTitle;
+	olc::vi2d mPosition;
+};
+
+//--------------------------------------------------------------------------------
+class BorderDecorator : public IWidget
+{
+	inline static const olc::vi2d kBorderPadding { UIStyle::kBorderSize, UIStyle::kBorderSize };
+
+public:
+	BorderDecorator(std::unique_ptr<IWidget> inner)
+		: mInner(std::move(inner))
+	{ 
+		SetPosition(mInner->GetPosition());
+	}
+
+	virtual olc::vi2d GetSize() const override
+	{		
+		return mInner->GetSize() + kBorderPadding * 2;
+	}
+	
+	virtual olc::vi2d GetPosition() const override { return mPosition; }
+
+	virtual void SetPosition(const olc::vi2d& position) override
+	{
+		mPosition = position;
+
+		// Offset the inner widget to accomodate border
+		olc::vi2d innerPos = position + kBorderPadding;
+		mInner->SetPosition(innerPos);
+	}
+
+	virtual void Draw(olc::PixelGameEngine& pge) const override
+	{
+		// DrawRect is inclusive — subtract {1,1} to avoid overshooting the intended size
+		pge.DrawRect(mPosition, GetSize() - olc::vi2d{ 1, 1 }, UIStyle::kColorBorder);
+		mInner->Draw(pge);
+
+		pge.DrawRect({0, 0}, {1, 1}, UIStyle::kColorBorder);
+	}
+
+private:
+	std::unique_ptr<IWidget> mInner;
 	olc::vi2d mPosition;
 };
