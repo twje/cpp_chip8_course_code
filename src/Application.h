@@ -76,7 +76,7 @@ public:
 
 	virtual olc::vi2d GetSize() const override
 	{
-		const std::string sampleLabel = "F: 0xFFFF"; // Longest possible line
+		const std::string sampleLabel = " F: 0xFFFF"; // Longest possible line
 		const int32_t charWidth = 8;
 		const int32_t charHeight = 8;
 
@@ -98,19 +98,20 @@ public:
 
 	virtual void Draw(olc::PixelGameEngine& pge) const override
 	{
-		const int32_t lineHeight = 8;
+		constexpr int32_t lineHeight = 8;
 
 		for (size_t i = 0; i < STACK_SIZE; ++i)
 		{
-			olc::vi2d linePos = mPosition + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
+			size_t index = STACK_SIZE - 1 - i; // Flip: index 0 at bottom
+			const bool isTop = (index == mCPU.GetStackPointer());
 
-			// Highlight the current top of the stack
-			olc::Pixel textColor = (i == mCPU.GetStackPointer())
-				? UIStyle::kColorActive
-				: UIStyle::kColorText;
+			const olc::Pixel color = isTop ? UIStyle::kColorActive : UIStyle::kColorText;
+			const std::string cursor = isTop ? ">" : " ";
 
-			std::string entry = Hex(i, 1) + ": 0x" + Hex(mCPU.GetStackValueAt(i), 4);
-			pge.DrawString(linePos, entry, textColor);
+			olc::vi2d pos = mPosition + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
+			std::string text = cursor + Hex(index, 1) + ": 0x" + Hex(mCPU.GetStackValueAt(index), 4);
+
+			pge.DrawString(pos, text, color);
 		}
 	}
 
