@@ -316,6 +316,125 @@ private:
 };
 
 //--------------------------------------------------------------------------------
+enum class Chip8Key : uint8_t
+{
+	Key0, 
+	Key1, 
+	Key2, 
+	Key3,
+	Key4, 
+	Key5, 
+	Key6, 
+	Key7,
+	Key8, 
+	Key9, 
+	KeyA, 
+	KeyB,
+	KeyC, 
+	KeyD, 
+	KeyE, 
+	KeyF
+};
+
+//--------------------------------------------------------------------------------
+class KeypadUI : public IWidget
+{
+	inline static constexpr Chip8Key kKeypadMap[4][4] = {
+		{ Chip8Key::Key1, Chip8Key::Key2, Chip8Key::Key3, Chip8Key::KeyC },
+		{ Chip8Key::Key4, Chip8Key::Key5, Chip8Key::Key6, Chip8Key::KeyD },
+		{ Chip8Key::Key7, Chip8Key::Key8, Chip8Key::Key9, Chip8Key::KeyE },
+		{ Chip8Key::KeyA, Chip8Key::Key0, Chip8Key::KeyB, Chip8Key::KeyF }
+	};
+
+	static constexpr int kCharSize = 8;
+	static constexpr int kPadding = 5;
+	static constexpr int kRows = 4;
+	static constexpr int kCols = 4;
+
+public:
+	KeypadUI(const Keypad& keypad)
+		: mKeypad(keypad)
+		, mFrame("Keypad")
+	{ 
+		mFrame.SetContentSize(GetInternalContentSize());
+	}
+
+	virtual olc::vi2d GetSize() const override
+	{
+		return mFrame.GetSize();
+	}
+
+	virtual olc::vi2d GetPosition() const override
+	{
+		return mFrame.GetPosition();
+	}
+
+	virtual void SetPosition(const olc::vi2d& position) override
+	{
+		mFrame.SetPosition(position);
+	}
+
+	virtual void Draw(olc::PixelGameEngine& pge) const override
+	{
+		mFrame.Draw(pge);
+
+		const olc::vi2d position = mFrame.GetContentOffset();		
+
+		for (int32_t y = 0; y < kRows; y++)
+		{
+			for (int32_t x = 0; x < kCols; x++)
+			{
+				olc::vi2d offset = {
+					x * (kCharSize + kPadding),
+					y * (kCharSize + kPadding)
+				};
+
+				const Chip8Key key = kKeypadMap[y][x];
+				const auto label = GetLabelForKey(key);
+
+				pge.DrawString(position + offset, label.data(), olc::WHITE);
+			}
+		}
+	}
+
+private:
+	olc::vi2d GetInternalContentSize() const
+	{
+		int32_t width = (kCols - 1) * (kCharSize + kPadding) + kCharSize;
+		int32_t height = (kRows - 1) * (kCharSize + kPadding) + kCharSize;
+
+		return { width, height };
+	}
+
+	std::string_view GetLabelForKey(Chip8Key key) const
+	{
+		switch (key)
+		{
+			case Chip8Key::Key0: return "0";
+			case Chip8Key::Key1: return "1";
+			case Chip8Key::Key2: return "2";
+			case Chip8Key::Key3: return "3";
+			case Chip8Key::Key4: return "4";
+			case Chip8Key::Key5: return "5";
+			case Chip8Key::Key6: return "6";
+			case Chip8Key::Key7: return "7";
+			case Chip8Key::Key8: return "8";
+			case Chip8Key::Key9: return "9";
+			case Chip8Key::KeyA: return "A";
+			case Chip8Key::KeyB: return "B";
+			case Chip8Key::KeyC: return "C";
+			case Chip8Key::KeyD: return "D";
+			case Chip8Key::KeyE: return "E";
+			case Chip8Key::KeyF: return "F";
+			default:             return "?";
+		}
+	}
+
+	const Keypad& mKeypad;
+	WidgetFrame mFrame;
+};
+
+//--------------------------------------------------------------------------------
 class UIManager
 {
 public:
@@ -324,6 +443,7 @@ public:
 		, mRegisterUI(cpu)
 		, mStackUI(cpu)
 		, mDisplayUI(bus.mDisplay)
+		, mKeypadUI(bus.mKeypad)
 	{
 		const olc::vi2d start{ 4, 4 };
 		const int spacing = 4;  // TODO: reference style for spacing
@@ -339,6 +459,11 @@ public:
 		
 		foo.x += mRegisterUI.GetSize().x + spacing;
 		mStackUI.SetPosition(foo);
+
+		foo = start;
+		foo.y += mDisplayUI.GetSize().y + spacing;
+
+		mKeypadUI.SetPosition(foo);
 	}
 
 	void SetCurrentInstruction(const Instruction& instruction)
@@ -348,10 +473,11 @@ public:
 
 	void Draw(olc::PixelGameEngine& pge) const
 	{
-		mDisplayUI.Draw(pge);
 		mCPUStateUI.Draw(pge);
 		mRegisterUI.Draw(pge);
 		mStackUI.Draw(pge);
+		mDisplayUI.Draw(pge);
+		mKeypadUI.Draw(pge);
 	}
 
 private:
@@ -359,6 +485,7 @@ private:
 	RegisterUI mRegisterUI;
 	StackUI mStackUI;
 	DisplayUI mDisplayUI;
+	KeypadUI mKeypadUI;
 };
 
 //--------------------------------------------------------------------------------
