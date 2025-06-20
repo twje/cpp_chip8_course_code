@@ -12,6 +12,7 @@
 // System
 #include <memory>
 
+// Fills the widget's background with a solid color
 //--------------------------------------------------------------------------------
 class BackgroundDecorator : public IWidget
 {
@@ -40,12 +41,15 @@ private:
 	olc::vi2d mPosition;
 };
 
+// Adds a text title above the widget with an underline
 //--------------------------------------------------------------------------------
 class TitleDecorator : public IWidget
 {
-	static constexpr int32_t kTitlePadding = 1;
 	static constexpr int32_t kTextHeight = 8;
-	static constexpr int32_t kTitleHeight = kTitlePadding * 2 + kTextHeight;
+	static constexpr int32_t kGapBelowText = 1;
+	static constexpr int32_t kUnderlineHeight = 1;
+	static constexpr int32_t kGapBelowLine = 1;
+	static constexpr int32_t kTotalTitleHeight = kTextHeight + kGapBelowText + kUnderlineHeight + kGapBelowLine;
 
 public:
 	TitleDecorator(std::unique_ptr<IWidget> inner, std::string title)
@@ -56,7 +60,7 @@ public:
 
 	virtual olc::vi2d GetSize() const override
 	{
-		return mInner->GetSize() + olc::vi2d{ 0, kTitleHeight };
+		return mInner->GetSize() + olc::vi2d{ 0, kTotalTitleHeight };
 	}
 
 	virtual olc::vi2d GetPosition() const override
@@ -67,19 +71,21 @@ public:
 	virtual void SetPosition(const olc::vi2d& position) override
 	{
 		mPosition = position;
-
-		// Offset the inner widget below the title
-		mInner->SetPosition(mPosition + olc::vi2d{ 0, kTitleHeight });
+		mInner->SetPosition(position + olc::vi2d{ 0, kTotalTitleHeight });
 	}
 
 	virtual void Draw(olc::PixelGameEngine& pge) const override
 	{
-		pge.DrawString(mPosition + olc::vi2d{ kTitlePadding, kTitlePadding }, mTitle, UIStyle::kColorAccent);
+		pge.DrawString(mPosition, mTitle, UIStyle::kColorAccent);
 
-		// Draw underline (DrawLine is inclusive, so subtract 1 from width)
-		olc::vi2d lineStart = mPosition + olc::vi2d{ 0, kTitleHeight - 1 };
-		olc::vi2d lineEnd = lineStart + olc::vi2d{ GetSize().x - 1, 0 };
-		pge.DrawLine(lineStart, lineEnd, UIStyle::kColorBorder);
+		const int32_t underlineY = mPosition.y + kTextHeight + kGapBelowText;
+
+		// DrawLine is inclusive on both ends — subtract 1 to avoid overshooting the intended width
+		pge.DrawLine(
+			{ mPosition.x, underlineY },
+			{ mPosition.x + GetSize().x - 1, underlineY },
+			UIStyle::kColorBorder
+		);
 
 		mInner->Draw(pge);
 	}
