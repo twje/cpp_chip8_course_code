@@ -29,6 +29,12 @@ CPU::CPU(Bus& bus)
 { }
 
 //--------------------------------------------------------------------------------
+uint8_t CPU::GetRegisterValueAt(size_t index) const
+{
+    return mRegisters.at(index);
+}
+
+//--------------------------------------------------------------------------------
 uint16_t CPU::GetStackValueAt(size_t index) const
 {
     return mStack.at(index);

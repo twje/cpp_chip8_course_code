@@ -140,7 +140,7 @@ public:
 
 	virtual olc::vi2d GetSize() const override
 	{
-		const std::string sampleLabel = "F: 0xFF  "; // Longest possible line
+		const std::string sampleLabel = "F: 0xFF  "; // Longest possible line (whitespace to accomodate title)
 		const int32_t charWidth = 8;
 		const int32_t charHeight = 8;
 
@@ -167,7 +167,7 @@ public:
 		for (size_t i = 0; i < NUM_REGISTERS; ++i)
 		{
 			olc::vi2d pos = mPosition + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
-			std::string text = Hex(i, 1) + ": 0x" + Hex(mCPU.GetStackValueAt(i), 2);
+			std::string text = Hex(i, 1) + ": 0x" + Hex(mCPU.GetRegisterValueAt(i), 2);
 
 			pge.DrawString(pos, text, UIStyle::kColorText);
 		}
@@ -209,7 +209,6 @@ public:
 			return false;
 		}		
 
-
 		mStackDisplay = MakeStyledWidget<StackDisplay>("Stack", mEmulator.GetCPU());
 		mRegisterDisplay = MakeStyledWidget<RegisterDisplay>("Registers", mEmulator.GetCPU());
 		
@@ -220,14 +219,10 @@ public:
 	std::unique_ptr<IWidget> MakeStyledWidget(const std::string& title, TArgs&&... args)
 	{
 		auto base = std::make_unique<TWidget>(std::forward<TArgs>(args)...);
-
-		// Apply decorators in reverse order (innermost first)
-		auto titled = std::make_unique<TitleDecorator>(std::move(base), title);
-		auto padding = std::make_unique<PaddingDecorator>(std::move(titled));
-		auto background = std::make_unique<BackgroundDecorator>(std::move(padding));
-		auto bordered = std::make_unique<BorderDecorator>(std::move(background));
-
-		return bordered;
+		auto titled = std::make_unique<TitleDecorator>(std::move(base), std::move(title));
+		auto padded = std::make_unique<PaddingDecorator>(std::move(titled));
+		auto background = std::make_unique<BackgroundDecorator>(std::move(padded));
+		return std::make_unique<BorderDecorator>(std::move(background));
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override

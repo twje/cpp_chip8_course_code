@@ -25,6 +25,7 @@ class CPU
 public:
 	CPU(Bus& bus);
 
+	uint8_t GetRegisterValueAt(size_t index) const;
 	uint16_t GetStackValueAt(size_t index) const;
 	size_t GetStackPointer() const { return mStackPointer; }
 	
