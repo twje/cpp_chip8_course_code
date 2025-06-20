@@ -24,12 +24,10 @@ class WidgetFrame
 	inline static constexpr int32_t kGap = 1;
 
 public:
-	WidgetFrame()
-		: mTitle("")
-	{ }
+	WidgetFrame() = default;
 
 	WidgetFrame(const std::string& title)
-		: mTitle(title)		
+		: mTitle(title)
 	{ }
 
 	void SetPosition(const olc::vi2d& position)
@@ -54,20 +52,19 @@ public:
 
 	olc::vi2d GetContentOffset() const
 	{
-		return mPosition + kBorder + kPadding + GetTitleOffset();
+		return mPosition + kBorder + kPadding + GetTitleSize();
 	}
 
 	void Draw(olc::PixelGameEngine& pge) const
 	{
-		// Background
 		pge.FillRect(mPosition, GetSize(), UIStyle::kColorBG);
 
-		// Title
 		if (!mTitle.empty())
 		{
 			const olc::vi2d titlePos = mPosition + kBorder + kPadding;
 			pge.DrawString(titlePos, mTitle, UIStyle::kColorAccent);
 
+			// One pixel gap after title, then line
 			const int32_t underlineY = titlePos.y + kTextHeight + kGap;
 
 			// DrawLine is inclusive — subtract 1 to avoid overshooting the width
@@ -78,23 +75,16 @@ public:
 			);
 		}
 
-		// Border
 		pge.DrawRect(mPosition, GetSize() - olc::vi2d{ 1, 1 }, UIStyle::kColorBorder);
 	}
 
 private:
 	olc::vi2d GetTitleSize() const
-	{	
-		return mTitle.empty() 
-			? olc::vi2d{ 0, 0 } 
-			: olc::vi2d{ 0, kTextHeight + kGap * 2 + kLineHeight };
-	}
-
-	olc::vi2d GetTitleOffset() const
-	{		
-		return mTitle.empty() 
-			? olc::vi2d{ 0, 0 } 
-			: olc::vi2d{ 0, kTextHeight + kGap * 2 + kLineHeight };
+	{
+		// Title + 1px gap + 1px underline + 1px gap
+		return mTitle.empty()
+			? olc::vi2d{ 0, 0 }
+		: olc::vi2d{ 0, kTextHeight + kGap * 2 + kLineHeight };
 	}
 
 private:
