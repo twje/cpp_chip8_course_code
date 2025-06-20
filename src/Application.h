@@ -155,9 +155,43 @@ class RegisterUI : public IWidget
 public:
 	RegisterUI(CPU& cpu)
 		: mCPU(cpu)		
-	{ }
+		, mFrame("Registers")
+	{ 
+		mFrame.SetContentSize(GetInternalContentSize());
+	}
 
 	virtual olc::vi2d GetSize() const override
+	{
+		return mFrame.GetSize();
+	}
+
+	virtual olc::vi2d GetPosition() const override
+	{
+		return mFrame.GetPosition();
+	}
+
+	virtual void SetPosition(const olc::vi2d& position) override
+	{
+		mFrame.SetPosition(position);
+	}
+
+	virtual void Draw(olc::PixelGameEngine& pge) const override
+	{
+		mFrame.Draw(pge);
+
+		constexpr int32_t lineHeight = 8;  // TODO: Move to UI style
+
+		for (size_t i = 0; i < NUM_REGISTERS; ++i)
+		{
+			olc::vi2d pos = mFrame.GetContentOffset() + olc::vi2d{0, static_cast<int32_t>(i) * lineHeight};
+			std::string text = Hex(i, 1) + ": 0x" + Hex(mCPU.GetRegisterValueAt(i), 2);
+
+			pge.DrawString(pos, text, UIStyle::kColorText);
+		}
+	}
+
+private:
+	olc::vi2d GetInternalContentSize() const
 	{
 		const std::string sampleLabel = "F: 0xFF  "; // Longest possible line (whitespace to accomodate title)
 		const int32_t charWidth = 8;
@@ -169,30 +203,6 @@ public:
 		};
 	}
 
-	virtual olc::vi2d GetPosition() const override
-	{
-		return mPosition;
-	}
-
-	virtual void SetPosition(const olc::vi2d& position) override
-	{
-		mPosition = position;
-	}
-
-	virtual void Draw(olc::PixelGameEngine& pge) const override
-	{
-		constexpr int32_t lineHeight = 8;  // TODO: Move to UI style
-
-		for (size_t i = 0; i < NUM_REGISTERS; ++i)
-		{
-			olc::vi2d pos = mPosition + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
-			std::string text = Hex(i, 1) + ": 0x" + Hex(mCPU.GetRegisterValueAt(i), 2);
-
-			pge.DrawString(pos, text, UIStyle::kColorText);
-		}
-	}
-
-private:
 	std::string Hex(uint32_t value, uint8_t width) const  // TODO: reused
 	{
 		std::string s(width, '0');
@@ -203,8 +213,8 @@ private:
 		return s;
 	}
 
-	CPU& mCPU;
-	olc::vi2d mPosition;
+	CPU& mCPU;	
+	WidgetFrame mFrame;
 };
 
 //--------------------------------------------------------------------------------
@@ -330,7 +340,8 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{		
-		mCPUStateUI.Draw(*this);
+		mRegisterUI.Draw(*this);
+		//mCPUStateUI.Draw(*this);
 
 		if (mIsHalted)
 		{
