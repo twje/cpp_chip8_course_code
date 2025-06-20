@@ -51,8 +51,8 @@ public:
 			for (int x = 0; x < DISPLAY_WIDTH; ++x)
 			{
 				olc::Pixel color = mDisplay.IsPixelSet(x, y)
-					? olc::GREEN
-					: olc::DARK_GREY;
+					? UIStyle::kColorScreenOn
+					: UIStyle::kColorScreenOff;
 
 				const olc::vi2d position = mPosition + olc::vi2d{ x, y } *mPixelScale;
 				pge.FillRect(position, pixelSize, color);
@@ -106,8 +106,8 @@ public:
 
 			// Highlight the current top of the stack
 			olc::Pixel textColor = (i == mCPU.GetStackPointer())
-				? olc::RED
-				: olc::WHITE;
+				? UIStyle::kColorActive
+				: UIStyle::kColorText;
 
 			std::string entry = Hex(i, 1) + ": 0x" + Hex(mCPU.GetStackValueAt(i), 4);
 			pge.DrawString(linePos, entry, textColor);
@@ -208,7 +208,7 @@ public:
 
 		auto widget = std::make_unique<StackDisplay>(mEmulator.GetCPU());
 		auto widget1 = std::make_unique<TitleDecorator>(std::move(widget), "Stack");
-		mStackDisplayV2 = std::make_unique<BackgroundDecorator>(std::move(widget1), olc::VERY_DARK_GREY);
+		mStackDisplayV2 = std::make_unique<BackgroundDecorator>(std::move(widget1));
 		
 		
 		//widget = std::make_unique<WidgetBorder>(std::move(widget));
