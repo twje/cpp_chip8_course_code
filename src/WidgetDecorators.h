@@ -43,7 +43,9 @@ private:
 //--------------------------------------------------------------------------------
 class TitleDecorator : public IWidget
 {
-	static constexpr int32_t kTitleHeight = 9;
+	static constexpr int32_t kTitlePadding = 1;
+	static constexpr int32_t kTextHeight = 8;
+	static constexpr int32_t kTitleHeight = kTitlePadding * 2 + kTextHeight;
 
 public:
 	TitleDecorator(std::unique_ptr<IWidget> inner, std::string title)
@@ -54,7 +56,6 @@ public:
 
 	virtual olc::vi2d GetSize() const override
 	{
-		// Title sits above the inner widget
 		return mInner->GetSize() + olc::vi2d{ 0, kTitleHeight };
 	}
 
@@ -68,20 +69,18 @@ public:
 		mPosition = position;
 
 		// Offset the inner widget below the title
-		olc::vi2d innerPos = position + olc::vi2d{ 0, kTitleHeight };
-		mInner->SetPosition(innerPos);
+		mInner->SetPosition(mPosition + olc::vi2d{ 0, kTitleHeight });
 	}
 
 	virtual void Draw(olc::PixelGameEngine& pge) const override
 	{
-		// Draw title text
-		pge.DrawString(mPosition, mTitle, UIStyle::kColorAccent);
+		pge.DrawString(mPosition + olc::vi2d{ kTitlePadding, kTitlePadding }, mTitle, UIStyle::kColorAccent);
 
 		// Draw underline (DrawLine is inclusive, so subtract 1 from width)
-		const olc::vi2d lineStart = mPosition + olc::vi2d{ 0, kTitleHeight - 1 };
-		const olc::vi2d lineEnd = lineStart + olc::vi2d{ GetSize().x - 1, 0 };
+		olc::vi2d lineStart = mPosition + olc::vi2d{ 0, kTitleHeight - 1 };
+		olc::vi2d lineEnd = lineStart + olc::vi2d{ GetSize().x - 1, 0 };
 		pge.DrawLine(lineStart, lineEnd, UIStyle::kColorBorder);
-		
+
 		mInner->Draw(pge);
 	}
 
@@ -123,9 +122,7 @@ public:
 	{
 		// DrawRect is inclusive — subtract {1,1} to avoid overshooting the intended size
 		pge.DrawRect(mPosition, GetSize() - olc::vi2d{ 1, 1 }, UIStyle::kColorBorder);
-		mInner->Draw(pge);
-
-		pge.DrawRect({0, 0}, {1, 1}, UIStyle::kColorBorder);
+		mInner->Draw(pge);		
 	}
 
 private:
