@@ -458,6 +458,8 @@ private:
 //--------------------------------------------------------------------------------
 class UIManager
 {
+	static constexpr int kSpacing = 4;
+
 public:
 	UIManager(const CPU& cpu, const Bus& bus)
 		: mCPUStateUI(cpu)
@@ -466,85 +468,111 @@ public:
 		, mDisplayUI(bus.mDisplay)
 		, mKeypadUI(bus.mKeypad)
 	{
-		const olc::vi2d start{ 4, 4 };
-		const int spacing = 4;
+		const olc::vi2d start{ kSpacing, kSpacing };
 
-		// Temporarily place status bar at top-left (width will be set later)
+		// Position the status strip first
 		mStatusUI.SetPosition(start);
 
-		// Offset everything below it
-		olc::vi2d belowStatus = start + olc::vi2d{ 0, mStatusUI.GetSize().y + spacing };
+		// Position all other UI elements below the status strip
+		const olc::vi2d belowStatus = start + olc::vi2d{ 0, mStatusUI.GetSize().y + kSpacing };
 
 		mDisplayUI.SetPosition(belowStatus);
-		PlaceRightOf(mCPUStateUI, mDisplayUI, spacing);
-		PlaceRightOf(mRegisterUI, mCPUStateUI, spacing);
-		PlaceRightOf(mStackUI, mRegisterUI, spacing);
-		PlaceBelow(mKeypadUI, mCPUStateUI, spacing);
+		PlaceRightOf(mCPUStateUI, mDisplayUI, kSpacing);
+		PlaceRightOf(mRegisterUI, mCPUStateUI, kSpacing);
+		PlaceRightOf(mStackUI, mRegisterUI, kSpacing);
+		PlaceBelow(mKeypadUI, mCPUStateUI, kSpacing);
 
-		mStatusUI.SetWidth(GetCanvasSize().x);
+		ResizeStatusToMatchContent();
 	}
 
 	void SetCurrentInstruction(const Instruction& instruction)
 	{
 		mCPUStateUI.SetCurrentInstruction(instruction);
-	}	
+	}
+
+	void SetStatusText(std::string_view text)
+	{
+		//mStatusUI.SetText(text);
+	}
+
+	olc::vi2d GetCanvasSize() const
+	{
+		olc::vi2d widgetBounds = ComputeBoundsOf({
+			&mStatusUI,
+			&mCPUStateUI,
+			&mRegisterUI,
+			&mStackUI,
+			&mDisplayUI,
+			&mKeypadUI
+		});
+
+		return widgetBounds + olc::vi2d{ kSpacing, kSpacing };
+	}
 
 	void Draw(olc::PixelGameEngine& pge) const
 	{
+		mStatusUI.Draw(pge);
 		mCPUStateUI.Draw(pge);
 		mRegisterUI.Draw(pge);
 		mStackUI.Draw(pge);
 		mDisplayUI.Draw(pge);
 		mKeypadUI.Draw(pge);
-		mStatusUI.Draw(pge);
 	}
 
-private:	
+private:
+	void ResizeStatusToMatchContent()
+	{
+		// Compute layout bounds (excluding status), and resize status to match layout width
+		const olc::vi2d contentBounds = ComputeBoundsOf({
+			&mCPUStateUI,
+			&mRegisterUI,
+			&mStackUI,
+			&mDisplayUI,
+			&mKeypadUI
+		});
+
+		mStatusUI.SetWidth(contentBounds.x - kSpacing);
+	}
+
 	void PlaceRightOf(IWidget& target, const IWidget& anchor, int32_t spacing)
 	{
-		olc::vi2d anchorPos = anchor.GetPosition();
-		olc::vi2d offset = {
+		const olc::vi2d anchorPos = anchor.GetPosition();
+		target.SetPosition({
 			anchorPos.x + anchor.GetSize().x + spacing,
 			anchorPos.y
-		};
-		target.SetPosition(offset);
+		});
 	}
 	
 	void PlaceBelow(IWidget& target, const IWidget& anchor, int32_t spacing)
 	{
-		olc::vi2d anchorPos = anchor.GetPosition();
-		olc::vi2d offset = {
+		const olc::vi2d anchorPos = anchor.GetPosition();
+		target.SetPosition({
 			anchorPos.x,
 			anchorPos.y + anchor.GetSize().y + spacing
-		};
-		target.SetPosition(offset);
+		});
 	}
-
-	olc::vi2d GetCanvasSize() const
+	
+	olc::vi2d ComputeBoundsOf(std::initializer_list<const IWidget*> widgets) const
 	{
 		olc::vi2d max = { 0, 0 };
 
-		auto expandToFit = [&](const IWidget& widget) {
-				const olc::vi2d bottomRight = widget.GetPosition() + widget.GetSize();
-				max.x = std::max(max.x, bottomRight.x);
-				max.y = std::max(max.y, bottomRight.y);
-			};
-
-		expandToFit(mCPUStateUI);
-		expandToFit(mRegisterUI);
-		expandToFit(mStackUI);
-		expandToFit(mDisplayUI);
-		expandToFit(mKeypadUI);
+		for (const IWidget* widget : widgets)
+		{
+			const olc::vi2d bottomRight = widget->GetPosition() + widget->GetSize();
+			max.x = std::max(max.x, bottomRight.x);
+			max.y = std::max(max.y, bottomRight.y);
+		}
 
 		return max;
 	}
 
+private:	
+	StatusUI mStatusUI;
 	CPUStateUI mCPUStateUI;
 	RegisterUI mRegisterUI;
 	StackUI mStackUI;
 	DisplayUI mDisplayUI;
 	KeypadUI mKeypadUI;
-	StatusUI mStatusUI;
 };
 
 //--------------------------------------------------------------------------------
@@ -557,6 +585,8 @@ public:
 	{
 		sAppName = "Chip8 Emulator";		
 	}
+
+	olc::vi2d GetCanvasSize() const { return mUIManager.GetCanvasSize(); }
 
 	bool OnUserCreate() override
 	{

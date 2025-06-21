@@ -9,10 +9,11 @@
 int main()
 {
 	Application app;
+		
+	const olc::vi2d canvasSize = app.GetCanvasSize();	
+	const int32_t pixelScale = 2;
 	
-	// The window size is fixed to fit all UI elements comfortably.
-	// You can change this if you rearrange or add more widgets.
-	app.Construct(640, 500, 2, 2);	
+	app.Construct(canvasSize.x, canvasSize.y, pixelScale, pixelScale);	
 	app.Start();
 
 	return 0;
