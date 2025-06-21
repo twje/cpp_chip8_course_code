@@ -13,6 +13,7 @@
 Emulator::Emulator()
 	: mBus({ mRAM, mDisplay, mKeypad, mDelayTimer, mSoundTimer })
 	, mCPU(mBus)
+	, mCycle(0)
 {
 	mRAM.WriteRange(0x000, CHAR_SET); // Load CHIP-8 character fontset into memory
 	mDisplay.SetRAM(mRAM);
@@ -23,6 +24,7 @@ void Emulator::Reset()
 {
 	mRAM.ClearProgramMemory();	
 	mCPU.Reset();
+	mCycle = 0;
 
 	// TODO: reste bus components
 }
@@ -75,13 +77,29 @@ bool Emulator::LoadRom(const fs::path& romPath)
 }
 
 //--------------------------------------------------------------------------------
-ExecutionStatus Emulator::Step()
+PeekResult Emulator::PeekNextInstruction()
 {
-	Instruction instruction = mCPU.Fetch();
+	Instruction instruction = mCPU.Peek();
 	if (!mCPU.Decode(instruction))
 	{
-		return ExecutionStatus::DecodeError;
+		return { instruction, PeekStatus::DecodeError };
+	}	
+
+	return { instruction, PeekStatus::Valid };
+}
+
+//--------------------------------------------------------------------------------
+StepResult Emulator::Step()
+{
+	Instruction instruction = mCPU.Fetch();	
+
+	if (!mCPU.Decode(instruction))
+	{
+		return { instruction, ExecutionStatus::DecodeError };
 	}
 	
-	return mCPU.Execute(instruction);
+	ExecutionStatus result = mCPU.Execute(instruction);
+	mCycle++;
+	
+	return { instruction, result };
 }

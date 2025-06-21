@@ -25,8 +25,8 @@ public:
 	void Reset();
 	bool LoadRom(const fs::path& romPath);
 	
-	// Convenience method for unit tests or headless execution
-	ExecutionStatus Step();
+	PeekResult PeekNextInstruction();
+	StepResult Step();
 		
 	CPU& GetCPU() { return mCPU; }
 	const CPU& GetCPU() const { return mCPU; }
@@ -40,7 +40,8 @@ private:
 	Keypad mKeypad;
 	DelayTimer mDelayTimer;
 	SoundTimer mSoundTimer;
+	size_t mCycle;
 
 	Bus mBus;
-	CPU mCPU;
+	CPU mCPU;	
 };

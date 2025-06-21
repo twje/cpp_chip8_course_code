@@ -584,15 +584,13 @@ private:
 //--------------------------------------------------------------------------------
 class Application : public olc::PixelGameEngine
 {
-	static constexpr std::array<int32_t, 2> mCheck = { 1, 2 };
-
 public:
 	Application()
 		: mIsHalted(false)
 		, mUIManager(mEmulator.GetCPU(), mEmulator.GetBus())
 	{
-		sAppName = "Chip8 Emulator";	
-		mUIManager.SetStatusText("Hello World");
+		sAppName = "Chip8 Emulator";
+		mUIManager.SetStatusText("Ready");
 	}
 
 	olc::vi2d GetCanvasSize() const { return mUIManager.GetCanvasSize(); }
@@ -606,44 +604,45 @@ public:
 		{
 			std::cerr << "Unable to load ROM: " << romPath << std::endl;
 			return false;
-		}		
+		}
 
 		return true;
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override
-	{		
+	{
 		mUIManager.Draw(*this);
-		//mCPUStateUI.Draw(*this);
 
 		if (mIsHalted)
 		{
 			return true;
 		}
 
-		CPU& cpu = mEmulator.GetCPU();
-		Instruction instruction = cpu.Fetch();
-				
-		// UI displays the address the instruction was read from (before PC was incremented),
-		// not the current PC value after fetch.
-		mUIManager.SetCurrentInstruction(instruction);
+		//--------------------------------------------
+		// Peek for UI display and update mnemonic
+		const auto peekResult = mEmulator.PeekNextInstruction();
+		mUIManager.SetCurrentInstruction(peekResult.mInstruction);
 
-		LogCycle(instruction);
-
-		if (!cpu.Decode(instruction))
+		if (peekResult.status == PeekStatus::DecodeError)
 		{
-			std::cerr << "Decode error" << std::endl;
+			mUIManager.SetStatusText("Decode Error (Halted)");
 			mIsHalted = true;
 			return true;
 		}
-			
-		// After decode — update mnemonic
-		mUIManager.SetCurrentInstruction(instruction);
 
-		const ExecutionStatus status = cpu.Execute(instruction);
-		LogExecution(instruction, status);
-		mIsHalted = !ShouldContinue(status);
-		
+		//--------------------------------------------
+		// Step emulator and update based on result
+		const StepResult result = mEmulator.Step();
+		LogCycle(result.mInstruction);
+		LogExecution(result.mInstruction, result.mStatus);
+
+		if (!ShouldContinue(result.mStatus))
+		{
+			mIsHalted = true;
+			std::string statusStr = ExecutionStatusToString(result.mStatus) + " (Halted)";
+			mUIManager.SetStatusText(statusStr);
+		}
+
 		return true;
 	}
 
@@ -670,9 +669,9 @@ private:
 	void LogCycle(const Instruction& instruction)
 	{
 		static int cycle = 0;
-		if (cycle > 0) { std::cout << std::endl; }
+		if (cycle > 0) std::cout << std::endl;
 
-		std::cout << "--- Cycle " << cycle++ << " -----------------------------------" << std::endl;
+		std::cout << "--- Cycle " << cycle++ << " -----------------------------------\n";
 		std::cout << "Fetch and decode opcode ";
 		LogHex(std::cout, instruction.GetOpcode());
 		std::cout << " at ";
@@ -684,28 +683,32 @@ private:
 	{
 		std::cout << "Execute opcode ";
 		LogHex(std::cout, instruction.GetOpcode());
-		std::cout << " (" << GetOpcodePatternString(instruction.GetPatternId()) << ")" << std::endl;
+		std::cout << " (" << GetOpcodePatternString(instruction.GetPatternId()) << ")\n";
 
+		std::cout << ExecutionStatusToString(status) << std::endl;
+	}
+
+	std::string ExecutionStatusToString(ExecutionStatus status) const
+	{
 		switch (status)
 		{
 			case ExecutionStatus::Executed:
-				std::cout << "Executed" << std::endl; 
-				break;
+				return "Executed";
 			case ExecutionStatus::Ignored:
-				std::cout << "Ignored" << std::endl; 
-				break;
+				return "Ignored";
+			case ExecutionStatus::DecodeError:
+				return "Decode Error";
 			case ExecutionStatus::NotImplemented:
-				std::cout << "Not implemented" << std::endl;
-				break;
+				return "Not Implemented";
 			case ExecutionStatus::MissingHandler:
-				std::cout << "Missing handler" << std::endl;
-				break;
+				return "Missing Handler";
+			default: 
+				return "Unknown";
 		}
 	}
 
-private:	
+private:
 	Emulator mEmulator;
 	bool mIsHalted;
-
 	UIManager mUIManager;
 };

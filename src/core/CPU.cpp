@@ -55,16 +55,24 @@ uint16_t CPU::GetStackValueAt(size_t index) const
 // CHIP-8 stores opcodes as two consecutive bytes in big-endian format.
 // Read and combine the two bytes into a single 16-bit opcode.
 //--------------------------------------------------------------------------------
-Instruction CPU::Fetch()
+Instruction CPU::Peek()
 {
     const uint16_t address = mProgramCounter;
     assert(address % 2 == 0);
 
     const uint8_t hByte = mBus.mRAM.Read(address);
     const uint8_t lByte = mBus.mRAM.Read(address + 1);
-    
+
     const uint16_t opcode = (static_cast<uint16_t>(hByte) << 8) | lByte;
     Instruction instruction(address, opcode);
+
+    return instruction;
+}
+
+//--------------------------------------------------------------------------------
+Instruction CPU::Fetch()
+{
+    Instruction instruction = Peek();
 
     // Advance PC early (some instructions override it)
     mProgramCounter += 2;

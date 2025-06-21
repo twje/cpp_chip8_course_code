@@ -14,7 +14,7 @@
 class OpcodeTest : public ::testing::Test
 {
 protected:
-    ExecutionStatus Step() { return mEmulator.Step(); }
+    StepResult Step() { return mEmulator.Step(); }
 
     void LoadInstruction(uint16_t address, uint16_t opcode)
     {
@@ -81,14 +81,16 @@ TEST(OpcodeExecutionTests, DISABLED_Opcode_2nnn_CALL_ADDR)
     */
 }
 
+// TODO: think about the name for result0, result1
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 3xkk_SE_VX_KK)
 {
     // Positive case: V2 == 0x05, should skip next instruction
     LoadInstruction(PROGRAM_START_ADDRESS, 0x3205);
     SetRegister(2, 0x05);
-
-    ASSERT_EQ(ExecutionStatus::Executed, Step());
+    
+    StepResult result0 = Step();
+    ASSERT_EQ(ExecutionStatus::Executed, result0.mStatus);
     ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetProgramCounter()); // Skip next instruction
 
     // Negative case: V2 != 0x05, should NOT skip
@@ -96,7 +98,8 @@ TEST_F(OpcodeTest, 3xkk_SE_VX_KK)
     LoadInstruction(PROGRAM_START_ADDRESS, 0x3205);
     SetRegister(2, 0x04); // Different value
 
-    ASSERT_EQ(ExecutionStatus::Executed, Step());
+    StepResult result1 = Step();
+    ASSERT_EQ(ExecutionStatus::Executed, result1.mStatus);
     ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetProgramCounter()); // Proceed to next instruction
 }
 

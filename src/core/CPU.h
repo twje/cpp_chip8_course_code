@@ -33,6 +33,7 @@ public:
 	uint8_t GetDelayTimer() const { return mDelayTimer; }
 	uint8_t GetSoundTimer() const { return mSoundTimer; }
 	
+	Instruction Peek();
 	Instruction Fetch();
 	bool Decode(Instruction& outInstruction);	
 	ExecutionStatus Execute(const Instruction& instruction);		
