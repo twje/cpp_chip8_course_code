@@ -22,15 +22,18 @@ protected:
         mCPU.mProgramCounter = address;
     }    
 
-    // Forward internal state to test cases; needed since members are private 
-    // and only OpcodeTest is a friend.
-    uint16_t& PC() { return mCPU.mProgramCounter; }
-    uint16_t& I() { return mCPU.mIndexRegister; }
-    std::array<uint8_t, NUM_REGISTERS>& V() { return mCPU.mRegisters; }
-    size_t& SP() { return mCPU.mStackPointer; }
-    std::array<uint16_t, STACK_SIZE>& Stack() { return mCPU.mStack; }
-    uint8_t& DelayTimer() { return mCPU.mDelayTimer; }
-    uint8_t& SoundTimer() { return mCPU.mSoundTimer; }
+    // Expose internal CPU state for test access only; this class is declared as a friend.
+    uint16_t& PCRef() { return mCPU.mProgramCounter; }
+    uint16_t& IRef() { return mCPU.mIndexRegister; }
+    size_t& SPRef() { return mCPU.mStackPointer; }
+    uint8_t& DelayTimerRef() { return mCPU.mDelayTimer; }
+    uint8_t& SoundTimerRef() { return mCPU.mSoundTimer; }
+
+    uint8_t GetRegister(size_t index) const { return mCPU.mRegisters.at(index); }
+    void SetRegister(size_t index, uint8_t value) { mCPU.mRegisters.at(index) = value; }
+
+    uint16_t GetStackValue(size_t index) const { return mCPU.mStack.at(index); }
+    void SetStackValue(size_t index, uint16_t value) { mCPU.mStack.at(index) = value; }
 
     Emulator mEmulator;
     RAM& mRAM = mEmulator.GetBus().mRAM;
@@ -80,24 +83,32 @@ TEST_F(OpcodeTest, 3xkk_SE_VX_KK)
 {
     // Positive case: V2 == 0x05, should skip next instruction
     {
+        // Arrange
         LoadInstruction(PROGRAM_START_ADDRESS, 0x3205);
-        V()[2] = 0x05;
+        SetRegister(2, 0x05);
 
+        // Act
         StepResult step = mEmulator.Step();
+        
+        // Assert
         ASSERT_EQ(ExecutionStatus::Executed, step.mStatus);
-        ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, PC());
+        ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, PCRef());
     }
 
     // Negative case: V2 != 0x05, should NOT skip
     {
+        // Arrange
         mEmulator.Reset();
         LoadInstruction(PROGRAM_START_ADDRESS, 0x3205);
-        V()[2] = 0x04;        
+        SetRegister(2, 0x04);
 
+        // Act
         StepResult step = mEmulator.Step();
+        
+        // Assert
         ASSERT_EQ(ExecutionStatus::Executed, step.mStatus);
-        ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, PC());
-    }
+        ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, PCRef());
+    }    
 }
 
 //--------------------------------------------------------------------------------
@@ -118,13 +129,24 @@ TEST(OpcodeExecutionTests, DISABLED_Opcode_5xy0_SE_VX_VY)
     */
 }
 
+// The interpreter puts the value kk into register Vx. 
 //--------------------------------------------------------------------------------
-TEST(OpcodeExecutionTests, DISABLED_Opcode_6xkk_LD_VX_KK)
+TEST_F(OpcodeTest, Opcode_6xkk_LD_VX_KK)
 {
-    /*
-        TODO: Implement test for opcode 6xkk (LD_VX_KK).
-        Refer to: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
-    */
+    // Arrange
+    LoadInstruction(PROGRAM_START_ADDRESS, 0x6206);    
+
+    // Act
+    const StepResult step = mEmulator.Step();
+    
+    // Assert
+    ASSERT_EQ(ExecutionStatus::Executed, step.mStatus);
+
+    const Instruction& instruction = step.mInstruction;
+    const size_t vxIndex = instruction.GetArgument<size_t>(0);
+    const uint8_t value = instruction.GetArgument<uint8_t>(1);
+   
+    ASSERT_EQ(GetRegister(vxIndex), value);
 }
 
 //--------------------------------------------------------------------------------

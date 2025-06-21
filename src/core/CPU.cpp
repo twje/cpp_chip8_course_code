@@ -211,7 +211,11 @@ ExecutionStatus CPU::Execute_SE_VX_VY(const Instruction& instruction)
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_LD_VX_KK(const Instruction& instruction)
 {
-    return ExecutionStatus::NotImplemented;
+    const size_t vxIndex = instruction.GetArgument<size_t>(0);
+    const uint8_t value = instruction.GetArgument<uint8_t>(1);
+    mRegisters[vxIndex] = value;
+
+    return ExecutionStatus::Executed;
 }
 
 //--------------------------------------------------------------------------------
