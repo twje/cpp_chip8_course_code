@@ -438,25 +438,13 @@ public:
 		, mKeypadUI(bus.mKeypad)
 	{
 		const olc::vi2d start{ 4, 4 };
-		const int spacing = 4;  // TODO: reference style for spacing
+		const int spacing = 4;
 
-		olc::vi2d foo = start;
 		mDisplayUI.SetPosition(start);
-		
-		foo.x += mDisplayUI.GetSize().x + spacing;
-		mCPUStateUI.SetPosition(foo);
-
-		foo.x += mCPUStateUI.GetSize().x + spacing;
-		mRegisterUI.SetPosition(foo + olc::vi2d{ 0, 0 });
-		
-		foo.x += mRegisterUI.GetSize().x + spacing;
-		mStackUI.SetPosition(foo);
-
-		foo = start;
-		foo.x += mDisplayUI.GetSize().x + spacing;
-		foo.y += mCPUStateUI.GetSize().y + spacing;
-
-		mKeypadUI.SetPosition(foo);
+		PlaceRightOf(mCPUStateUI, mDisplayUI, spacing);
+		PlaceRightOf(mRegisterUI, mCPUStateUI, spacing);
+		PlaceRightOf(mStackUI, mRegisterUI, spacing);
+		PlaceBelow(mKeypadUI, mCPUStateUI, spacing);
 	}
 
 	void SetCurrentInstruction(const Instruction& instruction)
@@ -473,7 +461,27 @@ public:
 		mKeypadUI.Draw(pge);
 	}
 
-private:
+private:	
+	void PlaceRightOf(IWidget& target, const IWidget& anchor, int32_t spacing)
+	{
+		olc::vi2d anchorPos = anchor.GetPosition();
+		olc::vi2d offset = {
+			anchorPos.x + anchor.GetSize().x + spacing,
+			anchorPos.y
+		};
+		target.SetPosition(offset);
+	}
+	
+	void PlaceBelow(IWidget& target, const IWidget& anchor, int32_t spacing)
+	{
+		olc::vi2d anchorPos = anchor.GetPosition();
+		olc::vi2d offset = {
+			anchorPos.x,
+			anchorPos.y + anchor.GetSize().y + spacing
+		};
+		target.SetPosition(offset);
+	}
+
 	CPUStateUI mCPUStateUI;
 	RegisterUI mRegisterUI;
 	StackUI mStackUI;
