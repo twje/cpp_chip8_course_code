@@ -28,6 +28,8 @@ public:
 	PeekResult PeekNextInstruction();
 	StepResult Step();
 		
+	// TODO: hide now?
+	size_t GetCycle() const { return mCycle; }
 	CPU& GetCPU() { return mCPU; }
 	const CPU& GetCPU() const { return mCPU; }
 	

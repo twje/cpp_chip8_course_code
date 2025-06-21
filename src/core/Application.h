@@ -230,16 +230,23 @@ public:
 		: mCPU(cpu)
 		, mCurrentPC(0)
 		, mCurrentOpcode(0)
+		, mCurrentCycle(0)
 		, mFrame("CPU State")
 	{ 
 		mFrame.SetContentSize(GetInternalContentSize());
 	}
 	
-	void SetCurrentInstruction(const Instruction& instruction)
+	void SetInstructionState(const Instruction& instruction)
 	{
+		// TODO: think about current prefix
 		mCurrentPC = instruction.GetAddress();
 		mCurrentOpcode = instruction.GetOpcode();
-		mCurrentPattern = GetOpcodePatternString(instruction.GetPatternId());
+		mCurrentPattern = GetOpcodePatternString(instruction.GetPatternId());		
+	}
+
+	void SetCycle(size_t cycle)
+	{
+		mCurrentCycle = cycle;
 	}
 
 	virtual olc::vi2d GetSize() const override  
@@ -272,12 +279,13 @@ public:
 
 		const int labelWidth = 8;
 
-		DrawLine(0, RightAlign("PC:", labelWidth) + " 0x" + Hex(mCurrentPC, 4));
-		DrawLine(1, RightAlign("I:", labelWidth) + " 0x" + Hex(mCPU.GetIndexRegister(), 4));
-		DrawLine(2, RightAlign("Opcode:", labelWidth) + " 0x" + Hex(mCurrentOpcode, 4));
-		DrawLine(3, RightAlign("Pattern:", labelWidth) + " " + mCurrentPattern);
-		DrawLine(4, RightAlign("Delay:", labelWidth) + " 0x" + Hex(mCPU.GetDelayTimer(), 2));
-		DrawLine(5, RightAlign("Sound:", labelWidth) + " 0x" + Hex(mCPU.GetSoundTimer(), 2));
+		DrawLine(0, RightAlign("Cycle:", labelWidth) + " " + std::to_string(mCurrentCycle));
+		DrawLine(1, RightAlign("PC:", labelWidth) + " 0x" + Hex(mCurrentPC, 4));
+		DrawLine(2, RightAlign("I:", labelWidth) + " 0x" + Hex(mCPU.GetIndexRegister(), 4));
+		DrawLine(3, RightAlign("Opcode:", labelWidth) + " 0x" + Hex(mCurrentOpcode, 4));
+		DrawLine(4, RightAlign("Pattern:", labelWidth) + " " + mCurrentPattern);
+		DrawLine(5, RightAlign("Delay:", labelWidth) + " 0x" + Hex(mCPU.GetDelayTimer(), 2));
+		DrawLine(6, RightAlign("Sound:", labelWidth) + " 0x" + Hex(mCPU.GetSoundTimer(), 2));
 	}
 
 private:
@@ -286,7 +294,7 @@ private:
 		std::string longestSample = "Pattern: 0xFFFF";
 
 		const int32_t lineHeight = 8;
-		const int32_t lineCount = 6;
+		const int32_t lineCount = 7;
 		const int32_t textWidth = longestSample.size() * 8;
 		return { textWidth, lineCount * lineHeight };
 	}
@@ -307,10 +315,12 @@ private:
 		return std::string(width - label.size(), ' ') + label;
 	}
 
+	// TODO: think about current??
 	const CPU& mCPU;
 	uint16_t mCurrentPC;
 	uint16_t mCurrentOpcode;
 	std::string mCurrentPattern;
+	size_t mCurrentCycle;
 	olc::vi2d mPosition;
 	WidgetFrame mFrame;
 };
@@ -418,7 +428,7 @@ private:
 			case Chip8Key::KeyD: return "D";
 			case Chip8Key::KeyE: return "E";
 			case Chip8Key::KeyF: return "F";
-			default:             return "?";
+			default: return "?";
 		}
 	}
 
@@ -485,15 +495,20 @@ public:
 		mDisplayUI.SetPosition(belowStatus);
 		PlaceRightOf(mRegisterUI, mDisplayUI, kSpacing);
 		PlaceRightOf(mStackUI, mRegisterUI, kSpacing);
-		PlaceBelow(mKeypadUI, mDisplayUI, kSpacing);
-		PlaceRightOf(mCPUStateUI, mKeypadUI, kSpacing);
+		PlaceBelow(mCPUStateUI, mDisplayUI, kSpacing);
+		PlaceRightOf(mKeypadUI, mCPUStateUI, kSpacing);
 
 		ResizeStatusToMatchContent();
 	}
 
-	void SetCurrentInstruction(const Instruction& instruction)
+	void SetInstructionState(const Instruction& instruction)
 	{
-		mCPUStateUI.SetCurrentInstruction(instruction);
+		mCPUStateUI.SetInstructionState(instruction);
+	}
+
+	void SetCycle(size_t cycle)
+	{
+		mCPUStateUI.SetCycle(cycle);
 	}
 
 	void SetStatusText(const std::string& text)
@@ -621,7 +636,8 @@ public:
 		//--------------------------------------------
 		// Peek for UI display and update mnemonic
 		const auto peekResult = mEmulator.PeekNextInstruction();
-		mUIManager.SetCurrentInstruction(peekResult.mInstruction);
+		mUIManager.SetInstructionState(peekResult.mInstruction);
+		mUIManager.SetCycle(mEmulator.GetCycle());
 
 		if (peekResult.status == PeekStatus::DecodeError)
 		{
@@ -633,6 +649,8 @@ public:
 		//--------------------------------------------
 		// Step emulator and update based on result
 		const StepResult result = mEmulator.Step();
+		
+		mUIManager.SetCycle(mEmulator.GetCycle());
 		LogCycle(result.mInstruction);
 		LogExecution(result.mInstruction, result.mStatus);
 
@@ -668,10 +686,7 @@ private:
 
 	void LogCycle(const Instruction& instruction)
 	{
-		static int cycle = 0;
-		if (cycle > 0) std::cout << std::endl;
-
-		std::cout << "--- Cycle " << cycle++ << " -----------------------------------\n";
+		std::cout << "--- Cycle " << mEmulator.GetCycle() << " -----------------------------------\n";
 		std::cout << "Fetch and decode opcode ";
 		LogHex(std::cout, instruction.GetOpcode());
 		std::cout << " at ";
