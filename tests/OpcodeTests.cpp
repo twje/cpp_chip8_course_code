@@ -14,35 +14,29 @@
 class OpcodeTest : public ::testing::Test
 {
 protected:
-    StepResult Step() { return mEmulator.Step(); }
-
     void LoadInstruction(uint16_t address, uint16_t opcode)
     {
         // Write 2-byte opcode in big-endian format and set PC to its address
         mRAM.Write(address + 0, opcode >> 8);
         mRAM.Write(address + 1, opcode & 0xFF);
         mCPU.mProgramCounter = address;
-    }
+    }    
 
-    void SetRegister(size_t index, uint8_t value) 
-    {
-        mCPU.mRegisters[index] = value;
-    }
+    // Forward internal state to test cases; needed since members are private 
+    // and only OpcodeTest is a friend.
+    uint16_t& PC() { return mCPU.mProgramCounter; }
+    uint16_t& I() { return mCPU.mIndexRegister; }
+    std::array<uint8_t, NUM_REGISTERS>& V() { return mCPU.mRegisters; }
+    size_t& SP() { return mCPU.mStackPointer; }
+    std::array<uint16_t, STACK_SIZE>& Stack() { return mCPU.mStack; }
+    uint8_t& DelayTimer() { return mCPU.mDelayTimer; }
+    uint8_t& SoundTimer() { return mCPU.mSoundTimer; }
 
-    uint16_t GetProgramCounter() const
-    {
-        return mCPU.mProgramCounter;
-    }
-
-    void ResetEmulator()
-    {
-        mEmulator.Reset();
-    }
+    Emulator mEmulator;
+    RAM& mRAM = mEmulator.GetBus().mRAM;
 
 private:
-    Emulator mEmulator;
     CPU& mCPU = mEmulator.GetCPU();
-    RAM& mRAM = mEmulator.GetBus().mRAM;
 };
 
 //--------------------------------------------------------------------------------
@@ -87,22 +81,22 @@ TEST_F(OpcodeTest, 3xkk_SE_VX_KK)
     // Positive case: V2 == 0x05, should skip next instruction
     {
         LoadInstruction(PROGRAM_START_ADDRESS, 0x3205);
-        SetRegister(2, 0x05);
+        V()[2] = 0x05;
 
-        StepResult step = Step();
+        StepResult step = mEmulator.Step();
         ASSERT_EQ(ExecutionStatus::Executed, step.mStatus);
-        ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetProgramCounter());
+        ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, PC());
     }
 
     // Negative case: V2 != 0x05, should NOT skip
     {
-        ResetEmulator();
+        mEmulator.Reset();
         LoadInstruction(PROGRAM_START_ADDRESS, 0x3205);
-        SetRegister(2, 0x04);
+        V()[2] = 0x04;        
 
-        StepResult step = Step();
+        StepResult step = mEmulator.Step();
         ASSERT_EQ(ExecutionStatus::Executed, step.mStatus);
-        ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetProgramCounter());
+        ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, PC());
     }
 }
 
