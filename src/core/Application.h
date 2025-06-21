@@ -453,6 +453,7 @@ public:
 	{
 		mFrame.Draw(pge);
 		pge.DrawString(mFrame.GetContentOffset() + olc::vi2d{ kPadding, kPadding }, "Status: " + mText);
+		// TODO: Add text color, UIStyle is the source of truth
 	}
 
 private:

@@ -44,12 +44,12 @@ include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/vendor/PGE)
 # Source and Core Library
 #-------------------------------------------------------------------------------
 
-# Gather all source files under src/
-file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp src/*.h)
+# Gather only core source files (excluding main.cpp)
+file(GLOB_RECURSE CORE_SRC CONFIGURE_DEPENDS src/core/*.cpp src/core/*.h)
 
 # Build core logic as a static library
-add_library(Chip8Core STATIC ${SRC_FILES})
-target_include_directories(Chip8Core PUBLIC src)
+add_library(Chip8Core STATIC ${CORE_SRC})
+target_include_directories(Chip8Core PUBLIC src/core)
 
 # Optional: define ROMS_PATH for dev builds
 if(NOT PRODUCTION_BUILD)
@@ -72,7 +72,6 @@ file(GLOB_RECURSE TEST_FILES CONFIGURE_DEPENDS tests/*.cpp)
 if(TEST_FILES)
     add_executable(${PROJECT_NAME}_tests ${TEST_FILES})
     target_link_libraries(${PROJECT_NAME}_tests PRIVATE Chip8Core gtest_main)
-    target_include_directories(${PROJECT_NAME}_tests PRIVATE src)
 
     include(CTest)
     enable_testing()
