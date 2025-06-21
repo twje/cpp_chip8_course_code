@@ -427,6 +427,35 @@ private:
 };
 
 //--------------------------------------------------------------------------------
+class StatusUI : public IWidget
+{	
+	static constexpr int32_t kCharPixelHeight = 8;
+
+public:
+	StatusUI()
+	{
+		mFrame.SetContentSize({ 0, kCharPixelHeight });
+	}
+	
+	void SetWidth(int32_t width)
+	{
+		mFrame.SetContentSize({ width, kCharPixelHeight });
+	}
+
+	virtual olc::vi2d GetSize() const override { return mFrame.GetSize(); }
+	virtual olc::vi2d GetPosition() const override { return mFrame.GetPosition(); }
+	virtual void SetPosition(const olc::vi2d& position) override { mFrame.SetPosition(position); }
+
+	virtual void Draw(olc::PixelGameEngine& pge) const override
+	{
+		mFrame.Draw(pge);
+	}
+
+private:
+	WidgetFrame mFrame;
+};
+
+//--------------------------------------------------------------------------------
 class UIManager
 {
 public:
@@ -440,11 +469,19 @@ public:
 		const olc::vi2d start{ 4, 4 };
 		const int spacing = 4;
 
-		mDisplayUI.SetPosition(start);
+		// Temporarily place status bar at top-left (width will be set later)
+		mStatusUI.SetPosition(start);
+
+		// Offset everything below it
+		olc::vi2d belowStatus = start + olc::vi2d{ 0, mStatusUI.GetSize().y + spacing };
+
+		mDisplayUI.SetPosition(belowStatus);
 		PlaceRightOf(mCPUStateUI, mDisplayUI, spacing);
 		PlaceRightOf(mRegisterUI, mCPUStateUI, spacing);
 		PlaceRightOf(mStackUI, mRegisterUI, spacing);
 		PlaceBelow(mKeypadUI, mCPUStateUI, spacing);
+
+		mStatusUI.SetWidth(GetCanvasSize().x);
 	}
 
 	void SetCurrentInstruction(const Instruction& instruction)
@@ -459,6 +496,7 @@ public:
 		mStackUI.Draw(pge);
 		mDisplayUI.Draw(pge);
 		mKeypadUI.Draw(pge);
+		mStatusUI.Draw(pge);
 	}
 
 private:	
@@ -482,11 +520,31 @@ private:
 		target.SetPosition(offset);
 	}
 
+	olc::vi2d GetCanvasSize() const
+	{
+		olc::vi2d max = { 0, 0 };
+
+		auto expandToFit = [&](const IWidget& widget) {
+				const olc::vi2d bottomRight = widget.GetPosition() + widget.GetSize();
+				max.x = std::max(max.x, bottomRight.x);
+				max.y = std::max(max.y, bottomRight.y);
+			};
+
+		expandToFit(mCPUStateUI);
+		expandToFit(mRegisterUI);
+		expandToFit(mStackUI);
+		expandToFit(mDisplayUI);
+		expandToFit(mKeypadUI);
+
+		return max;
+	}
+
 	CPUStateUI mCPUStateUI;
 	RegisterUI mRegisterUI;
 	StackUI mStackUI;
 	DisplayUI mDisplayUI;
 	KeypadUI mKeypadUI;
+	StatusUI mStatusUI;
 };
 
 //--------------------------------------------------------------------------------
