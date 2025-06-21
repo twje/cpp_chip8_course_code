@@ -601,11 +601,10 @@ public:
 		PlaceRightOf(mRegisterUI, mDisplayUI, kSpacing, VertAlign::Top);
 		PlaceRightOf(mStackUI, mRegisterUI, kSpacing, VertAlign::Top);
 		PlaceBelow(mCPUStateUI, mDisplayUI, kSpacing, HortAlign::Left);
-		PlaceRightOf(mMemoryUI, mCPUStateUI, kSpacing, VertAlign::Top);
-		PlaceRightOf(mKeypadUI, mMemoryUI, kSpacing, VertAlign::Bottom);		
+		PlaceRightOf(mMemoryUI, mCPUStateUI, kSpacing, VertAlign::Top);			
 
 		// Special case
-		//PlaceKeypadUIBottomRight();
+		PlaceKeypadUIBottomRight();
 		ResizeStatusToMatchContent();
 	}
 
@@ -666,7 +665,7 @@ private:
 	{
 		const auto contentWidgets = GetWidgetsExcluding({ &mKeypadUI });
 		const olc::vi2d contentBounds = ComputeBoundsOf(contentWidgets);
-		mKeypadUI.SetPosition(olc::vi2d{ kSpacing, contentBounds.y } - olc::vi2d{ 0, mKeypadUI.GetSize().y });
+		mKeypadUI.SetPosition(contentBounds - mKeypadUI.GetSize() + olc::vi2d{ kSpacing, 0 });
 	}
 
 	void ResizeStatusToMatchContent()
@@ -674,7 +673,7 @@ private:
 		// Compute layout bounds (excluding status), and resize status to match layout width
 		const auto contentWidgets = GetWidgetsExcluding({ &mStatusUI });
 		const olc::vi2d contentBounds = ComputeBoundsOf(contentWidgets);
-		mStatusUI.SetWidth(contentBounds.x - kSpacing);
+		mStatusUI.SetWidth(contentBounds.x - 2 * kSpacing);
 	}
 
 	void PlaceRightOf(IWidget& target, const IWidget& anchor, int32_t spacing, VertAlign align)
