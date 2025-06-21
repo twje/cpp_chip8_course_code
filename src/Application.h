@@ -433,7 +433,7 @@ class StatusUI : public IWidget
 	static constexpr int32_t kPadding = 1;
 
 public:
-	StatusUI()
+	StatusUI()		
 	{
 		mFrame.SetContentSize({ 0, kCharPixelHeight + kPadding });
 	}
@@ -452,7 +452,7 @@ public:
 	virtual void Draw(olc::PixelGameEngine& pge) const override
 	{
 		mFrame.Draw(pge);
-		pge.DrawString(mFrame.GetContentOffset() + olc::vi2d{ kPadding, kPadding }, mText);
+		pge.DrawString(mFrame.GetContentOffset() + olc::vi2d{ kPadding, kPadding }, "Status: " + mText);
 	}
 
 private:
@@ -583,6 +583,8 @@ private:
 //--------------------------------------------------------------------------------
 class Application : public olc::PixelGameEngine
 {
+	static constexpr std::array<int32_t, 2> mCheck = { 1, 2 };
+
 public:
 	Application()
 		: mIsHalted(false)
