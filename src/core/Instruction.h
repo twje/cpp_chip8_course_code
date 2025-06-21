@@ -17,8 +17,6 @@ struct Instruction
         : mPatternId(OpcodePatternId::UNASSIGNED)
         , mAddress(address)
         , mOpcode(opcode)
-        , mMask(0)
-        , mPattern(0)
     { }
 
     bool MatchesPattern(const OpcodePatternDef& def) const
@@ -32,8 +30,6 @@ struct Instruction
     void DecodeFrom(const OpcodePatternDef& def)
     {
         mPatternId = def.mPatternId;
-        mMask = def.mMask;
-        mPattern = def.mPattern;
 
         mArguments.clear();
         for (const auto& argDef : def.mArgs)
@@ -44,17 +40,16 @@ struct Instruction
     }
 
     OpcodePatternId GetPatternId() const { return mPatternId; }
+    std::string GetPatternIdString() const { return GetOpcodePatternString(mPatternId); }
+
+    uint16_t GetAddress() const { return mAddress; }
+    uint16_t GetOpcode() const { return mOpcode; }
 
     template <typename T>
     T GetArgument(size_t index) const
     {
         return static_cast<T>(mArguments.at(index));
-    }    
-
-    uint16_t GetAddress() const { return mAddress; }
-    uint16_t GetOpcode() const { return mOpcode; }
-    uint16_t GetMask() const { return mMask; }
-    uint16_t GetPattern() const { return mPattern; }
+    }
 
 private:
     OpcodePatternId mPatternId;
@@ -63,10 +58,6 @@ private:
     // Core decode metadata
     uint16_t mAddress; // Memory address the opcode was read from.
     uint16_t mOpcode;
-    
-    // Set during decoding (e.g., XOR_VX_VY -> mask: 0xF00F, pattern: 0x8003)
-    uint16_t mMask;
-    uint16_t mPattern;
 };
 
 //--------------------------------------------------------------------------------

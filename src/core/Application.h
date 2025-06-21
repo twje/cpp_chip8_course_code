@@ -241,7 +241,7 @@ public:
 		// TODO: think about current prefix
 		mCurrentPC = instruction.GetAddress();
 		mCurrentOpcode = instruction.GetOpcode();
-		mCurrentPattern = GetOpcodePatternString(instruction.GetPatternId());		
+		mCurrentPattern = instruction.GetPatternIdString();
 	}
 
 	void SetCycle(size_t cycle)
@@ -833,7 +833,7 @@ private:
 	{
 		std::cout << "Execute opcode ";
 		LogHex(std::cout, instruction.GetOpcode());
-		std::cout << " (" << GetOpcodePatternString(instruction.GetPatternId()) << ")\n";
+		std::cout << " (" << instruction.GetPatternIdString() << ")\n";
 
 		std::cout << ExecutionStatusToString(status) << std::endl;
 	}
