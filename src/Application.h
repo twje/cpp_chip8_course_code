@@ -430,17 +430,20 @@ private:
 class StatusUI : public IWidget
 {	
 	static constexpr int32_t kCharPixelHeight = 8;
+	static constexpr int32_t kPadding = 1;
 
 public:
 	StatusUI()
 	{
-		mFrame.SetContentSize({ 0, kCharPixelHeight });
+		mFrame.SetContentSize({ 0, kCharPixelHeight + kPadding });
 	}
 	
 	void SetWidth(int32_t width)
 	{
-		mFrame.SetContentSize({ width, kCharPixelHeight });
+		mFrame.SetContentSize({ width, kCharPixelHeight + kPadding });
 	}
+
+	void SetText(const std::string& text) { mText = text; }
 
 	virtual olc::vi2d GetSize() const override { return mFrame.GetSize(); }
 	virtual olc::vi2d GetPosition() const override { return mFrame.GetPosition(); }
@@ -449,10 +452,12 @@ public:
 	virtual void Draw(olc::PixelGameEngine& pge) const override
 	{
 		mFrame.Draw(pge);
+		pge.DrawString(mFrame.GetContentOffset() + olc::vi2d{ kPadding, kPadding }, mText);
 	}
 
 private:
 	WidgetFrame mFrame;
+	std::string mText;
 };
 
 //--------------------------------------------------------------------------------
@@ -477,10 +482,10 @@ public:
 		const olc::vi2d belowStatus = start + olc::vi2d{ 0, mStatusUI.GetSize().y + kSpacing };
 
 		mDisplayUI.SetPosition(belowStatus);
-		PlaceRightOf(mCPUStateUI, mDisplayUI, kSpacing);
-		PlaceRightOf(mRegisterUI, mCPUStateUI, kSpacing);
+		PlaceRightOf(mRegisterUI, mDisplayUI, kSpacing);
 		PlaceRightOf(mStackUI, mRegisterUI, kSpacing);
-		PlaceBelow(mKeypadUI, mCPUStateUI, kSpacing);
+		PlaceBelow(mKeypadUI, mDisplayUI, kSpacing);
+		PlaceRightOf(mCPUStateUI, mKeypadUI, kSpacing);
 
 		ResizeStatusToMatchContent();
 	}
@@ -490,9 +495,9 @@ public:
 		mCPUStateUI.SetCurrentInstruction(instruction);
 	}
 
-	void SetStatusText(std::string_view text)
+	void SetStatusText(const std::string& text)
 	{
-		//mStatusUI.SetText(text);
+		mStatusUI.SetText(text);
 	}
 
 	olc::vi2d GetCanvasSize() const
@@ -583,7 +588,8 @@ public:
 		: mIsHalted(false)
 		, mUIManager(mEmulator.GetCPU(), mEmulator.GetBus())
 	{
-		sAppName = "Chip8 Emulator";		
+		sAppName = "Chip8 Emulator";	
+		mUIManager.SetStatusText("Hello World");
 	}
 
 	olc::vi2d GetCanvasSize() const { return mUIManager.GetCanvasSize(); }
