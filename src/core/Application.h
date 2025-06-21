@@ -566,6 +566,8 @@ private:
 class UIManager
 {
 	static constexpr int kSpacing = 4;
+	enum class VertAlign { Top, Bottom };
+	enum class HortAlign { Left, Right };
 
 public:
 	UIManager(const CPU& cpu, const Bus& bus)
@@ -596,14 +598,14 @@ public:
 		const olc::vi2d belowStatus = start + olc::vi2d{ 0, mStatusUI.GetSize().y + kSpacing };
 
 		mDisplayUI.SetPosition(belowStatus);
-		PlaceRightOf(mRegisterUI, mDisplayUI, kSpacing);
-		PlaceRightOf(mStackUI, mRegisterUI, kSpacing);
-		PlaceBelow(mCPUStateUI, mDisplayUI, kSpacing);
-		PlaceRightOf(mMemoryUI, mCPUStateUI, kSpacing);
-		PlaceRightOf(mKeypadUI, mMemoryUI, kSpacing);
+		PlaceRightOf(mRegisterUI, mDisplayUI, kSpacing, VertAlign::Top);
+		PlaceRightOf(mStackUI, mRegisterUI, kSpacing, VertAlign::Top);
+		PlaceBelow(mCPUStateUI, mDisplayUI, kSpacing, HortAlign::Left);
+		PlaceRightOf(mMemoryUI, mCPUStateUI, kSpacing, VertAlign::Top);
+		PlaceRightOf(mKeypadUI, mMemoryUI, kSpacing, VertAlign::Bottom);		
 
 		// Special case
-		PlaceKeypadUIBottomRight();
+		//PlaceKeypadUIBottomRight();
 		ResizeStatusToMatchContent();
 	}
 
@@ -675,22 +677,34 @@ private:
 		mStatusUI.SetWidth(contentBounds.x - kSpacing);
 	}
 
-	void PlaceRightOf(IWidget& target, const IWidget& anchor, int32_t spacing)
+	void PlaceRightOf(IWidget& target, const IWidget& anchor, int32_t spacing, VertAlign align)
 	{
-		const olc::vi2d anchorPos = anchor.GetPosition();
-		target.SetPosition({
-			anchorPos.x + anchor.GetSize().x + spacing,
-			anchorPos.y
-		});
+		const auto anchorPosition = anchor.GetPosition();
+		const auto anchorSize = anchor.GetSize();
+		const auto targetSize = target.GetSize();
+
+		int32_t y = anchorPosition.y;
+		if (align == VertAlign::Bottom)
+		{
+			y += anchorSize.y - targetSize.y;
+		}
+
+		target.SetPosition({ anchorPosition.x + anchorSize.x + spacing, y });
 	}
-	
-	void PlaceBelow(IWidget& target, const IWidget& anchor, int32_t spacing)
+
+	void PlaceBelow(IWidget& target, const IWidget& anchor, int32_t spacing, HortAlign align)
 	{
-		const olc::vi2d anchorPos = anchor.GetPosition();
-		target.SetPosition({
-			anchorPos.x,
-			anchorPos.y + anchor.GetSize().y + spacing
-		});
+		const auto anchorPosition = anchor.GetPosition();
+		const auto anchorSize = anchor.GetSize();
+		const auto targetSize = target.GetSize();
+
+		int32_t x = anchorPosition.x;
+		if (align == HortAlign::Right)
+		{
+			x += anchorSize.x - targetSize.x;
+		}
+
+		target.SetPosition({ x, anchorPosition.y + anchorSize.y + spacing });
 	}
 	
 	olc::vi2d ComputeBoundsOf(const std::vector<const IWidget*>& widgets) const
