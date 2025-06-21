@@ -117,11 +117,11 @@ public:
 
 		for (size_t i = 0; i < STACK_SIZE; ++i)
 		{			
-			const bool isTop = (i == mCPU.GetStackPointer());			
+			const bool isTop = (i == mCPU.GetSP());			
 			const std::string cursor = isTop ? ">" : " ";
 
 			olc::vi2d pos = mFrame.GetContentOffset() + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
-			std::string text = cursor + Hex(i, 1) + ": 0x" + Hex(mCPU.GetStackValueAt(i), 4);
+			std::string text = cursor + Hex(i, 1) + ": 0x" + Hex(mCPU.GetStackValue(i), 4);
 
 			pge.DrawString(pos, text, UIStyle::kColorText);
 		}
@@ -189,7 +189,7 @@ public:
 		for (size_t i = 0; i < NUM_REGISTERS; ++i)
 		{
 			olc::vi2d pos = mFrame.GetContentOffset() + olc::vi2d{0, static_cast<int32_t>(i) * lineHeight};
-			std::string text = Hex(i, 1) + ": 0x" + Hex(mCPU.GetRegisterValueAt(i), 2);
+			std::string text = Hex(i, 1) + ": 0x" + Hex(mCPU.GetRegister(i), 2);
 
 			pge.DrawString(pos, text, UIStyle::kColorText);
 		}
@@ -281,7 +281,7 @@ public:
 
 		DrawLine(0, RightAlign("Cycle:", labelWidth) + " " + std::to_string(mCurrentCycle));
 		DrawLine(1, RightAlign("PC:", labelWidth) + " 0x" + Hex(mCurrentPC, 4));
-		DrawLine(2, RightAlign("I:", labelWidth) + " 0x" + Hex(mCPU.GetIndexRegister(), 4));
+		DrawLine(2, RightAlign("I:", labelWidth) + " 0x" + Hex(mCPU.GetI(), 4));
 		DrawLine(3, RightAlign("Opcode:", labelWidth) + " 0x" + Hex(mCurrentOpcode, 4));
 		DrawLine(4, RightAlign("Pattern:", labelWidth) + " " + mCurrentPattern);
 		DrawLine(5, RightAlign("Delay:", labelWidth) + " 0x" + Hex(mCPU.GetDelayTimer(), 2));

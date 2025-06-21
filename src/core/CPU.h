@@ -26,10 +26,10 @@ public:
 	CPU(Bus& bus);
 	
 	void Reset();
-	uint8_t GetRegisterValueAt(size_t index) const;
-	int16_t GetIndexRegister() const { return mIndexRegister; }
-	size_t GetStackPointer() const { return mStackPointer; }
-	uint16_t GetStackValueAt(size_t index) const;
+	uint8_t GetRegister(size_t index) const;
+	int16_t GetI() const { return mIndexRegister; }
+	size_t GetSP() const { return mStackPointer; }
+	uint16_t GetStackValue(size_t index) const;
 	uint8_t GetDelayTimer() const { return mDelayTimer; }
 	uint8_t GetSoundTimer() const { return mSoundTimer; }
 	
@@ -82,7 +82,7 @@ private:
 	// Core CPU State
 	uint16_t mProgramCounter;
 	uint16_t mIndexRegister;
-	std::array<uint8_t, NUM_REGISTERS> mRegisters; // V0–VF
+	std::array<uint8_t, NUM_REGISTERS> mRegisters;
 
 	// Stack
 	size_t mStackPointer;

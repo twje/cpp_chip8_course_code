@@ -41,13 +41,13 @@ void CPU::Reset()
 }
 
 //--------------------------------------------------------------------------------
-uint8_t CPU::GetRegisterValueAt(size_t index) const
+uint8_t CPU::GetRegister(size_t index) const
 {
     return mRegisters.at(index);
 }
 
 //--------------------------------------------------------------------------------
-uint16_t CPU::GetStackValueAt(size_t index) const
+uint16_t CPU::GetStackValue(size_t index) const
 {
     return mStack.at(index);
 }
