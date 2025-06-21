@@ -472,6 +472,97 @@ private:
 };
 
 //--------------------------------------------------------------------------------
+class MemoryUI : public IWidget
+{
+public:
+	MemoryUI(const RAM& ram)
+		: mRAM(ram)
+		, mCurrentAddress(0)
+		, mFrame("Memory")
+	{
+		mFrame.SetContentSize(GetInternalContentSize());
+	}
+
+	void SetAddress(uint16_t address)
+	{
+		mCurrentAddress = address;
+	}
+
+	virtual olc::vi2d GetSize() const override { return mFrame.GetSize(); }
+	virtual olc::vi2d GetPosition() const override { return mFrame.GetPosition(); }
+	virtual void SetPosition(const olc::vi2d& position) override { mFrame.SetPosition(position); }
+
+	virtual void Draw(olc::PixelGameEngine& pge) const override
+	{
+		mFrame.Draw(pge);
+
+		const int32_t lineHeight = 8;
+		const int32_t numLines = 7;
+		const int32_t bytesPerLine = 2;
+		const int32_t halfLines = numLines / 2;
+		const olc::vi2d start = mFrame.GetContentOffset();
+
+		for (int i = 0; i < numLines; ++i)
+		{
+			int32_t offset = i - halfLines;
+			uint16_t address = mCurrentAddress + offset * bytesPerLine;
+
+			if (address >= RAM_SIZE)
+			{
+				continue;
+			}
+
+			std::string prefix = (address == mCurrentAddress) ? ">" : " ";
+			std::string line = prefix + Hex(address, 4) + ": ";
+
+			for (int b = 0; b < bytesPerLine; ++b)
+			{
+				uint16_t byteAddress = address + b;
+				if (byteAddress < RAM_SIZE)
+				{
+					line += Hex(mRAM.Read(byteAddress), 2) + " ";
+				}
+				else
+				{
+					line += "?? ";
+				}
+			}
+
+			olc::vi2d pos = start + olc::vi2d{ 0, i * lineHeight };
+			pge.DrawString(pos, line, UIStyle::kColorText);
+		}
+	}
+
+private:
+	olc::vi2d GetInternalContentSize() const
+	{
+		const std::string sample = ">FFFF: FF FF";
+		const int32_t charWidth = 8;
+		const int32_t lineHeight = 8;
+		const int32_t numLines = 7;
+
+		return {
+			static_cast<int32_t>(sample.size()) * charWidth,
+			numLines * lineHeight
+		};
+	}
+
+	std::string Hex(uint32_t value, uint8_t width) const
+	{
+		std::string s(width, '0');
+		for (int32_t i = width - 1; i >= 0; --i, value >>= 4)
+		{
+			s[i] = "0123456789ABCDEF"[value & 0xF];
+		}
+		return s;
+	}
+
+	const RAM& mRAM;
+	uint16_t mCurrentAddress;
+	WidgetFrame mFrame;
+};
+
+//--------------------------------------------------------------------------------
 class UIManager
 {
 	static constexpr int kSpacing = 4;
@@ -483,6 +574,7 @@ public:
 		, mStackUI(cpu)
 		, mDisplayUI(bus.mDisplay)
 		, mKeypadUI(bus.mKeypad)
+		, mMemoryUI(bus.mRAM)
 	{
 		const olc::vi2d start{ kSpacing, kSpacing };
 
@@ -496,7 +588,8 @@ public:
 		PlaceRightOf(mRegisterUI, mDisplayUI, kSpacing);
 		PlaceRightOf(mStackUI, mRegisterUI, kSpacing);
 		PlaceBelow(mCPUStateUI, mDisplayUI, kSpacing);
-		PlaceRightOf(mKeypadUI, mCPUStateUI, kSpacing);
+		PlaceRightOf(mMemoryUI, mCPUStateUI, kSpacing);
+		PlaceRightOf(mKeypadUI, mMemoryUI, kSpacing);
 
 		ResizeStatusToMatchContent();
 	}
@@ -509,6 +602,11 @@ public:
 	void SetCycle(size_t cycle)
 	{
 		mCPUStateUI.SetCycle(cycle);
+	}
+
+	void SetAddress(uint16_t address)
+	{
+		mMemoryUI.SetAddress(address);
 	}
 
 	void SetStatusText(const std::string& text)
@@ -524,7 +622,8 @@ public:
 			&mRegisterUI,
 			&mStackUI,
 			&mDisplayUI,
-			&mKeypadUI
+			&mKeypadUI,
+			&mMemoryUI
 		});
 
 		return widgetBounds + olc::vi2d{ kSpacing, kSpacing };
@@ -538,6 +637,7 @@ public:
 		mStackUI.Draw(pge);
 		mDisplayUI.Draw(pge);
 		mKeypadUI.Draw(pge);
+		mMemoryUI.Draw(pge);
 	}
 
 private:
@@ -549,7 +649,8 @@ private:
 			&mRegisterUI,
 			&mStackUI,
 			&mDisplayUI,
-			&mKeypadUI
+			&mKeypadUI,
+			&mMemoryUI
 		});
 
 		mStatusUI.SetWidth(contentBounds.x - kSpacing);
@@ -594,6 +695,7 @@ private:
 	StackUI mStackUI;
 	DisplayUI mDisplayUI;
 	KeypadUI mKeypadUI;
+	MemoryUI mMemoryUI;
 };
 
 //--------------------------------------------------------------------------------
@@ -638,6 +740,7 @@ public:
 		const auto peekResult = mEmulator.PeekNextInstruction();
 		mUIManager.SetInstructionState(peekResult.mInstruction);
 		mUIManager.SetCycle(mEmulator.GetCycle());
+		mUIManager.SetAddress(peekResult.mInstruction.GetAddress()); // TODO: remove address from instruction, after refactor
 
 		if (peekResult.status == PeekStatus::DecodeError)
 		{
