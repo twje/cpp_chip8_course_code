@@ -5,7 +5,7 @@
 // Emulator
 #include "Config.h"
 #include "Bus.h"
-#include "ExecutionStatus.h"
+#include "EmulationStatus.h"
 #include "Instruction.h"
 
 // System

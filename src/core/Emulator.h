@@ -3,7 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Chip 8
-#include "ExecutionStatus.h"
+#include "EmulationStatus.h"
 #include "Common.h"
 #include "RAM.h"
 #include "Display.h"

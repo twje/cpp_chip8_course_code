@@ -8,7 +8,7 @@
 #include "WidgetDecorators.h"
 #include "RomManager.h"
 #include "Emulator.h"
-#include "ExecutionStatus.h"
+#include "EmulationStatus.h"
 
 // Third Party
 #include "olcPixelGameEngine.h"
