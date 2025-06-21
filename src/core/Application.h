@@ -576,6 +576,17 @@ public:
 		, mKeypadUI(bus.mKeypad)
 		, mMemoryUI(bus.mRAM)
 	{
+		// Register all widgets
+		mWidgets = {
+			&mStatusUI,
+			&mCPUStateUI,
+			&mRegisterUI,
+			&mStackUI,
+			&mDisplayUI,
+			&mKeypadUI,
+			&mMemoryUI
+		};
+
 		const olc::vi2d start{ kSpacing, kSpacing };
 
 		// Position the status strip first
@@ -591,6 +602,8 @@ public:
 		PlaceRightOf(mMemoryUI, mCPUStateUI, kSpacing);
 		PlaceRightOf(mKeypadUI, mMemoryUI, kSpacing);
 
+		// Special case
+		PlaceKeypadUIBottomRight();
 		ResizeStatusToMatchContent();
 	}
 
@@ -616,16 +629,7 @@ public:
 
 	olc::vi2d GetCanvasSize() const
 	{
-		olc::vi2d widgetBounds = ComputeBoundsOf({
-			&mStatusUI,
-			&mCPUStateUI,
-			&mRegisterUI,
-			&mStackUI,
-			&mDisplayUI,
-			&mKeypadUI,
-			&mMemoryUI
-		});
-
+		olc::vi2d widgetBounds = ComputeBoundsOf(mWidgets);
 		return widgetBounds + olc::vi2d{ kSpacing, kSpacing };
 	}
 
@@ -641,18 +645,33 @@ public:
 	}
 
 private:
+	std::vector<const IWidget*> GetWidgetsExcluding(std::initializer_list<const IWidget*> excludeList) const
+	{
+		std::vector<const IWidget*> result;
+
+		for (const IWidget* widget : mWidgets)
+		{
+			if (std::find(excludeList.begin(), excludeList.end(), widget) == excludeList.end())
+			{
+				result.push_back(widget);
+			}
+		}
+
+		return result;
+	}
+
+	void PlaceKeypadUIBottomRight()
+	{
+		const auto contentWidgets = GetWidgetsExcluding({ &mKeypadUI });
+		const olc::vi2d contentBounds = ComputeBoundsOf(contentWidgets);
+		mKeypadUI.SetPosition(olc::vi2d{ kSpacing, contentBounds.y } - olc::vi2d{ 0, mKeypadUI.GetSize().y });
+	}
+
 	void ResizeStatusToMatchContent()
 	{
 		// Compute layout bounds (excluding status), and resize status to match layout width
-		const olc::vi2d contentBounds = ComputeBoundsOf({
-			&mCPUStateUI,
-			&mRegisterUI,
-			&mStackUI,
-			&mDisplayUI,
-			&mKeypadUI,
-			&mMemoryUI
-		});
-
+		const auto contentWidgets = GetWidgetsExcluding({ &mStatusUI });
+		const olc::vi2d contentBounds = ComputeBoundsOf(contentWidgets);
 		mStatusUI.SetWidth(contentBounds.x - kSpacing);
 	}
 
@@ -674,7 +693,7 @@ private:
 		});
 	}
 	
-	olc::vi2d ComputeBoundsOf(std::initializer_list<const IWidget*> widgets) const
+	olc::vi2d ComputeBoundsOf(const std::vector<const IWidget*>& widgets) const
 	{
 		olc::vi2d max = { 0, 0 };
 
@@ -688,7 +707,6 @@ private:
 		return max;
 	}
 
-private:	
 	StatusUI mStatusUI;
 	CPUStateUI mCPUStateUI;
 	RegisterUI mRegisterUI;
@@ -696,6 +714,7 @@ private:
 	DisplayUI mDisplayUI;
 	KeypadUI mKeypadUI;
 	MemoryUI mMemoryUI;
+	std::vector<const IWidget*> mWidgets;
 };
 
 //--------------------------------------------------------------------------------
