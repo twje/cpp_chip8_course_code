@@ -15,6 +15,7 @@ inline constexpr size_t DISPLAY_WIDTH = 64;
 inline constexpr size_t DISPLAY_HEIGHT = 32;
 inline constexpr size_t DISPLAY_PIXEL_COUNT = DISPLAY_WIDTH * DISPLAY_HEIGHT;
 inline constexpr size_t NUM_KEYS = 16;
+inline constexpr uint16_t INSTRUCTION_SIZE = 2;
 
 inline constexpr std::array<uint8_t, 80> CHAR_SET = {
     0xf0, 0x90, 0x90, 0x90, 0xf0, // 0

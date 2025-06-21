@@ -7,6 +7,7 @@
 
 // System
 #include <fstream>
+#include <iostream>
 
 //--------------------------------------------------------------------------------
 Emulator::Emulator()
@@ -15,6 +16,15 @@ Emulator::Emulator()
 {
 	mRAM.WriteRange(0x000, CHAR_SET); // Load CHIP-8 character fontset into memory
 	mDisplay.SetRAM(mRAM);
+}
+
+//--------------------------------------------------------------------------------
+void Emulator::Reset()
+{
+	mRAM.ClearProgramMemory();	
+	mCPU.Reset();
+
+	// TODO: reste bus components
 }
 
 //--------------------------------------------------------------------------------

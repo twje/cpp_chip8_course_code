@@ -1,4 +1,4 @@
-#include <iostream>
+#pragma once
 
 // Includes
 //--------------------------------------------------------------------------------
@@ -19,12 +19,13 @@
 class CPU
 {
 #ifdef UNIT_TESTING
-	friend class CPUOpcodeTest;
+	friend class OpcodeTest;
 #endif
 
 public:
 	CPU(Bus& bus);
-
+	
+	void Reset();
 	uint8_t GetRegisterValueAt(size_t index) const;
 	int16_t GetIndexRegister() const { return mIndexRegister; }
 	size_t GetStackPointer() const { return mStackPointer; }
@@ -78,9 +79,9 @@ private:
 	Bus& mBus;
 
 	// Core CPU State
-	size_t mProgramCounter;
+	uint16_t mProgramCounter;
 	uint16_t mIndexRegister;
-	std::array<uint16_t, NUM_REGISTERS> mRegisters; // V0–VF
+	std::array<uint8_t, NUM_REGISTERS> mRegisters; // V0–VF
 
 	// Stack
 	size_t mStackPointer;

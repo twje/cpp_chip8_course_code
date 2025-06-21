@@ -44,7 +44,12 @@ struct Instruction
     }
 
     OpcodePatternId GetPatternId() const { return mPatternId; }
-    const std::vector<uint16_t>& GetArguments() const { return mArguments; }
+
+    template <typename T>
+    T GetArgument(size_t index) const
+    {
+        return static_cast<T>(mArguments.at(index));
+    }    
 
     uint16_t GetAddress() const { return mAddress; }
     uint16_t GetOpcode() const { return mOpcode; }

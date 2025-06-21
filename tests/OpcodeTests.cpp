@@ -1,11 +1,49 @@
 #include <gtest/gtest.h>
+#define UNIT_TESTING
 
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
+#include "Config.h"
 #include "Emulator.h"
 #include "Bus.h"
 #include "RAM.h"
+#include "CPU.h"
+
+//--------------------------------------------------------------------------------
+class OpcodeTest : public ::testing::Test
+{
+protected:
+    ExecutionStatus Step() { return mEmulator.Step(); }
+
+    void LoadInstruction(uint16_t address, uint16_t opcode)
+    {
+        // Write 2-byte opcode in big-endian format and set PC to its address
+        mRAM.Write(address + 0, opcode >> 8);
+        mRAM.Write(address + 1, opcode & 0xFF);
+        mCPU.mProgramCounter = address;
+    }
+
+    void SetRegister(size_t index, uint8_t value) 
+    {
+        mCPU.mRegisters[index] = value;
+    }
+
+    uint16_t GetProgramCounter() const
+    {
+        return mCPU.mProgramCounter;
+    }
+
+    void ResetEmulator()
+    {
+        mEmulator.Reset();
+    }
+
+private:
+    Emulator mEmulator;
+    CPU& mCPU = mEmulator.GetCPU();
+    RAM& mRAM = mEmulator.GetBus().mRAM;
+};
 
 //--------------------------------------------------------------------------------
 TEST(OpcodeExecutionTests, DISABLED_Opcode_00E0_CLS)
@@ -44,12 +82,22 @@ TEST(OpcodeExecutionTests, DISABLED_Opcode_2nnn_CALL_ADDR)
 }
 
 //--------------------------------------------------------------------------------
-TEST(OpcodeExecutionTests, DISABLED_Opcode_3xkk_SE_VX_KK)
+TEST_F(OpcodeTest, 3xkk_SE_VX_KK)
 {
-    /*
-        TODO: Implement test for opcode 3xkk (SE_VX_KK).
-        Refer to: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
-    */
+    // Positive case: V2 == 0x05, should skip next instruction
+    LoadInstruction(PROGRAM_START_ADDRESS, 0x3205);
+    SetRegister(2, 0x05);
+
+    ASSERT_EQ(ExecutionStatus::Executed, Step());
+    ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetProgramCounter()); // Skip next instruction
+
+    // Negative case: V2 != 0x05, should NOT skip
+    ResetEmulator();
+    LoadInstruction(PROGRAM_START_ADDRESS, 0x3205);
+    SetRegister(2, 0x04); // Different value
+
+    ASSERT_EQ(ExecutionStatus::Executed, Step());
+    ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetProgramCounter()); // Proceed to next instruction
 }
 
 //--------------------------------------------------------------------------------

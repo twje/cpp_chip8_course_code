@@ -29,6 +29,18 @@ CPU::CPU(Bus& bus)
 { }
 
 //--------------------------------------------------------------------------------
+void CPU::Reset()
+{
+    mProgramCounter = PROGRAM_START_ADDRESS;
+    mIndexRegister = 0;
+    mRegisters.fill(0);
+    mStackPointer = 0;
+    mStack.fill(0);
+    mDelayTimer = 0;
+    mSoundTimer = 0;
+}
+
+//--------------------------------------------------------------------------------
 uint8_t CPU::GetRegisterValueAt(size_t index) const
 {
     return mRegisters.at(index);
@@ -163,7 +175,17 @@ ExecutionStatus CPU::Execute_CALL_ADDR(const Instruction& instruction)
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_SE_VX_KK(const Instruction& instruction)
 {
-    return ExecutionStatus::NotImplemented;
+    const size_t vxIndex = instruction.GetArgument<size_t>(0);
+    const uint8_t value = instruction.GetArgument<uint8_t>(1);
+    const uint8_t vx = mRegisters.at(vxIndex);
+
+    // Skip next instruction if Vx == kk
+    if (vx == value)
+    {
+        mProgramCounter += INSTRUCTION_SIZE;
+    }
+
+    return ExecutionStatus::Executed;
 }
 
 //--------------------------------------------------------------------------------

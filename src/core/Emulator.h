@@ -22,6 +22,7 @@ class Emulator
 public:
 	Emulator();
 
+	void Reset();
 	bool LoadRom(const fs::path& romPath);
 	
 	// Convenience method for unit tests or headless execution
