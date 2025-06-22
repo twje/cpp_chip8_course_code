@@ -59,7 +59,6 @@ bool Emulator::LoadRom(const fs::path& romPath)
 		return false;
 	}
 
-
 	std::vector<uint8_t> buffer(static_cast<size_t>(fileSize));
 	if (!file.read(reinterpret_cast<char*>(buffer.data()), fileSize))
 	{

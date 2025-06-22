@@ -9,6 +9,7 @@ constexpr OpcodeArgDef ARG_Y   = { 0x00F0, 4 };
 
 //--------------------------------------------------------------------------------
 const std::vector<OpcodePatternDef> OPCODE_PATTERN_TABLE = {
+    { OpcodePatternId::SYS_ADDR,    0xF000, 0x0000, { ARG_NNN } },
     { OpcodePatternId::CLS,         0xFFFF, 0x00E0, { } },
     { OpcodePatternId::RET,         0xFFFF, 0x00EE, { } },
     { OpcodePatternId::JP_ADDR,     0xF000, 0x1000, { ARG_NNN } },

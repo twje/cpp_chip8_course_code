@@ -11,9 +11,9 @@
 //--------------------------------------------------------------------------------
 enum class OpcodePatternId : uint8_t
 {
+    SYS_ADDR,      // 0nnn (opcode is not required for modern interpreters)
     CLS,           // 00E0
     RET,           // 00EE
-    SYS_ADDR,      // 0nnn (opcode is not required for modern interpreters)
     JP_ADDR,       // 1nnn
     CALL_ADDR,     // 2nnn
     SE_VX_KK,      // 3xkk

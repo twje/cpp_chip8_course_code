@@ -59,6 +59,7 @@ Instruction CPU::Peek()
 {
     const uint16_t address = mProgramCounter;
     assert(address % 2 == 0);
+    assert(address >= PROGRAM_START_ADDRESS && address + 1 < RAM_SIZE);
 
     const uint8_t hByte = mBus.mRAM.Read(address);
     const uint8_t lByte = mBus.mRAM.Read(address + 1);
@@ -175,17 +176,31 @@ ExecutionStatus CPU::Execute_1nnn_JP_ADDR(const Instruction&)
 }
 
 //--------------------------------------------------------------------------------
-ExecutionStatus CPU::Execute_2nnn_CALL_ADDR(const Instruction&)
+ExecutionStatus CPU::Execute_2nnn_CALL_ADDR(const Instruction& instruction)
 {
-    return ExecutionStatus::NotImplemented;
+    const uint16_t address = instruction.GetArgument<uint16_t>(0);
+
+    mStack[mStackPointer] = mProgramCounter;
+    mStackPointer++;
+    mProgramCounter = address;
+ 
+    return ExecutionStatus::Executed;
 }
+
+#include <cassert>
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_3xkk_SE_VX_KK(const Instruction& instruction)
 {
+    // 0x3A61
+
     const size_t vxIndex = instruction.GetArgument<size_t>(0);
     const uint8_t value = instruction.GetArgument<uint8_t>(1);
-    const uint8_t vx = mRegisters.at(vxIndex);
+    const uint8_t vx = mRegisters.at(vxIndex);    
+    
+    assert(vxIndex == 10);
+    assert(value == 97);
+    assert(vx == 0);
 
     if (vx == value)
     {

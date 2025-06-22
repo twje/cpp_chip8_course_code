@@ -19,6 +19,6 @@ public:
     bool WriteRange(size_t start, std::span<const uint8_t> data);
     void ClearProgramMemory();
 
-private:
-    std::array<uint8_t, RAM_SIZE> mData;
+//private:
+    std::array<uint8_t, RAM_SIZE> mData{ };
 };

@@ -25,6 +25,7 @@ bool RAM::WriteRange(size_t start, std::span<const uint8_t> data)
     {
         return false;
     }
+
     std::copy(data.begin(), data.end(), mData.begin() + start);
     return true;
 }

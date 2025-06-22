@@ -10,6 +10,9 @@
 #include "Emulator.h"
 #include "EmulationStatus.h"
 
+// Temp
+#include "Utils.h"
+
 // Third Party
 #include "olcPixelGameEngine.h"
 
@@ -291,8 +294,8 @@ public:
 private:
 	olc::vi2d GetInternalContentSize() const
 	{
-		std::string longestSample = "Pattern: 0xFFFF";
-
+		std::string longestSample = "Pattern: UNKNOWN";
+		                                      
 		const int32_t lineHeight = 8;
 		const int32_t lineCount = 7;
 		const int32_t textWidth = longestSample.size() * 8;
@@ -747,13 +750,16 @@ public:
 	bool OnUserCreate() override
 	{
 		RomManager romManager(ROMS_PATH);
-		const auto romPath = romManager.ResolveRom("test_rom/test_opcode.8o");
+		const auto romPath = romManager.ResolveRom("test_rom/test_opcode.ch8");
 
 		if (!mEmulator.LoadRom(romPath))
 		{
 			std::cerr << "Unable to load ROM: " << romPath << std::endl;
 			return false;
 		}
+
+		// TEST
+		BinaryToHex(romPath.string(), romManager.ResolveRom("test_rom/test_opcode_1.ch8").string());
 
 		return true;
 	}
@@ -843,15 +849,15 @@ private:
 		switch (status)
 		{
 			case ExecutionStatus::Executed:
-				return "Executed";
+				return "Opcode Executed";
 			case ExecutionStatus::Ignored:
-				return "Ignored";
+				return "Opcode Ignored";
 			case ExecutionStatus::DecodeError:
-				return "Decode Error";
+				return "Opcode Decode Error";
 			case ExecutionStatus::NotImplemented:
-				return "Not Implemented";
+				return "Opcode Not Implemented";
 			case ExecutionStatus::MissingHandler:
-				return "Missing Handler";
+				return "Opcode Handler Missing";
 			default: 
 				return "Unknown";
 		}
