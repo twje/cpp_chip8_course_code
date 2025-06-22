@@ -82,13 +82,9 @@ bool CPU::Decode(Instruction& outInstruction)
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute(const Instruction& instruction)
 {
-    if (IsLegacyInstruction(instruction))
-    {
-        return ExecutionStatus::Ignored;
-    }
-
     switch (instruction.GetPatternId())
     {
+        case OpcodePatternId::SYS_ADDR:    return Execute_0nnn_SYS_ADDR(instruction);
         case OpcodePatternId::CLS:         return Execute_00E0_CLS(instruction);
         case OpcodePatternId::RET:         return Execute_00EE_RET(instruction);
         case OpcodePatternId::JP_ADDR:     return Execute_1nnn_JP_ADDR(instruction);
@@ -129,15 +125,10 @@ ExecutionStatus CPU::Execute(const Instruction& instruction)
 }
 
 //--------------------------------------------------------------------------------
-bool CPU::IsLegacyInstruction(const Instruction& instruction) const
+ExecutionStatus CPU::Execute_0nnn_SYS_ADDR(const Instruction&)
 {
-    // Ignore 0nnn (RCA 1802 call) — obsolete on modern interpreters
-    if (instruction.GetPatternId() == OpcodePatternId::SYS_ADDR)
-    {
-        return true;
-    }
-
-    return false;
+    // Legacy SYS instruction (0nnn); ignored in modern interpreters.
+    return ExecutionStatus::Executed;
 }
 
 //--------------------------------------------------------------------------------

@@ -48,12 +48,11 @@ public:
 	Instruction Peek();
 	Instruction Fetch();
 	bool Decode(Instruction& outInstruction);	
-	ExecutionStatus Execute(const Instruction& instruction);		
+	ExecutionStatus Execute(const Instruction& instruction);
 
-private:	
-	bool IsLegacyInstruction(const Instruction& instruction) const;
-
+private:
 	// One method per opcode
+	DECLARE_OPCODE_HANDLER(0nnn, SYS_ADDR)
 	DECLARE_OPCODE_HANDLER(00E0, CLS)
 	DECLARE_OPCODE_HANDLER(00EE, RET)
 	DECLARE_OPCODE_HANDLER(1nnn, JP_ADDR)

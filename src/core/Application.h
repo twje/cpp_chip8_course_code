@@ -799,7 +799,7 @@ public:
 		LogCycle(result.mInstruction);
 		LogExecution(result.mInstruction, result.mStatus);
 
-		if (!ShouldContinue(result.mStatus))
+		if (result.mStatus != ExecutionStatus::Executed)
 		{
 			mIsHalted = true;
 			std::string statusStr = ExecutionStatusToString(result.mStatus) + " (Halted)";
@@ -810,18 +810,6 @@ public:
 	}
 
 private:
-	bool ShouldContinue(ExecutionStatus status)
-	{
-		switch (status)
-		{
-			case ExecutionStatus::Executed:
-			case ExecutionStatus::Ignored:
-				return true;
-			default:
-				return false;
-		}
-	}
-
 	void LogHex(std::ostream& os, uint16_t value, int width = 4)
 	{
 		os << "0x"
@@ -854,8 +842,6 @@ private:
 		{
 			case ExecutionStatus::Executed:
 				return "Opcode Executed";
-			case ExecutionStatus::Ignored:
-				return "Opcode Ignored";
 			case ExecutionStatus::DecodeError:
 				return "Opcode Decode Error";
 			case ExecutionStatus::NotImplemented:
