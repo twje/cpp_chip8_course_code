@@ -16,8 +16,8 @@ class OpcodeTest : public ::testing::Test
 protected:
     void LoadInstruction(uint16_t address, uint16_t opcode)
     {
-        RAM& ram = mEmulator.GetBus().mRAM;
-        CPU& cpu = mEmulator.GetCPU();
+        RAM& ram = mEmulator.mBus.mRAM;
+        CPU& cpu = mEmulator.mCPU;
 
         // Write 2-byte opcode in big-endian format and set PC to its address
         ram.Write(address + 0, opcode >> 8);
@@ -26,7 +26,7 @@ protected:
     }    
 
     // Expose internal CPU state for test access only; this class is declared as a friend.
-    CPUState& GetCPUStateRef() { return mEmulator.GetCPU().mState; }
+    CPUState& GetCPUStateRef() { return mEmulator.mCPU.mState; }
 
     Emulator mEmulator;  
 };

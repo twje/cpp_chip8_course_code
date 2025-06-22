@@ -41,10 +41,10 @@ class CPU
 
 public:
 	CPU(Bus& bus);
-	
+
 	void Reset();
-	CPUState GetState() const;
-	
+	const CPUState& GetState() const { return mState; }
+
 	Instruction Peek();
 	Instruction Fetch();
 	bool Decode(Instruction& outInstruction);	

@@ -35,12 +35,6 @@ void CPU::Reset()
     mState.mSoundTimer = 0;
 }
 
-//--------------------------------------------------------------------------------
-CPUState CPU::GetState() const
-{
-    return mState;
-}
-
 // CHIP-8 stores opcodes as two consecutive bytes in big-endian format.
 // Read and combine the two bytes into a single 16-bit opcode.
 //--------------------------------------------------------------------------------

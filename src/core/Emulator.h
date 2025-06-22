@@ -16,9 +16,14 @@
 // System
 #include <array>
 
+// TODO: think about removing 'Bus& GetBus() { return mBus; }' and adding unit test define so bus can be maniupated
 //--------------------------------------------------------------------------------
 class Emulator
 {
+#ifdef UNIT_TESTING
+	friend class OpcodeTest;
+#endif
+
 public:
 	Emulator();
 
@@ -27,13 +32,9 @@ public:
 	
 	PeekResult PeekNextInstruction();
 	StepResult Step();
-		
-	// TODO: hide now?
-	size_t GetCycle() const { return mCycle; }
-	CPU& GetCPU() { return mCPU; }
-	const CPU& GetCPU() const { return mCPU; }
 	
-	Bus& GetBus() { return mBus; }
+	size_t GetCycle() const { return mCycle; }
+	const CPU& GetCPU() const { return mCPU; }
 	const Bus& GetBus() const { return mBus; }
 
 private:

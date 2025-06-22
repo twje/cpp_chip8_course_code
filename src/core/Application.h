@@ -115,7 +115,7 @@ public:
 	{		
 		mFrame.Draw(pge);
 
-		const CPUState cpuState = mCPU.GetState();
+		const CPUState& cpuState = mCPU.GetState();
 		const olc::vi2d offset = mFrame.GetContentOffset();
 		const int32_t lineHeight = 8;
 
@@ -188,7 +188,7 @@ public:
 	{
 		mFrame.Draw(pge);
 
-		const CPUState cpuState = mCPU.GetState();
+		const CPUState& cpuState = mCPU.GetState();
 		const olc::vi2d offset = mFrame.GetContentOffset();
 		const int32_t lineHeight = 8;
 
@@ -274,7 +274,7 @@ public:
 	{
 		mFrame.Draw(pge);
 		
-		const CPUState cpuState = mCPU.GetState();
+		const CPUState& cpuState = mCPU.GetState();
 		const olc::vi2d offset = mFrame.GetContentOffset();
 		const int32_t lineHeight = 8;
 
