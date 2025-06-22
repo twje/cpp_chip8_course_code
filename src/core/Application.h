@@ -229,30 +229,18 @@ private:
 };
 
 //--------------------------------------------------------------------------------
-class CPUStateUI : public IWidget
+class CPUStateUI : public IWidget  // TODO: rename class to CPU
 {
 public:
-	CPUStateUI(const CPU& cpu)
-		: mCPU(cpu)
-		, mCurrentPC(0)
-		, mCurrentOpcode(0)
-		, mCurrentCycle(0)
-		, mFrame("CPU State")
+	CPUStateUI()
+		: mFrame("CPU")
 	{ 
 		mFrame.SetContentSize(GetInternalContentSize());
 	}
-	
-	void SetInstructionState(const Instruction& instruction)
-	{
-		// TODO: think about current prefix
-		mCurrentPC = instruction.GetAddress();
-		mCurrentOpcode = instruction.GetOpcode();
-		mCurrentPattern = instruction.GetPatternIdString();
-	}
 
-	void SetCycle(size_t cycle)
+	void SetCPUState(const CPUState& cpuState)
 	{
-		mCurrentCycle = cycle;
+		mCPUState = cpuState;
 	}
 
 	virtual olc::vi2d GetSize() const override  
@@ -274,7 +262,6 @@ public:
 	{
 		mFrame.Draw(pge);
 		
-		const CPUState& cpuState = mCPU.GetState();
 		const olc::vi2d offset = mFrame.GetContentOffset();
 		const int32_t lineHeight = 8;
 
@@ -285,14 +272,11 @@ public:
 		};
 
 		const int labelWidth = 8;
-
-		DrawLine(0, RightAlign("Cycle:", labelWidth) + " " + std::to_string(mCurrentCycle));
-		DrawLine(1, RightAlign("PC:", labelWidth) + " 0x" + Hex(mCurrentPC, 4));
-		DrawLine(2, RightAlign("I:", labelWidth) + " 0x" + Hex(cpuState.mI, 4));
-		DrawLine(3, RightAlign("Opcode:", labelWidth) + " 0x" + Hex(mCurrentOpcode, 4));
-		DrawLine(4, RightAlign("Pattern:", labelWidth) + " " + mCurrentPattern);
-		DrawLine(5, RightAlign("Delay:", labelWidth) + " 0x" + Hex(cpuState.mDelayTimer, 2));
-		DrawLine(6, RightAlign("Sound:", labelWidth) + " 0x" + Hex(cpuState.mSoundTimer, 2));
+		
+		DrawLine(0, RightAlign("PC:", labelWidth) + " 0x" + Hex(mCPUState.mPC, 4));
+		DrawLine(1, RightAlign("I:", labelWidth) + " 0x" + Hex(mCPUState.mI, 4));
+		DrawLine(2, RightAlign("Delay:", labelWidth) + " 0x" + Hex(mCPUState.mDelayTimer, 2));
+		DrawLine(3, RightAlign("Sound:", labelWidth) + " 0x" + Hex(mCPUState.mSoundTimer, 2));
 	}
 
 private:
@@ -301,7 +285,7 @@ private:
 		std::string longestSample = "Pattern: UNKNOWN";
 		                                      
 		const int32_t lineHeight = 8;
-		const int32_t lineCount = 7;
+		const int32_t lineCount = 4;
 		const int32_t textWidth = longestSample.size() * 8;
 		return { textWidth, lineCount * lineHeight };
 	}
@@ -322,12 +306,7 @@ private:
 		return std::string(width - label.size(), ' ') + label;
 	}
 
-	// TODO: think about current??
-	const CPU& mCPU;
-	uint16_t mCurrentPC;
-	uint16_t mCurrentOpcode;
-	std::string mCurrentPattern;
-	size_t mCurrentCycle;
+	CPUState mCPUState;
 	olc::vi2d mPosition;
 	WidgetFrame mFrame;
 };
@@ -577,9 +556,8 @@ class UIManager
 	enum class HortAlign { Left, Right };
 
 public:
-	UIManager(const CPU& cpu, const Bus& bus)
-		: mCPUStateUI(cpu)
-		, mRegisterUI(cpu)
+	UIManager(const CPU& cpu, const Bus& bus)		
+		: mRegisterUI(cpu)
 		, mStackUI(cpu)
 		, mDisplayUI(bus.mDisplay)
 		, mKeypadUI(bus.mKeypad)
@@ -615,15 +593,7 @@ public:
 		ResizeStatusToMatchContent();
 	}
 
-	void SetInstructionState(const Instruction& instruction)
-	{
-		mCPUStateUI.SetInstructionState(instruction);
-	}
-
-	void SetCycle(size_t cycle)
-	{
-		mCPUStateUI.SetCycle(cycle);
-	}
+	CPUStateUI& GetCPUStateUI() { return mCPUStateUI; }
 
 	void SetAddress(uint16_t address)
 	{
@@ -779,9 +749,10 @@ public:
 
 		//--------------------------------------------
 		// Peek for UI display and update mnemonic
+		CPUState cpuState = mEmulator.GetCPU().GetState();
+		mUIManager.GetCPUStateUI().SetCPUState(cpuState);
+
 		const auto peekResult = mEmulator.PeekNextInstruction();
-		mUIManager.SetInstructionState(peekResult.mInstruction);
-		mUIManager.SetCycle(mEmulator.GetCycle());
 		mUIManager.SetAddress(peekResult.mInstruction.GetAddress()); // TODO: remove address from instruction, after refactor
 
 		if (peekResult.status == PeekStatus::DecodeError)
@@ -794,8 +765,7 @@ public:
 		//--------------------------------------------
 		// Step emulator and update based on result
 		const StepResult result = mEmulator.Step();
-		
-		mUIManager.SetCycle(mEmulator.GetCycle());
+				
 		LogCycle(result.mInstruction);
 		LogExecution(result.mInstruction, result.mStatus);
 
