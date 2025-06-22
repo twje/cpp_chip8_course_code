@@ -192,7 +192,7 @@ public:
 		const olc::vi2d offset = mFrame.GetContentOffset();
 		const int32_t lineHeight = 8;
 
-		for (size_t i = 0; i < NUM_REGISTERS; ++i)
+		for (size_t i = 0; i < REGISTER_COUNT; ++i)
 		{
 			olc::vi2d pos = offset + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
 			std::string text = Hex(i, 1) + ": 0x" + Hex(cpuState.mV[i], 2);

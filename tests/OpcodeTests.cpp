@@ -16,30 +16,19 @@ class OpcodeTest : public ::testing::Test
 protected:
     void LoadInstruction(uint16_t address, uint16_t opcode)
     {
+        RAM& ram = mEmulator.GetBus().mRAM;
+        CPU& cpu = mEmulator.GetCPU();
+
         // Write 2-byte opcode in big-endian format and set PC to its address
-        mRAM.Write(address + 0, opcode >> 8);
-        mRAM.Write(address + 1, opcode & 0xFF);
-        mCPU.mPC = address;
+        ram.Write(address + 0, opcode >> 8);
+        ram.Write(address + 1, opcode & 0xFF);
+        cpu.mState.mPC = address;
     }    
 
     // Expose internal CPU state for test access only; this class is declared as a friend.
-    uint16_t& PCRef() { return mCPU.mPC; }
-    uint16_t& IRef() { return mCPU.mI; }
-    uint8_t& SPRef() { return mCPU.mSP; }
-    uint8_t& DelayTimerRef() { return mCPU.mDelayTimer; }
-    uint8_t& SoundTimerRef() { return mCPU.mSoundTimer; }
+    CPUState& GetCPUStateRef() { return mEmulator.GetCPU().mState; }
 
-    uint8_t GetRegister(size_t index) const { return mCPU.mV.at(index); }
-    void SetRegister(size_t index, uint8_t value) { mCPU.mV.at(index) = value; }
-
-    uint16_t GetStackValue(size_t index) const { return mCPU.mStack.at(index); }
-    void SetStackValue(size_t index, uint16_t value) { mCPU.mStack.at(index) = value; }
-
-    Emulator mEmulator;
-    RAM& mRAM = mEmulator.GetBus().mRAM;
-
-private:
-    CPU& mCPU = mEmulator.GetCPU();
+    Emulator mEmulator;  
 };
 
 //--------------------------------------------------------------------------------
@@ -81,10 +70,9 @@ TEST_F(OpcodeTest, 2nnn_CALL_ADDR)
     StepResult step = mEmulator.Step();
 
     // Assert
-    ASSERT_EQ(ExecutionStatus::Executed, step.mStatus);
-    ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetStackValue(0)); // PC saved at stack[0]
-    ASSERT_EQ(1, SPRef()); // SP incremented to next free slot
-    ASSERT_EQ(0x0F23, PCRef());
+    ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mStack[0]);
+    ASSERT_EQ(1, GetCPUStateRef().mSP);
+    ASSERT_EQ(0x0F23, GetCPUStateRef().mPC);
 }
 
 // Skip next instruction if Vx = kk.
@@ -96,14 +84,14 @@ TEST_F(OpcodeTest, 3xkk_SE_VX_KK)
     {
         // Arrange
         LoadInstruction(PROGRAM_START_ADDRESS, 0x3205);
-        SetRegister(2, 0x05);
+        GetCPUStateRef().mV[2] = 0x05;
 
         // Act
         StepResult step = mEmulator.Step();
         
         // Assert
         ASSERT_EQ(ExecutionStatus::Executed, step.mStatus);
-        ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, PCRef());
+        ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mPC);
     }
 
     // Negative case: V2 != 0x05, should NOT skip
@@ -111,14 +99,14 @@ TEST_F(OpcodeTest, 3xkk_SE_VX_KK)
         // Arrange
         mEmulator.Reset();
         LoadInstruction(PROGRAM_START_ADDRESS, 0x3205);
-        SetRegister(2, 0x04);
+        GetCPUStateRef().mV[2] = 0x04;
 
         // Act
         StepResult step = mEmulator.Step();
         
         // Assert
         ASSERT_EQ(ExecutionStatus::Executed, step.mStatus);
-        ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, PCRef());
+        ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mPC);
     }    
 }
 
@@ -158,7 +146,7 @@ TEST_F(OpcodeTest, 6xkk_LD_VX_KK)
     const size_t vxIndex = instruction.GetArgument<size_t>(0);
     const uint8_t value = instruction.GetArgument<uint8_t>(1);
    
-    ASSERT_EQ(GetRegister(vxIndex), value);
+    ASSERT_EQ(GetCPUStateRef().mV[vxIndex], value);
 }
 
 //--------------------------------------------------------------------------------

@@ -19,39 +19,26 @@
 //--------------------------------------------------------------------------------
 CPU::CPU(Bus& bus)
     : mBus{ bus }
-    , mPC{ PROGRAM_START_ADDRESS }
-    , mI{ 0 }
-    , mV{ }
-    , mSP{ 0 }
-    , mStack{ }
-    , mDelayTimer{ 0 }
-    , mSoundTimer{ 0 }
-{ }
+{ 
+    mState.mPC = PROGRAM_START_ADDRESS;
+}
 
 //--------------------------------------------------------------------------------
 void CPU::Reset()
 {
-    mPC = PROGRAM_START_ADDRESS;
-    mI = 0;
-    mV.fill(0);
-    mSP = 0;
-    mStack.fill(0);
-    mDelayTimer = 0;
-    mSoundTimer = 0;
+    mState.mPC = PROGRAM_START_ADDRESS;
+    mState.mI = 0;
+    mState.mV.fill(0);
+    mState.mSP = 0;
+    mState.mStack.fill(0);
+    mState.mDelayTimer = 0;
+    mState.mSoundTimer = 0;
 }
 
 //--------------------------------------------------------------------------------
 CPUState CPU::GetState() const
 {
-    return {
-        .mV = mV,
-        .mI = mI,
-        .mPC = mPC,
-        .mSP = mSP,
-        .mStack = mStack,
-        .mDelayTimer = mDelayTimer,
-        .mSoundTimer = mSoundTimer
-    };
+    return mState;
 }
 
 // CHIP-8 stores opcodes as two consecutive bytes in big-endian format.
@@ -59,7 +46,7 @@ CPUState CPU::GetState() const
 //--------------------------------------------------------------------------------
 Instruction CPU::Peek()
 {
-    const uint16_t address = mPC;
+    const uint16_t address = mState.mPC;
     assert(address % 2 == 0);
     assert(address >= PROGRAM_START_ADDRESS && address + 1 < RAM_SIZE);
 
@@ -78,7 +65,7 @@ Instruction CPU::Fetch()
     Instruction instruction = Peek();
 
     // Advance PC early (some instructions override it)
-    mPC += 2;
+    mState.mPC += 2;
 
     return instruction;
 }
@@ -182,9 +169,9 @@ ExecutionStatus CPU::Execute_2nnn_CALL_ADDR(const Instruction& instruction)
 {
     const uint16_t address = instruction.GetArgument<uint16_t>(0);
 
-    mStack[mSP] = mPC;
-    mSP++;
-    mPC = address;
+    mState.mStack[mState.mSP] = mState.mPC;
+    mState.mSP++;
+    mState.mPC = address;
  
     return ExecutionStatus::Executed;
 }
@@ -194,11 +181,11 @@ ExecutionStatus CPU::Execute_3xkk_SE_VX_KK(const Instruction& instruction)
 {
     const size_t vxIndex = instruction.GetArgument<size_t>(0);
     const uint8_t value = instruction.GetArgument<uint8_t>(1);
-    const uint8_t vx = mV.at(vxIndex);
+    const uint8_t vx = mState.mV.at(vxIndex);
 
     if (vx == value)
     {
-        mPC += INSTRUCTION_SIZE;
+        mState.mPC += INSTRUCTION_SIZE;
     }
 
     return ExecutionStatus::Executed;
@@ -221,7 +208,7 @@ ExecutionStatus CPU::Execute_6xkk_LD_VX_KK(const Instruction& instruction)
 {
     const size_t vxIndex = instruction.GetArgument<size_t>(0);
     const uint8_t value = instruction.GetArgument<uint8_t>(1);
-    mV[vxIndex] = value;
+    mState.mV[vxIndex] = value;
 
     return ExecutionStatus::Executed;
 }

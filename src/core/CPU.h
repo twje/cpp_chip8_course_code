@@ -18,11 +18,16 @@
 //--------------------------------------------------------------------------------
 struct CPUState
 {
-	std::array<uint8_t, NUM_REGISTERS> mV{ };  // TODO: renamre to REGISTER_COUNT
+	// Core CPU State
+	std::array<uint8_t, REGISTER_COUNT> mV{ };
 	uint16_t mI = 0;
 	uint16_t mPC = 0;
+	
+	// Stack
 	uint8_t mSP = 0;
 	std::array<uint16_t, STACK_SIZE> mStack{ };
+	
+	// Timers
 	uint8_t mDelayTimer = 0;
 	uint8_t mSoundTimer = 0;
 };
@@ -85,17 +90,5 @@ private:
 	DECLARE_OPCODE_HANDLER(Fx65, LD_VX_I)
 
 	Bus& mBus;
-
-	// Core CPU State
-	uint16_t mPC;
-	uint16_t mI;
-	std::array<uint8_t, NUM_REGISTERS> mV;
-
-	// Stack
-	uint8_t mSP;
-	std::array<uint16_t, STACK_SIZE> mStack;
-
-	// Timers
-	uint8_t mDelayTimer;
-	uint8_t mSoundTimer;
+	CPUState mState;
 };
