@@ -21,7 +21,7 @@ struct CPUState
 	std::array<uint8_t, NUM_REGISTERS> mV{ };  // TODO: renamre to REGISTER_COUNT
 	uint16_t mI = 0;
 	uint16_t mPC = 0;
-	uint8_t  mSP = 0;
+	uint8_t mSP = 0;
 	std::array<uint16_t, STACK_SIZE> mStack{ };
 	uint8_t mDelayTimer = 0;
 	uint8_t mSoundTimer = 0;
@@ -87,12 +87,12 @@ private:
 	Bus& mBus;
 
 	// Core CPU State
-	uint16_t mProgramCounter;
-	uint16_t mIndexRegister;
-	std::array<uint8_t, NUM_REGISTERS> mRegisters;
+	uint16_t mPC;
+	uint16_t mI;
+	std::array<uint8_t, NUM_REGISTERS> mV;
 
 	// Stack
-	size_t mStackPointer;
+	uint8_t mSP;
 	std::array<uint16_t, STACK_SIZE> mStack;
 
 	// Timers

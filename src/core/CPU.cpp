@@ -19,10 +19,10 @@
 //--------------------------------------------------------------------------------
 CPU::CPU(Bus& bus)
     : mBus{ bus }
-    , mProgramCounter{ PROGRAM_START_ADDRESS }
-    , mIndexRegister{ 0 }
-    , mRegisters{ }
-    , mStackPointer{ 0 }
+    , mPC{ PROGRAM_START_ADDRESS }
+    , mI{ 0 }
+    , mV{ }
+    , mSP{ 0 }
     , mStack{ }
     , mDelayTimer{ 0 }
     , mSoundTimer{ 0 }
@@ -31,10 +31,10 @@ CPU::CPU(Bus& bus)
 //--------------------------------------------------------------------------------
 void CPU::Reset()
 {
-    mProgramCounter = PROGRAM_START_ADDRESS;
-    mIndexRegister = 0;
-    mRegisters.fill(0);
-    mStackPointer = 0;
+    mPC = PROGRAM_START_ADDRESS;
+    mI = 0;
+    mV.fill(0);
+    mSP = 0;
     mStack.fill(0);
     mDelayTimer = 0;
     mSoundTimer = 0;
@@ -43,16 +43,15 @@ void CPU::Reset()
 //--------------------------------------------------------------------------------
 CPUState CPU::GetState() const
 {
-    CPUState state;
-    std::copy(std::begin(mRegisters), std::end(mRegisters), std::begin(state.mV));
-    state.mI = mIndexRegister;
-    state.mPC = mProgramCounter;
-    state.mSP = static_cast<uint8_t>(mStackPointer);
-    std::copy(std::begin(mStack), std::end(mStack), std::begin(state.mStack));
-    state.mDelayTimer = mDelayTimer;
-    state.mSoundTimer = mSoundTimer;
-    
-    return state;
+    return {
+        .mV = mV,
+        .mI = mI,
+        .mPC = mPC,
+        .mSP = mSP,
+        .mStack = mStack,
+        .mDelayTimer = mDelayTimer,
+        .mSoundTimer = mSoundTimer
+    };
 }
 
 // CHIP-8 stores opcodes as two consecutive bytes in big-endian format.
@@ -60,7 +59,7 @@ CPUState CPU::GetState() const
 //--------------------------------------------------------------------------------
 Instruction CPU::Peek()
 {
-    const uint16_t address = mProgramCounter;
+    const uint16_t address = mPC;
     assert(address % 2 == 0);
     assert(address >= PROGRAM_START_ADDRESS && address + 1 < RAM_SIZE);
 
@@ -79,7 +78,7 @@ Instruction CPU::Fetch()
     Instruction instruction = Peek();
 
     // Advance PC early (some instructions override it)
-    mProgramCounter += 2;
+    mPC += 2;
 
     return instruction;
 }
@@ -183,31 +182,23 @@ ExecutionStatus CPU::Execute_2nnn_CALL_ADDR(const Instruction& instruction)
 {
     const uint16_t address = instruction.GetArgument<uint16_t>(0);
 
-    mStack[mStackPointer] = mProgramCounter;
-    mStackPointer++;
-    mProgramCounter = address;
+    mStack[mSP] = mPC;
+    mSP++;
+    mPC = address;
  
     return ExecutionStatus::Executed;
 }
 
-#include <cassert>
-
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_3xkk_SE_VX_KK(const Instruction& instruction)
 {
-    // 0x3A61
-
     const size_t vxIndex = instruction.GetArgument<size_t>(0);
     const uint8_t value = instruction.GetArgument<uint8_t>(1);
-    const uint8_t vx = mRegisters.at(vxIndex);    
-    
-    assert(vxIndex == 10);
-    assert(value == 97);
-    assert(vx == 0);
+    const uint8_t vx = mV.at(vxIndex);
 
     if (vx == value)
     {
-        mProgramCounter += INSTRUCTION_SIZE;
+        mPC += INSTRUCTION_SIZE;
     }
 
     return ExecutionStatus::Executed;
@@ -230,7 +221,7 @@ ExecutionStatus CPU::Execute_6xkk_LD_VX_KK(const Instruction& instruction)
 {
     const size_t vxIndex = instruction.GetArgument<size_t>(0);
     const uint8_t value = instruction.GetArgument<uint8_t>(1);
-    mRegisters[vxIndex] = value;
+    mV[vxIndex] = value;
 
     return ExecutionStatus::Executed;
 }

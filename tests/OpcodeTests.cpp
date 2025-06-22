@@ -19,18 +19,18 @@ protected:
         // Write 2-byte opcode in big-endian format and set PC to its address
         mRAM.Write(address + 0, opcode >> 8);
         mRAM.Write(address + 1, opcode & 0xFF);
-        mCPU.mProgramCounter = address;
+        mCPU.mPC = address;
     }    
 
     // Expose internal CPU state for test access only; this class is declared as a friend.
-    uint16_t& PCRef() { return mCPU.mProgramCounter; }
-    uint16_t& IRef() { return mCPU.mIndexRegister; }
-    size_t& SPRef() { return mCPU.mStackPointer; }
+    uint16_t& PCRef() { return mCPU.mPC; }
+    uint16_t& IRef() { return mCPU.mI; }
+    uint8_t& SPRef() { return mCPU.mSP; }
     uint8_t& DelayTimerRef() { return mCPU.mDelayTimer; }
     uint8_t& SoundTimerRef() { return mCPU.mSoundTimer; }
 
-    uint8_t GetRegister(size_t index) const { return mCPU.mRegisters.at(index); }
-    void SetRegister(size_t index, uint8_t value) { mCPU.mRegisters.at(index) = value; }
+    uint8_t GetRegister(size_t index) const { return mCPU.mV.at(index); }
+    void SetRegister(size_t index, uint8_t value) { mCPU.mV.at(index) = value; }
 
     uint16_t GetStackValue(size_t index) const { return mCPU.mStack.at(index); }
     void SetStackValue(size_t index, uint16_t value) { mCPU.mStack.at(index) = value; }
