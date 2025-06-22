@@ -21,9 +21,9 @@ CPU::CPU(Bus& bus)
     : mBus{ bus }
     , mProgramCounter{ PROGRAM_START_ADDRESS }
     , mIndexRegister{ 0 }
-    , mRegisters{}        // std::array — zero-initialized
+    , mRegisters{ }
     , mStackPointer{ 0 }
-    , mStack{}            // std::array — zero-initialized
+    , mStack{ }
     , mDelayTimer{ 0 }
     , mSoundTimer{ 0 }
 { }
@@ -41,15 +41,18 @@ void CPU::Reset()
 }
 
 //--------------------------------------------------------------------------------
-uint8_t CPU::GetRegister(size_t index) const
+CPUState CPU::GetState() const
 {
-    return mRegisters.at(index);
-}
-
-//--------------------------------------------------------------------------------
-uint16_t CPU::GetStackValue(size_t index) const
-{
-    return mStack.at(index);
+    CPUState state;
+    std::copy(std::begin(mRegisters), std::end(mRegisters), std::begin(state.mV));
+    state.mI = mIndexRegister;
+    state.mPC = mProgramCounter;
+    state.mSP = static_cast<uint8_t>(mStackPointer);
+    std::copy(std::begin(mStack), std::end(mStack), std::begin(state.mStack));
+    state.mDelayTimer = mDelayTimer;
+    state.mSoundTimer = mSoundTimer;
+    
+    return state;
 }
 
 // CHIP-8 stores opcodes as two consecutive bytes in big-endian format.

@@ -16,6 +16,18 @@
 #define DECLARE_OPCODE_HANDLER(pattern, mnemonic) ExecutionStatus Execute_##pattern##_##mnemonic(const Instruction& instruction);
 
 //--------------------------------------------------------------------------------
+struct CPUState
+{
+	std::array<uint8_t, NUM_REGISTERS> mV{ };  // TODO: renamre to REGISTER_COUNT
+	uint16_t mI = 0;
+	uint16_t mPC = 0;
+	uint8_t  mSP = 0;
+	std::array<uint16_t, STACK_SIZE> mStack{ };
+	uint8_t mDelayTimer = 0;
+	uint8_t mSoundTimer = 0;
+};
+
+//--------------------------------------------------------------------------------
 class CPU
 {
 #ifdef UNIT_TESTING
@@ -26,12 +38,7 @@ public:
 	CPU(Bus& bus);
 	
 	void Reset();
-	uint8_t GetRegister(size_t index) const;
-	int16_t GetI() const { return mIndexRegister; }
-	size_t GetSP() const { return mStackPointer; }
-	uint16_t GetStackValue(size_t index) const;
-	uint8_t GetDelayTimer() const { return mDelayTimer; }
-	uint8_t GetSoundTimer() const { return mSoundTimer; }
+	CPUState GetState() const;
 	
 	Instruction Peek();
 	Instruction Fetch();

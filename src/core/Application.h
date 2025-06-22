@@ -111,20 +111,21 @@ public:
 		mFrame.SetPosition(position);
 	}
 
-	// TODO: simplify
 	virtual void Draw(olc::PixelGameEngine& pge) const override
 	{		
 		mFrame.Draw(pge);
 
+		const CPUState cpuState = mCPU.GetState();
+		const olc::vi2d offset = mFrame.GetContentOffset();
 		const int32_t lineHeight = 8;
 
 		for (size_t i = 0; i < STACK_SIZE; ++i)
-		{			
-			const bool isTop = (i == mCPU.GetSP());			
+		{
+			const bool isTop = (i == cpuState.mSP);
 			const std::string cursor = isTop ? ">" : " ";
 
-			olc::vi2d pos = mFrame.GetContentOffset() + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
-			std::string text = cursor + Hex(i, 1) + ": 0x" + Hex(mCPU.GetStackValue(i), 4);
+			const olc::vi2d pos = offset + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
+			const std::string text = cursor + Hex(i, 1) + ": 0x" + Hex(cpuState.mStack[i], 4);
 
 			pge.DrawString(pos, text, UIStyle::kColorText);
 		}
@@ -187,12 +188,14 @@ public:
 	{
 		mFrame.Draw(pge);
 
-		constexpr int32_t lineHeight = 8;  // TODO: Move to UI style
+		const CPUState cpuState = mCPU.GetState();
+		const olc::vi2d offset = mFrame.GetContentOffset();
+		const int32_t lineHeight = 8;
 
 		for (size_t i = 0; i < NUM_REGISTERS; ++i)
 		{
-			olc::vi2d pos = mFrame.GetContentOffset() + olc::vi2d{0, static_cast<int32_t>(i) * lineHeight};
-			std::string text = Hex(i, 1) + ": 0x" + Hex(mCPU.GetRegister(i), 2);
+			olc::vi2d pos = offset + olc::vi2d{ 0, static_cast<int32_t>(i) * lineHeight };
+			std::string text = Hex(i, 1) + ": 0x" + Hex(cpuState.mV[i], 2);
 
 			pge.DrawString(pos, text, UIStyle::kColorText);
 		}
@@ -271,12 +274,13 @@ public:
 	{
 		mFrame.Draw(pge);
 		
-		const olc::vi2d start = mFrame.GetContentOffset();
+		const CPUState cpuState = mCPU.GetState();
+		const olc::vi2d offset = mFrame.GetContentOffset();
 		const int32_t lineHeight = 8;
 
 		auto DrawLine = [&](int lineIndex, const std::string& text)
 		{
-			olc::vi2d pos = start + olc::vi2d{ 0, lineIndex * lineHeight };
+			olc::vi2d pos = offset + olc::vi2d{ 0, lineIndex * lineHeight };
 			pge.DrawString(pos, text, UIStyle::kColorText);
 		};
 
@@ -284,11 +288,11 @@ public:
 
 		DrawLine(0, RightAlign("Cycle:", labelWidth) + " " + std::to_string(mCurrentCycle));
 		DrawLine(1, RightAlign("PC:", labelWidth) + " 0x" + Hex(mCurrentPC, 4));
-		DrawLine(2, RightAlign("I:", labelWidth) + " 0x" + Hex(mCPU.GetI(), 4));
+		DrawLine(2, RightAlign("I:", labelWidth) + " 0x" + Hex(cpuState.mI, 4));
 		DrawLine(3, RightAlign("Opcode:", labelWidth) + " 0x" + Hex(mCurrentOpcode, 4));
 		DrawLine(4, RightAlign("Pattern:", labelWidth) + " " + mCurrentPattern);
-		DrawLine(5, RightAlign("Delay:", labelWidth) + " 0x" + Hex(mCPU.GetDelayTimer(), 2));
-		DrawLine(6, RightAlign("Sound:", labelWidth) + " 0x" + Hex(mCPU.GetSoundTimer(), 2));
+		DrawLine(5, RightAlign("Delay:", labelWidth) + " 0x" + Hex(cpuState.mDelayTimer, 2));
+		DrawLine(6, RightAlign("Sound:", labelWidth) + " 0x" + Hex(cpuState.mSoundTimer, 2));
 	}
 
 private:
