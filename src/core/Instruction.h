@@ -3,7 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
-#include "OpcodeFormatTable.h"
+#include "OpcodeFormatMap.h"
 #include "OpcodeId.h"
 
 // System
@@ -27,9 +27,11 @@ struct Instruction
         return (mOpcode & def.mMask) == def.mPattern;
     }
 
-    void DecodeFrom(const OpcodeFormatDef& def)
+    void DecodeFrom(OpcodeId OpcodeId)
     {
-        mOpcodeId = def.mOpcodeId;
+        mOpcodeId = OpcodeId;
+        
+        const OpcodeFormatDef& def = OPCODE_FORMAT_MAP.at(mOpcodeId);
 
         mArguments.clear();
         for (const auto& operandDef : def.mOperands)

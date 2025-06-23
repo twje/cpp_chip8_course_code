@@ -6,7 +6,7 @@
 #include "OpcodeId.h"
 
 // System
-#include <vector>
+#include <unordered_map>
 #include <cstdint>
 #include <string>
 
@@ -32,11 +32,10 @@ struct OperandDef
 //--------------------------------------------------------------------------------
 struct OpcodeFormatDef
 {
-    OpcodeId mOpcodeId;
     uint16_t mMask;
     uint16_t mPattern;
     std::vector<OperandDef> mOperands;
 };
 
 //--------------------------------------------------------------------------------
-extern const std::vector<OpcodeFormatDef> OPCODE_FORMAT_TABLE;
+extern const std::unordered_map<OpcodeId, OpcodeFormatDef> OPCODE_FORMAT_MAP;
