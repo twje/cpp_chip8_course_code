@@ -1,11 +1,11 @@
 #include "OpcodePatternTable.h"
 
 //--------------------------------------------------------------------------------
-constexpr OpcodeArgDef ARG_NNN = { 0x0FFF, 0 };
-constexpr OpcodeArgDef ARG_KK  = { 0x00FF, 0 };
-constexpr OpcodeArgDef ARG_N   = { 0x000F, 0 };
-constexpr OpcodeArgDef ARG_X   = { 0x0F00, 8 };
-constexpr OpcodeArgDef ARG_Y   = { 0x00F0, 4 };
+constexpr OpcodeArgDef ARG_NNN = { 0x0FFF, 0, OperandLabel::NNN };
+constexpr OpcodeArgDef ARG_KK = { 0x00FF, 0, OperandLabel::KK };
+constexpr OpcodeArgDef ARG_N = { 0x000F, 0, OperandLabel::N };
+constexpr OpcodeArgDef ARG_X = { 0x0F00, 8, OperandLabel::X };
+constexpr OpcodeArgDef ARG_Y = { 0x00F0, 4, OperandLabel::Y };
 
 //--------------------------------------------------------------------------------
 const std::vector<OpcodePatternDef> OPCODE_PATTERN_TABLE = {
