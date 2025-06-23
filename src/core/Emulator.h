@@ -16,7 +16,6 @@
 // System
 #include <array>
 
-// TODO: think about removing 'Bus& GetBus() { return mBus; }' and adding unit test define so bus can be maniupated
 //--------------------------------------------------------------------------------
 class Emulator
 {
@@ -28,8 +27,8 @@ public:
 	Emulator();
 
 	void Reset();
-	bool LoadRom(const fs::path& romPath);
-	
+	bool LoadRom(const fs::path& romPath);	
+
 	PeekResult PeekNextInstruction();
 	StepResult Step();
 	

@@ -9,6 +9,24 @@
 // System
 #include <vector>
 #include <ostream>
+#include <string>
+
+//--------------------------------------------------------------------------------
+struct OperandInfo
+{
+    OperandLabel mLabel;
+    uint16_t mValue = 0;
+};
+
+//--------------------------------------------------------------------------------
+struct InstructionInfo
+{
+    uint16_t mAddress = 0;
+    uint16_t mOpcode = 0;
+    std::string mPattern;               // e.g. "8xy1"
+    std::string mMnemonic;              // e.g. "OR"
+    std::vector<OperandInfo> mOperands; // e.g. [ {X, 1}, {Y, 2} ]
+};
 
 //--------------------------------------------------------------------------------
 struct Instruction
