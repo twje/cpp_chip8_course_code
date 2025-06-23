@@ -22,7 +22,7 @@ enum class OperandLabel
 };
 
 //--------------------------------------------------------------------------------
-struct OpcodeArgDef
+struct OperandDef
 {
     uint16_t mMask;
     uint8_t mShift;
@@ -30,13 +30,13 @@ struct OpcodeArgDef
 };
 
 //--------------------------------------------------------------------------------
-struct OpcodePatternDef
+struct OpcodeFormatDef
 {
     OpcodeId mOpcodeId;
     uint16_t mMask;
     uint16_t mPattern;
-    std::vector<OpcodeArgDef> mArgs;
+    std::vector<OperandDef> mOperands;
 };
 
 //--------------------------------------------------------------------------------
-extern const std::vector<OpcodePatternDef> OPCODE_PATTERN_TABLE;
+extern const std::vector<OpcodeFormatDef> OPCODE_FORMAT_TABLE;

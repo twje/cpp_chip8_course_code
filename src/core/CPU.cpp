@@ -67,7 +67,7 @@ Instruction CPU::Fetch()
 //--------------------------------------------------------------------------------
 bool CPU::Decode(Instruction& outInstruction)
 {
-    for (const OpcodePatternDef& opcodeDef : OPCODE_PATTERN_TABLE)
+    for (const OpcodeFormatDef& opcodeDef : OPCODE_FORMAT_TABLE)
     {
         if (outInstruction.MatchesPattern(opcodeDef))
         {
