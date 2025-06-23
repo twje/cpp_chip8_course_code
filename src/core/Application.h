@@ -233,13 +233,15 @@ class CPUStateUI : public IWidget  // TODO: rename class to CPU
 {
 public:
 	CPUStateUI()
-		: mFrame("CPU")
+		: mCycle(0)
+		, mFrame("CPU")
 	{ 
 		mFrame.SetContentSize(GetInternalContentSize());
 	}
 
-	void SetCPUState(const CPUState& cpuState)
+	void UpdateDisplay(size_t cycle, const CPUState& cpuState)
 	{
+		mCycle = cycle;
 		mCPUState = cpuState;
 	}
 
@@ -273,10 +275,11 @@ public:
 
 		const int labelWidth = 8;
 		
-		DrawLine(0, RightAlign("PC:", labelWidth) + " 0x" + Hex(mCPUState.mPC, 4));
-		DrawLine(1, RightAlign("I:", labelWidth) + " 0x" + Hex(mCPUState.mI, 4));
-		DrawLine(2, RightAlign("Delay:", labelWidth) + " 0x" + Hex(mCPUState.mDelayTimer, 2));
-		DrawLine(3, RightAlign("Sound:", labelWidth) + " 0x" + Hex(mCPUState.mSoundTimer, 2));
+		DrawLine(0, RightAlign("Cycle:", labelWidth) + " " + std::to_string(mCycle));
+		DrawLine(1, RightAlign("PC:", labelWidth) + " 0x" + Hex(mCPUState.mPC, 4));
+		DrawLine(2, RightAlign("I:", labelWidth) + " 0x" + Hex(mCPUState.mI, 4));
+		DrawLine(3, RightAlign("Delay:", labelWidth) + " 0x" + Hex(mCPUState.mDelayTimer, 2));
+		DrawLine(4, RightAlign("Sound:", labelWidth) + " 0x" + Hex(mCPUState.mSoundTimer, 2));
 	}
 
 private:
@@ -285,7 +288,7 @@ private:
 		std::string longestSample = "Pattern: UNKNOWN";
 		                                      
 		const int32_t lineHeight = 8;
-		const int32_t lineCount = 4;
+		const int32_t lineCount = 5;
 		const int32_t textWidth = longestSample.size() * 8;
 		return { textWidth, lineCount * lineHeight };
 	}
@@ -306,6 +309,7 @@ private:
 		return std::string(width - label.size(), ' ') + label;
 	}
 
+	size_t mCycle;
 	CPUState mCPUState;
 	olc::vi2d mPosition;
 	WidgetFrame mFrame;
@@ -750,7 +754,7 @@ public:
 		//--------------------------------------------
 		// Peek for UI display and update mnemonic
 		CPUState cpuState = mEmulator.GetCPU().GetState();
-		mUIManager.GetCPUStateUI().SetCPUState(cpuState);
+		mUIManager.GetCPUStateUI().UpdateDisplay(mEmulator.GetCycle(), cpuState);
 
 		const auto peekResult = mEmulator.PeekNextInstruction();
 		mUIManager.SetAddress(peekResult.mInstruction.GetAddress()); // TODO: remove address from instruction, after refactor

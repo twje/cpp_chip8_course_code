@@ -15,7 +15,7 @@ enum class OpcodePatternId : uint8_t
     CLS,           // 00E0
     RET,           // 00EE
     JP_ADDR,       // 1nnn
-    CALL_ADDR,     // 2nnn
+    CALL_ADDR,     // 2nnn  
     SE_VX_KK,      // 3xkk
     SNE_VX_KK,     // 4xkk
     SE_VX_VY,      // 5xy0
