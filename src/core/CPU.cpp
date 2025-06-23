@@ -82,43 +82,43 @@ bool CPU::Decode(Instruction& outInstruction)
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute(const Instruction& instruction)
 {
-    switch (instruction.GetPatternId())
+    switch (instruction.GetOpcodeId())
     {
-        case OpcodePatternId::SYS_ADDR:    return Execute_0nnn_SYS_ADDR(instruction);
-        case OpcodePatternId::CLS:         return Execute_00E0_CLS(instruction);
-        case OpcodePatternId::RET:         return Execute_00EE_RET(instruction);
-        case OpcodePatternId::JP_ADDR:     return Execute_1nnn_JP_ADDR(instruction);
-        case OpcodePatternId::CALL_ADDR:   return Execute_2nnn_CALL_ADDR(instruction);
-        case OpcodePatternId::SE_VX_KK:    return Execute_3xkk_SE_VX_KK(instruction);
-        case OpcodePatternId::SNE_VX_KK:   return Execute_4xkk_SNE_VX_KK(instruction);
-        case OpcodePatternId::SE_VX_VY:    return Execute_5xy0_SE_VX_VY(instruction);
-        case OpcodePatternId::LD_VX_KK:    return Execute_6xkk_LD_VX_KK(instruction);
-        case OpcodePatternId::ADD_VX_KK:   return Execute_7xkk_ADD_VX_KK(instruction);
-        case OpcodePatternId::LD_VX_VY:    return Execute_8xy0_LD_VX_VY(instruction);
-        case OpcodePatternId::OR_VX_VY:    return Execute_8xy1_OR_VX_VY(instruction);
-        case OpcodePatternId::AND_VX_VY:   return Execute_8xy2_AND_VX_VY(instruction);
-        case OpcodePatternId::XOR_VX_VY:   return Execute_8xy3_XOR_VX_VY(instruction);
-        case OpcodePatternId::ADD_VX_VY:   return Execute_8xy4_ADD_VX_VY(instruction);
-        case OpcodePatternId::SUB_VX_VY:   return Execute_8xy5_SUB_VX_VY(instruction);
-        case OpcodePatternId::SHR_VX_VY:   return Execute_8xy6_SHR_VX_VY(instruction);
-        case OpcodePatternId::SUBN_VX_VY:  return Execute_8xy7_SUBN_VX_VY(instruction);
-        case OpcodePatternId::SHL_VX_VY:   return Execute_8xyE_SHL_VX_VY(instruction);
-        case OpcodePatternId::SNE_VX_VY:   return Execute_9xy0_SNE_VX_VY(instruction);
-        case OpcodePatternId::LD_I_ADDR:   return Execute_Annn_LD_I_ADDR(instruction);
-        case OpcodePatternId::JP_V0_ADDR:  return Execute_Bnnn_JP_V0_ADDR(instruction);
-        case OpcodePatternId::RND_VX_KK:   return Execute_Cxkk_RND_VX_KK(instruction);
-        case OpcodePatternId::DRW_VX_VY_N: return Execute_Dxyn_DRW_VX_VY_N(instruction);
-        case OpcodePatternId::SKP_VX:      return Execute_Ex9E_SKP_VX(instruction);
-        case OpcodePatternId::SKNP_VX:     return Execute_ExA1_SKNP_VX(instruction);
-        case OpcodePatternId::LD_VX_DT:    return Execute_Fx07_LD_VX_DT(instruction);
-        case OpcodePatternId::LD_VX_K:     return Execute_Fx0A_LD_VX_K(instruction);
-        case OpcodePatternId::LD_DT_VX:    return Execute_Fx15_LD_DT_VX(instruction);
-        case OpcodePatternId::LD_ST_VX:    return Execute_Fx18_LD_ST_VX(instruction);
-        case OpcodePatternId::ADD_I_VX:    return Execute_Fx1E_ADD_I_VX(instruction);
-        case OpcodePatternId::LD_F_VX:     return Execute_Fx29_LD_F_VX(instruction);
-        case OpcodePatternId::LD_B_VX:     return Execute_Fx33_LD_B_VX(instruction);
-        case OpcodePatternId::LD_I_VX:     return Execute_Fx55_LD_I_VX(instruction);
-        case OpcodePatternId::LD_VX_I:     return Execute_Fx65_LD_VX_I(instruction);
+        case OpcodeId::SYS_ADDR:    return Execute_0nnn_SYS_ADDR(instruction);
+        case OpcodeId::CLS:         return Execute_00E0_CLS(instruction);
+        case OpcodeId::RET:         return Execute_00EE_RET(instruction);
+        case OpcodeId::JP_ADDR:     return Execute_1nnn_JP_ADDR(instruction);
+        case OpcodeId::CALL_ADDR:   return Execute_2nnn_CALL_ADDR(instruction);
+        case OpcodeId::SE_VX_KK:    return Execute_3xkk_SE_VX_KK(instruction);
+        case OpcodeId::SNE_VX_KK:   return Execute_4xkk_SNE_VX_KK(instruction);
+        case OpcodeId::SE_VX_VY:    return Execute_5xy0_SE_VX_VY(instruction);
+        case OpcodeId::LD_VX_KK:    return Execute_6xkk_LD_VX_KK(instruction);
+        case OpcodeId::ADD_VX_KK:   return Execute_7xkk_ADD_VX_KK(instruction);
+        case OpcodeId::LD_VX_VY:    return Execute_8xy0_LD_VX_VY(instruction);
+        case OpcodeId::OR_VX_VY:    return Execute_8xy1_OR_VX_VY(instruction);
+        case OpcodeId::AND_VX_VY:   return Execute_8xy2_AND_VX_VY(instruction);
+        case OpcodeId::XOR_VX_VY:   return Execute_8xy3_XOR_VX_VY(instruction);
+        case OpcodeId::ADD_VX_VY:   return Execute_8xy4_ADD_VX_VY(instruction);
+        case OpcodeId::SUB_VX_VY:   return Execute_8xy5_SUB_VX_VY(instruction);
+        case OpcodeId::SHR_VX_VY:   return Execute_8xy6_SHR_VX_VY(instruction);
+        case OpcodeId::SUBN_VX_VY:  return Execute_8xy7_SUBN_VX_VY(instruction);
+        case OpcodeId::SHL_VX_VY:   return Execute_8xyE_SHL_VX_VY(instruction);
+        case OpcodeId::SNE_VX_VY:   return Execute_9xy0_SNE_VX_VY(instruction);
+        case OpcodeId::LD_I_ADDR:   return Execute_Annn_LD_I_ADDR(instruction);
+        case OpcodeId::JP_V0_ADDR:  return Execute_Bnnn_JP_V0_ADDR(instruction);
+        case OpcodeId::RND_VX_KK:   return Execute_Cxkk_RND_VX_KK(instruction);
+        case OpcodeId::DRW_VX_VY_N: return Execute_Dxyn_DRW_VX_VY_N(instruction);
+        case OpcodeId::SKP_VX:      return Execute_Ex9E_SKP_VX(instruction);
+        case OpcodeId::SKNP_VX:     return Execute_ExA1_SKNP_VX(instruction);
+        case OpcodeId::LD_VX_DT:    return Execute_Fx07_LD_VX_DT(instruction);
+        case OpcodeId::LD_VX_K:     return Execute_Fx0A_LD_VX_K(instruction);
+        case OpcodeId::LD_DT_VX:    return Execute_Fx15_LD_DT_VX(instruction);
+        case OpcodeId::LD_ST_VX:    return Execute_Fx18_LD_ST_VX(instruction);
+        case OpcodeId::ADD_I_VX:    return Execute_Fx1E_ADD_I_VX(instruction);
+        case OpcodeId::LD_F_VX:     return Execute_Fx29_LD_F_VX(instruction);
+        case OpcodeId::LD_B_VX:     return Execute_Fx33_LD_B_VX(instruction);
+        case OpcodeId::LD_I_VX:     return Execute_Fx55_LD_I_VX(instruction);
+        case OpcodeId::LD_VX_I:     return Execute_Fx65_LD_VX_I(instruction);
     }
 
     return ExecutionStatus::MissingHandler;

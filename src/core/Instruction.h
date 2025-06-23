@@ -4,7 +4,7 @@
 //--------------------------------------------------------------------------------
 // Emulator
 #include "OpcodePatternTable.h"
-#include "OpcodePatternId.h"
+#include "OpcodeId.h"
 
 // System
 #include <vector>
@@ -14,7 +14,7 @@
 struct Instruction
 {
     Instruction(uint16_t address, uint16_t opcode)
-        : mPatternId(OpcodePatternId::UNASSIGNED)
+        : mOpcodeId(OpcodeId::UNASSIGNED)
         , mAddress(address)
         , mOpcode(opcode)
     { }
@@ -29,7 +29,7 @@ struct Instruction
 
     void DecodeFrom(const OpcodePatternDef& def)
     {
-        mPatternId = def.mPatternId;
+        mOpcodeId = def.mOpcodeId;
 
         mArguments.clear();
         for (const auto& argDef : def.mArgs)
@@ -39,8 +39,8 @@ struct Instruction
         }
     }
 
-    OpcodePatternId GetPatternId() const { return mPatternId; }
-    std::string GetPatternIdString() const { return GetOpcodePatternString(mPatternId); }
+    OpcodeId GetOpcodeId() const { return mOpcodeId; }
+    std::string GetPatternIdString() const { return GetOpcodePatternString(mOpcodeId); }
 
     uint16_t GetAddress() const { return mAddress; }
     uint16_t GetOpcode() const { return mOpcode; }
@@ -52,7 +52,7 @@ struct Instruction
     }
 
 private:
-    OpcodePatternId mPatternId;
+    OpcodeId mOpcodeId;
     std::vector<uint16_t> mArguments;
 
     // Core decode metadata
