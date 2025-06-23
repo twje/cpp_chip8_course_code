@@ -91,14 +91,7 @@ public:
 
 	virtual olc::vi2d GetSize() const override
 	{
-		const std::string sampleLabel = " F: 0xFFFF"; // Longest possible line
-		const int32_t charWidth = 8;
-		const int32_t charHeight = 8;
-
-		return {
-			static_cast<int32_t>(sampleLabel.size()) * charWidth,
-			STACK_SIZE * charHeight
-		};
+		return mFrame.GetSize();
 	}
 
 	virtual olc::vi2d GetPosition() const override
@@ -316,6 +309,86 @@ private:
 };
 
 //--------------------------------------------------------------------------------
+class InstructionUI : public IWidget
+{
+public:
+	InstructionUI()
+		: mFrame("Instruction")
+	{
+		mFrame.SetContentSize(GetInternalContentSize());
+	}
+
+	virtual olc::vi2d GetSize() const override
+	{
+		return mFrame.GetSize();
+	}
+
+	virtual olc::vi2d GetPosition() const override
+	{
+		return mFrame.GetPosition();
+	}
+
+	virtual void SetPosition(const olc::vi2d& position) override
+	{
+		mFrame.SetPosition(position);
+	}
+
+	virtual void Draw(olc::PixelGameEngine& pge) const override
+	{
+		mFrame.Draw(pge);
+
+		const olc::vi2d offset = mFrame.GetContentOffset();
+		const int32_t lineHeight = 8;
+
+		auto DrawLine = [&](int lineIndex, const std::string& text)
+			{
+				olc::vi2d pos = offset + olc::vi2d{ 0, lineIndex * lineHeight };
+				pge.DrawString(pos, text, UIStyle::kColorText);
+			};
+
+		const int labelWidth = 10;
+
+		DrawLine(0, RightAlign("Address:", labelWidth) + " 0x" + Hex(0, 4));
+		DrawLine(1, RightAlign("Opcode:", labelWidth) + " 0x" + Hex(0, 4));
+		DrawLine(2, RightAlign("Pattern:", labelWidth) + " Cxkk");
+		DrawLine(3, RightAlign("Mnemonic:", labelWidth) + " DRW_VX_VY_N");
+		DrawLine(4, RightAlign("Operand 1:", labelWidth) + " 0x" + Hex(0, 3));
+		DrawLine(5, RightAlign("Operand 2:", labelWidth) + " 0x" + Hex(0, 3));
+	}
+
+private:
+	olc::vi2d GetInternalContentSize() const
+	{
+		std::string longestSample = " Mnemonic: DRW_VX_VY_N";  // Empty space is due to alignment
+								    
+		const int32_t lineHeight = 8;
+		const int32_t lineCount = 6;
+		const int32_t textWidth = longestSample.size() * 8;
+		return { textWidth, lineCount * lineHeight };
+	}
+
+	std::string Hex(uint32_t value, uint8_t width) const
+	{
+		std::string s(width, '0');
+		for (int i = width - 1; i >= 0; --i, value >>= 4)
+		{
+			s[i] = "0123456789ABCDEF"[value & 0xF];
+		}
+		return s;
+	}
+
+	std::string RightAlign(const std::string& label, size_t width) const
+	{
+		if (label.size() >= width) return label;
+		return std::string(width - label.size(), ' ') + label;
+	}
+	
+	olc::vi2d mPosition;
+	WidgetFrame mFrame;
+};
+
+
+//--------------------------------------------------------------------------------
 enum class Chip8Key : uint8_t
 {
 	Key0, 
@@ -487,7 +560,7 @@ public:
 		mFrame.Draw(pge);
 
 		const int32_t lineHeight = 8;
-		const int32_t numLines = 7;
+		const int32_t numLines = 6;
 		const int32_t bytesPerLine = 2;
 		const int32_t halfLines = numLines / 2;
 		const olc::vi2d start = mFrame.GetContentOffset();
@@ -502,7 +575,7 @@ public:
 				continue;
 			}
 
-			std::string prefix = (address == mCurrentAddress) ? ">" : " ";
+			std::string prefix = (address == mCurrentAddress) ? ">0x" : " 0x";
 			std::string line = prefix + Hex(address, 4) + ": ";
 
 			for (int b = 0; b < bytesPerLine; ++b)
@@ -526,10 +599,10 @@ public:
 private:
 	olc::vi2d GetInternalContentSize() const
 	{
-		const std::string sample = ">FFFF: FF FF";
+		const std::string sample = "0x>FFFF: FF FF";
 		const int32_t charWidth = 8;
 		const int32_t lineHeight = 8;
-		const int32_t numLines = 7;
+		const int32_t numLines = 6;
 
 		return {
 			static_cast<int32_t>(sample.size()) * charWidth,
@@ -575,7 +648,8 @@ public:
 			&mStackUI,
 			&mDisplayUI,
 			&mKeypadUI,
-			&mMemoryUI
+			&mMemoryUI,
+			&mInstructionUI
 		};
 
 		const olc::vi2d start{ kSpacing, kSpacing };
@@ -587,13 +661,16 @@ public:
 		const olc::vi2d belowStatus = start + olc::vi2d{ 0, mStatusUI.GetSize().y + kSpacing };
 
 		mDisplayUI.SetPosition(belowStatus);
-		PlaceRightOf(mRegisterUI, mDisplayUI, kSpacing, VertAlign::Top);
-		PlaceRightOf(mStackUI, mRegisterUI, kSpacing, VertAlign::Top);
-		PlaceBelow(mCPUStateUI, mDisplayUI, kSpacing, HortAlign::Left);
-		PlaceRightOf(mMemoryUI, mCPUStateUI, kSpacing, VertAlign::Top);			
+		PlaceRightOf(mKeypadUI, mDisplayUI, kSpacing, VertAlign::Top);
+		PlaceBelow(mInstructionUI, mDisplayUI, kSpacing, HortAlign::Left);
+		PlaceRightOf(mStackUI, mKeypadUI, kSpacing, VertAlign::Top);
+		PlaceRightOf(mRegisterUI, mStackUI, kSpacing, VertAlign::Top);
+		PlaceRightOf(mMemoryUI, mInstructionUI, kSpacing, VertAlign::Top);
+		PlaceRightOf(mCPUStateUI, mMemoryUI, kSpacing, VertAlign::Top);
+		//PlaceRightOf(mKeypadUI, mDisplayUI, kSpacing, VertAlign::Top);
 
 		// Special case
-		PlaceKeypadUIBottomRight();
+		//PlaceKeypadUIBottomRight();
 		ResizeStatusToMatchContent();
 	}
 
@@ -624,6 +701,7 @@ public:
 		mDisplayUI.Draw(pge);
 		mKeypadUI.Draw(pge);
 		mMemoryUI.Draw(pge);
+		mInstructionUI.Draw(pge);
 	}
 
 private:
@@ -646,7 +724,7 @@ private:
 	{
 		const auto contentWidgets = GetWidgetsExcluding({ &mKeypadUI });
 		const olc::vi2d contentBounds = ComputeBoundsOf(contentWidgets);
-		mKeypadUI.SetPosition(contentBounds - mKeypadUI.GetSize() + olc::vi2d{ kSpacing, 0 });
+		mKeypadUI.SetPosition(contentBounds - mKeypadUI.GetSize());
 	}
 
 	void ResizeStatusToMatchContent()
@@ -708,6 +786,7 @@ private:
 	DisplayUI mDisplayUI;
 	KeypadUI mKeypadUI;
 	MemoryUI mMemoryUI;
+	InstructionUI mInstructionUI;
 	std::vector<const IWidget*> mWidgets;
 };
 
