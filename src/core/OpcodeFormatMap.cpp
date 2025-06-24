@@ -46,17 +46,18 @@ const std::unordered_map<OpcodeId, OpcodeFormatDef> OPCODE_FORMAT_MAP = {
     { OpcodeId::LD_VX_I,     { 0xF0FF, 0xF065, { ARG_X } } },
 };
 
+// Operand labels use lowercase (e.g., "nnn") to denote placeholders and avoid confusion 
+// with uppercase hex digits.
 //--------------------------------------------------------------------------------
-std::string ToString(OperandLabel label)
+std::string OperandLabelToString(OperandLabel label)
 {
     switch (label)
     {
-        case OperandLabel::NNN: return "NNN";
-        case OperandLabel::KK:  return "KK";
-        case OperandLabel::N:   return "N";
-        case OperandLabel::X:   return "X";
-        case OperandLabel::Y:   return "Y";
-        case OperandLabel::None: return "None";
-        default: return "Invalid";
+        case OperandLabel::NNN: return "nnn";
+        case OperandLabel::KK:  return "kk";
+        case OperandLabel::N:   return "n";
+        case OperandLabel::X:   return "x";
+        case OperandLabel::Y:   return "y";
+        default: return "none";
     }
 }

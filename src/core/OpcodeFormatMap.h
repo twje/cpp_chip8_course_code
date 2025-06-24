@@ -44,4 +44,4 @@ extern const std::unordered_map<OpcodeId, OpcodeFormatDef> OPCODE_FORMAT_MAP;
 
 // Functions
 //--------------------------------------------------------------------------------
-std::string ToString(OperandLabel label);  // TODO: think about better function ame
+std::string OperandLabelToString(OperandLabel label);

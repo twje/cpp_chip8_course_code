@@ -142,7 +142,7 @@ std::vector<OperandInfo> Emulator::FormatOperands(const std::vector<OperandDef>&
 
 	for (size_t i = 0; i < defs.size(); ++i)
 	{
-		formatted.push_back({ ToString(defs[i].mLabel), values[i] });
+		formatted.push_back({ OperandLabelToString(defs[i].mLabel), values[i] });
 	}
 
 	return formatted;

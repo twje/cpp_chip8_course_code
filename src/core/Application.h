@@ -317,6 +317,10 @@ public:
 	{
 		mFrame.SetContentSize(GetInternalContentSize());
 	}
+	void UpdateDisplay(const InstructionInfo& info)
+	{
+		mInfo = info;
+	}
 
 	virtual olc::vi2d GetSize() const override
 	{
@@ -333,27 +337,22 @@ public:
 		mFrame.SetPosition(position);
 	}
 
-	virtual void Draw(olc::PixelGameEngine& pge) const override
+	void Draw(olc::PixelGameEngine& pge) const override
 	{
 		mFrame.Draw(pge);
-
 		const olc::vi2d offset = mFrame.GetContentOffset();
-		const int32_t lineHeight = 8;
-
-		auto DrawLine = [&](int lineIndex, const std::string& text)
-			{
-				olc::vi2d pos = offset + olc::vi2d{ 0, lineIndex * lineHeight };
-				pge.DrawString(pos, text, UIStyle::kColorText);
-			};
-
 		const int labelWidth = 10;
 
-		DrawLine(0, RightAlign("Address:", labelWidth) + " 0x" + Hex(0, 4));
-		DrawLine(1, RightAlign("Opcode:", labelWidth) + " 0x" + Hex(0, 4));
-		DrawLine(2, RightAlign("Pattern:", labelWidth) + " Cxkk");
-		DrawLine(3, RightAlign("Mnemonic:", labelWidth) + " DRW_VX_VY_N");
-		DrawLine(4, RightAlign("Operand 1:", labelWidth) + " 0x" + Hex(0, 3));
-		DrawLine(5, RightAlign("Operand 2:", labelWidth) + " 0x" + Hex(0, 3));
+		DrawField(pge, offset, 0, labelWidth, "Address:", "0x" + Hex(mInfo.mAddress, 4));
+		DrawField(pge, offset, 1, labelWidth, "Opcode:", "0x" + Hex(mInfo.mOpcode, 4));
+		DrawField(pge, offset, 2, labelWidth, "Pattern:", mInfo.mPattern);
+		DrawField(pge, offset, 3, labelWidth, "Mnemonic:", mInfo.mMnemonic);
+
+		const OperandInfo* op1 = mInfo.mOperands.size() > 0 ? &mInfo.mOperands[0] : nullptr;
+		const OperandInfo* op2 = mInfo.mOperands.size() > 1 ? &mInfo.mOperands[1] : nullptr;
+
+		DrawField(pge, offset, 4, labelWidth, "Operand 1:", FormatOperand(op1));
+		DrawField(pge, offset, 5, labelWidth, "Operand 2:", FormatOperand(op2));
 	}
 
 private:
@@ -383,7 +382,22 @@ private:
 		return std::string(width - label.size(), ' ') + label;
 	}
 	
+	std::string FormatOperand(const OperandInfo* op) const
+	{
+		if (!op) { return "-"; }
+		return "0x" + Hex(op->mValue, 3) + " (" + op->mLabel + ")";
+	}
+
+	void DrawField(olc::PixelGameEngine& pge, const olc::vi2d& offset, int line, int labelWidth,
+		const std::string& label, const std::string& value) const
+	{
+		const int lineHeight = 8;
+		olc::vi2d pos = offset + olc::vi2d{ 0, line * lineHeight };
+		pge.DrawString(pos, RightAlign(label, labelWidth) + " " + value, UIStyle::kColorText);
+	}
+
 	olc::vi2d mPosition;
+	InstructionInfo mInfo;
 	WidgetFrame mFrame;
 };
 
@@ -674,7 +688,9 @@ public:
 		ResizeStatusToMatchContent();
 	}
 
+	// TODO: think about a monolithic UpdateDisplay
 	CPUStateUI& GetCPUStateUI() { return mCPUStateUI; }
+	InstructionUI& GetInstructionUI() { return mInstructionUI; }
 
 	void SetAddress(uint16_t address)
 	{
@@ -831,9 +847,12 @@ public:
 		}
 
 		//--------------------------------------------
+		InstructionInfo info = mEmulator.PreviewInstruction();
+		
 		// Peek for UI display and update mnemonic
 		CPUState cpuState = mEmulator.GetCPU().GetState();
-		mUIManager.GetCPUStateUI().UpdateDisplay(mEmulator.GetCycle(), cpuState);
+		mUIManager.GetCPUStateUI().UpdateDisplay(mEmulator.GetCycle(), cpuState); // TODO: think aboiut where cycle berloings
+		mUIManager.GetInstructionUI().UpdateDisplay(info);
 
 		const auto peekResult = mEmulator.PeekNextInstruction();
 		mUIManager.SetAddress(peekResult.mInstruction.GetAddress()); // TODO: remove address from instruction, after refactor
