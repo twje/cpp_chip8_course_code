@@ -24,13 +24,6 @@ struct DecodeResult
 };
 
 //--------------------------------------------------------------------------------
-struct AddressOpcode
-{
-	uint16_t mAddress = 0;
-	uint16_t mOpcode = 0;
-};
-
-//--------------------------------------------------------------------------------
 struct CPUState
 {
 	// Core CPU State
@@ -61,8 +54,9 @@ public:
 	void Reset();
 	const CPUState& GetState() const { return mState; }
 
-	AddressOpcode Peek() const;
-	AddressOpcode Fetch();
+	RawInstruction PeekNextInstruction() const;
+	RawInstruction FetchInstruction();
+
 	DecodeResult Decode(uint16_t opcode) const;
 	ExecutionStatus Execute(const Instruction& instruction);	
 

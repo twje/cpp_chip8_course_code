@@ -80,7 +80,7 @@ InstructionInfo Emulator::PreviewInstruction() const
 {
 	InstructionInfo info;
 
-	AddressOpcode raw = mCPU.Peek();
+	RawInstruction raw = mCPU.PeekNextInstruction();
 	info.mAddress = raw.mAddress;
 	info.mOpcode = raw.mOpcode;	
 
@@ -110,7 +110,7 @@ InstructionInfo Emulator::PreviewInstruction() const
 //--------------------------------------------------------------------------------
 StepResult Emulator::Step()
 {	
-	AddressOpcode raw = mCPU.Fetch();	
+	RawInstruction raw = mCPU.FetchInstruction();
 	DecodeResult decode = mCPU.Decode(raw.mOpcode);
 
 	if (decode.status == DecodeStatus::UNKNOWN_OPCODE)

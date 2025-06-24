@@ -40,6 +40,13 @@ struct InstructionInfo
 };
 
 //--------------------------------------------------------------------------------
+struct RawInstruction
+{
+    uint16_t mAddress = 0;
+    uint16_t mOpcode = 0;
+};
+
+//--------------------------------------------------------------------------------
 struct Instruction
 {
     OpcodeId mOpcodeId = OpcodeId::UNASSIGNED;
