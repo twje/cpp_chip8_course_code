@@ -8,7 +8,7 @@ constexpr OperandDef ARG_X = { 0x0F00, 8, OperandLabel::X };
 constexpr OperandDef ARG_Y = { 0x00F0, 4, OperandLabel::Y };
 
 //--------------------------------------------------------------------------------
-const std::unordered_map<OpcodeId, OpcodeFormatDef> OPCODE_FORMAT_MAP = {
+const std::unordered_map<OpcodeId, OpcodeFormat> OPCODE_FORMAT_MAP = {
     { OpcodeId::SYS_ADDR,    { 0xF000, 0x0000, { ARG_NNN } } },
     { OpcodeId::CLS,         { 0xFFFF, 0x00E0, { } } },
     { OpcodeId::RET,         { 0xFFFF, 0x00EE, { } } },

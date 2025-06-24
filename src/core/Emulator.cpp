@@ -99,7 +99,7 @@ InstructionInfo Emulator::PreviewInstruction() const
 	info.mPattern = display.mPattern;
 	info.mMnemonic = display.mMnemonic;
 
-	const OpcodeFormatDef& def = OPCODE_FORMAT_MAP.at(instruction.mOpcodeId);
+	const OpcodeFormat& def = OPCODE_FORMAT_MAP.at(instruction.mOpcodeId);
 	info.mOperands = FormatOperands(def.mOperands, instruction.mOperands);
 
 	info.mPreviewCycle = mCycle;
@@ -110,7 +110,7 @@ InstructionInfo Emulator::PreviewInstruction() const
 //--------------------------------------------------------------------------------
 StepResult Emulator::Step()
 {	
-	AddressOpcode raw = mCPU.Peek();	
+	AddressOpcode raw = mCPU.Fetch();	
 	DecodeResult decode = mCPU.Decode(raw.mOpcode);
 
 	if (decode.status == DecodeStatus::UNKNOWN_OPCODE)

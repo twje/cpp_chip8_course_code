@@ -31,7 +31,7 @@ struct OperandDef
 };
 
 //--------------------------------------------------------------------------------
-struct OpcodeFormatDef
+struct OpcodeFormat
 {
     uint16_t mMask;
     uint16_t mPattern;
@@ -40,7 +40,7 @@ struct OpcodeFormatDef
 
 // Constants
 //--------------------------------------------------------------------------------
-extern const std::unordered_map<OpcodeId, OpcodeFormatDef> OPCODE_FORMAT_MAP;
+extern const std::unordered_map<OpcodeId, OpcodeFormat> OPCODE_FORMAT_MAP;
 
 // Functions
 //--------------------------------------------------------------------------------
