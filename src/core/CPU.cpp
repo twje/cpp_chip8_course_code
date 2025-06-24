@@ -35,8 +35,10 @@ void CPU::Reset()
     mState.mSoundTimer = 0;
 }
 
+// CHIP-8 stores opcodes as two consecutive bytes in big-endian format.
+// Read and combine the two bytes into a single 16-bit opcode.
 //--------------------------------------------------------------------------------
-AddressOpcode CPU::PeekZ() const
+AddressOpcode CPU::Peek() const
 {
     const uint16_t address = mState.mPC;
     assert(address % 2 == 0);
@@ -48,6 +50,17 @@ AddressOpcode CPU::PeekZ() const
     const uint16_t opcode = (static_cast<uint16_t>(hByte) << 8) | lByte;
     
     return { address, opcode };
+}
+
+//--------------------------------------------------------------------------------
+AddressOpcode CPU::Fetch()
+{
+    AddressOpcode raw = Peek();
+
+    // Advance PC early (some instructions override it)
+    mState.mPC += 2;
+
+    return raw;
 }
 
 //--------------------------------------------------------------------------------
@@ -67,61 +80,17 @@ DecodeResult CPU::Decode(uint16_t opcode) const
                 operands.push_back(value);
             }
         
-            return { DecodeStatus::OK, InstructionZ{ opcodeId, operands } };
+            return { DecodeStatus::OK, Instruction{ opcodeId, operands } };
         }
     }
 
     return { DecodeStatus::UNKNOWN_OPCODE, std::nullopt };
 }
 
-// CHIP-8 stores opcodes as two consecutive bytes in big-endian format.
-// Read and combine the two bytes into a single 16-bit opcode.
-//--------------------------------------------------------------------------------
-Instruction CPU::Peek()
-{
-    const uint16_t address = mState.mPC;
-    assert(address % 2 == 0);
-    assert(address >= PROGRAM_START_ADDRESS && address + 1 < RAM_SIZE);
-
-    const uint8_t hByte = mBus.mRAM.Read(address);
-    const uint8_t lByte = mBus.mRAM.Read(address + 1);
-
-    const uint16_t opcode = (static_cast<uint16_t>(hByte) << 8) | lByte;
-    Instruction instruction(address, opcode);
-
-    return instruction;
-}
-
-//--------------------------------------------------------------------------------
-Instruction CPU::Fetch()
-{
-    Instruction instruction = Peek();
-
-    // Advance PC early (some instructions override it)
-    mState.mPC += 2;
-
-    return instruction;
-}
-
-//--------------------------------------------------------------------------------
-bool CPU::Decode(Instruction& outInstruction)
-{
-    for (const auto& [opcodeId, opcodeFormatDef] : OPCODE_FORMAT_MAP)
-    {
-        if (outInstruction.MatchesPattern(opcodeFormatDef))
-        {
-            outInstruction.DecodeFrom(opcodeId);
-            return true;
-        }
-    }
-
-    return false;
-}
-
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute(const Instruction& instruction)
 {
-    switch (instruction.GetOpcodeId())
+    switch (instruction.mOpcodeId)
     {
         case OpcodeId::SYS_ADDR:    return Execute_0nnn_SYS_ADDR(instruction);
         case OpcodeId::CLS:         return Execute_00E0_CLS(instruction);
@@ -191,7 +160,7 @@ ExecutionStatus CPU::Execute_1nnn_JP_ADDR(const Instruction&)
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_2nnn_CALL_ADDR(const Instruction& instruction)
 {
-    const uint16_t address = instruction.GetArgument<uint16_t>(0);
+    const uint16_t address = instruction.GetOperand<uint16_t>(0);
 
     mState.mStack[mState.mSP] = mState.mPC;
     mState.mSP++;
@@ -203,8 +172,8 @@ ExecutionStatus CPU::Execute_2nnn_CALL_ADDR(const Instruction& instruction)
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_3xkk_SE_VX_KK(const Instruction& instruction)
 {
-    const size_t vxIndex = instruction.GetArgument<size_t>(0);
-    const uint8_t value = instruction.GetArgument<uint8_t>(1);
+    const size_t vxIndex = instruction.GetOperand<size_t>(0);
+    const uint8_t value = instruction.GetOperand<uint8_t>(1);
     const uint8_t vx = mState.mV.at(vxIndex);
 
     if (vx == value)
@@ -230,8 +199,8 @@ ExecutionStatus CPU::Execute_5xy0_SE_VX_VY(const Instruction&)
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_6xkk_LD_VX_KK(const Instruction& instruction)
 {
-    const size_t vxIndex = instruction.GetArgument<size_t>(0);
-    const uint8_t value = instruction.GetArgument<uint8_t>(1);
+    const size_t vxIndex = instruction.GetOperand<size_t>(0);
+    const uint8_t value = instruction.GetOperand<uint8_t>(1);
     mState.mV[vxIndex] = value;
 
     return ExecutionStatus::Executed;

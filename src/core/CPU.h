@@ -20,7 +20,7 @@
 struct DecodeResult
 {
 	DecodeStatus status = DecodeStatus::UNKNOWN_OPCODE;
-	std::optional<InstructionZ> mInstruction;
+	std::optional<Instruction> mInstruction;
 };
 
 //--------------------------------------------------------------------------------
@@ -60,13 +60,10 @@ public:
 	void Reset();
 	const CPUState& GetState() const { return mState; }
 
-	AddressOpcode PeekZ() const;
+	AddressOpcode Peek() const;
+	AddressOpcode Fetch();
 	DecodeResult Decode(uint16_t opcode) const;
-
-	Instruction Peek();
-	Instruction Fetch();
-	bool Decode(Instruction& outInstruction);	
-	ExecutionStatus Execute(const Instruction& instruction);
+	ExecutionStatus Execute(const Instruction& instruction);	
 
 private:
 	// One method per opcode

@@ -232,10 +232,10 @@ public:
 		mFrame.SetContentSize(GetInternalContentSize());
 	}
 
-	void UpdateDisplay(size_t cycle, const CPUState& cpuState)
+	void UpdateDisplay(const CPUState& cpuState, size_t cycle)
 	{
-		mCycle = cycle;
 		mCPUState = cpuState;
+		mCycle = cycle;
 	}
 
 	virtual olc::vi2d GetSize() const override  
@@ -400,7 +400,6 @@ private:
 	InstructionInfo mInfo;
 	WidgetFrame mFrame;
 };
-
 
 //--------------------------------------------------------------------------------
 enum class Chip8Key : uint8_t
@@ -688,14 +687,12 @@ public:
 		ResizeStatusToMatchContent();
 	}
 
-	// TODO: think about a monolithic UpdateDisplay
-	CPUStateUI& GetCPUStateUI() { return mCPUStateUI; }
-	InstructionUI& GetInstructionUI() { return mInstructionUI; }
-
-	void SetAddress(uint16_t address)
+	void UpdateDisplay(const InstructionInfo& info, const CPUState& cpuState, uint16_t cycle)
 	{
-		mMemoryUI.SetAddress(address);
-	}
+		mInstructionUI.UpdateDisplay(info);
+		mCPUStateUI.UpdateDisplay(cpuState, cycle);
+		mMemoryUI.SetAddress(info.mAddress);
+	}	
 
 	void SetStatusText(const std::string& text)
 	{
@@ -831,52 +828,50 @@ public:
 			return false;
 		}
 
-		// TEST
-		BinaryToHex(romPath.string(), romManager.ResolveRom("test_rom/test_opcode_1.ch8").string());
-
 		return true;
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
 		mUIManager.Draw(*this);
-
+		
 		if (mIsHalted)
 		{
 			return true;
 		}
 
-		//--------------------------------------------
-		InstructionInfo info = mEmulator.PreviewInstruction();
-		
-		// Peek for UI display and update mnemonic
+		InstructionInfo instrInfo = mEmulator.PreviewInstruction();
 		CPUState cpuState = mEmulator.GetCPU().GetState();
-		mUIManager.GetCPUStateUI().UpdateDisplay(mEmulator.GetCycle(), cpuState); // TODO: think aboiut where cycle berloings
-		mUIManager.GetInstructionUI().UpdateDisplay(info);
+		uint16_t cycle = mEmulator.GetCycle();
 
-		const auto peekResult = mEmulator.PeekNextInstruction();
-		mUIManager.SetAddress(peekResult.mInstruction.GetAddress()); // TODO: remove address from instruction, after refactor
+		mUIManager.UpdateDisplay(instrInfo, cpuState, cycle);
 
-		if (peekResult.status == PeekStatus::DecodeError)
+		if (instrInfo.mDecodeStatus == DecodeStatus::UNKNOWN_OPCODE)
 		{
-			mUIManager.SetStatusText("Decode Error (Halted)");
+			mUIManager.SetStatusText("Execution halted: Decode Error");
 			mIsHalted = true;
 			return true;
 		}
 
-		//--------------------------------------------
-		// Step emulator and update based on result
-		const StepResult result = mEmulator.Step();
-				
-		LogCycle(result.mInstruction);
-		LogExecution(result.mInstruction, result.mStatus);
+		StepResult stepResult = mEmulator.Step();
 
-		if (result.mStatus != ExecutionStatus::Executed)
+		// Decode should have succeeded if preview did
+		assert(stepResult.mStatus != ExecutionStatus::DecodeError);
+
+		std::string statusText;
+		if (stepResult.mStatus != ExecutionStatus::Executed)
 		{
+			statusText = "Execution halted: " + ExecutionStatusToString(stepResult.mStatus);
 			mIsHalted = true;
-			std::string statusStr = ExecutionStatusToString(result.mStatus) + " (Halted)";
-			mUIManager.SetStatusText(statusStr);
 		}
+		else
+		{
+			statusText = "Instruction executed";
+		}
+
+		LogCycle(instrInfo);
+		LogExecution(instrInfo, stepResult.mStatus);
+		mUIManager.SetStatusText(statusText);
 
 		return true;
 	}
@@ -889,21 +884,21 @@ private:
 			<< std::dec << std::nouppercase << std::setfill(' ');
 	}
 
-	void LogCycle(const Instruction& instruction)
+	void LogCycle(const InstructionInfo& info)
 	{
 		std::cout << "--- Cycle " << mEmulator.GetCycle() << " -----------------------------------\n";
 		std::cout << "Fetch and decode opcode ";
-		LogHex(std::cout, instruction.GetOpcode());
+		LogHex(std::cout, info.mOpcode);
 		std::cout << " at ";
-		LogHex(std::cout, instruction.GetAddress());
+		LogHex(std::cout, info.mAddress);
 		std::cout << std::endl;
 	}
 
-	void LogExecution(const Instruction& instruction, ExecutionStatus status)
+	void LogExecution(const InstructionInfo& info, ExecutionStatus status)
 	{
 		std::cout << "Execute opcode ";
-		LogHex(std::cout, instruction.GetOpcode());
-		std::cout << " (" << instruction.GetPatternIdString() << ")\n";
+		LogHex(std::cout, info.mOpcode);
+		std::cout << " (" << info.mPattern << ")\n";
 
 		std::cout << ExecutionStatusToString(status) << std::endl;
 	}

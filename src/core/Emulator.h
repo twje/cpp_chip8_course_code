@@ -30,7 +30,6 @@ public:
 	bool LoadRom(const fs::path& romPath);	
 
 	InstructionInfo PreviewInstruction() const;
-	PeekResult PeekNextInstruction();
 	StepResult Step();
 	
 	size_t GetCycle() const { return mCycle; }

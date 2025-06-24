@@ -142,9 +142,9 @@ TEST_F(OpcodeTest, 6xkk_LD_VX_KK)
     // Assert
     ASSERT_EQ(ExecutionStatus::Executed, step.mStatus);
 
-    const Instruction& instruction = step.mInstruction;
-    const size_t vxIndex = instruction.GetArgument<size_t>(0);
-    const uint8_t value = instruction.GetArgument<uint8_t>(1);
+    const Instruction& instruction = *step.mInstruction;
+    const size_t vxIndex = instruction.GetOperand<size_t>(0);
+    const uint8_t value = instruction.GetOperand<uint8_t>(1);
    
     ASSERT_EQ(GetCPUStateRef().mV[vxIndex], value);
 }

@@ -80,19 +80,20 @@ InstructionInfo Emulator::PreviewInstruction() const
 {
 	InstructionInfo info;
 
-	AddressOpcode raw = mCPU.PeekZ();
+	AddressOpcode raw = mCPU.Peek();
 	info.mAddress = raw.mAddress;
 	info.mOpcode = raw.mOpcode;
 
-	DecodeResult result = mCPU.Decode(raw.mOpcode);
-	info.mDecodeStatus = result.status;
+	DecodeResult decode = mCPU.Decode(raw.mOpcode);
+	info.mDecodeStatus = decode.status;
 
-	if (!result.mInstruction)
+	if (decode.status == DecodeStatus::UNKNOWN_OPCODE)
 	{
 		return info;
 	}
 
-	const InstructionZ& instruction = result.mInstruction.value();
+	assert(decode.mInstruction);
+	const Instruction& instruction = decode.mInstruction.value();
 
 	OpcodeDisplayInfo display = GetOpcodeDisplayInfo(instruction.mOpcodeId);
 	info.mPattern = display.mPattern;
@@ -105,31 +106,22 @@ InstructionInfo Emulator::PreviewInstruction() const
 }
 
 //--------------------------------------------------------------------------------
-PeekResult Emulator::PeekNextInstruction()
-{
-	Instruction instruction = mCPU.Peek();
-	if (!mCPU.Decode(instruction))
-	{
-		return { instruction, PeekStatus::DecodeError };
-	}	
-
-	return { instruction, PeekStatus::Valid };
-}
-
-//--------------------------------------------------------------------------------
 StepResult Emulator::Step()
-{
-	Instruction instruction = mCPU.Fetch();	
+{	
+	AddressOpcode raw = mCPU.Peek();	
+	DecodeResult decode = mCPU.Decode(raw.mOpcode);
 
-	if (!mCPU.Decode(instruction))
+	if (decode.status == DecodeStatus::UNKNOWN_OPCODE)
 	{
-		return { instruction, ExecutionStatus::DecodeError };
+		return { decode.mInstruction, ExecutionStatus::DecodeError };
 	}
+
+	assert(decode.mInstruction);
+	const Instruction& instruction = decode.mInstruction.value();
 	
-	ExecutionStatus result = mCPU.Execute(instruction);
-	mCycle++;
-	
-	return { instruction, result };
+	ExecutionStatus status = mCPU.Execute(instruction);
+
+	return { decode.mInstruction, status };
 }
 
 //--------------------------------------------------------------------------------

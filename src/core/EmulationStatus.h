@@ -5,6 +5,9 @@
 // Emulator
 #include "Instruction.h"
 
+// System
+#include <optional>
+
 //--------------------------------------------------------------------------------
 enum class ExecutionStatus
 {
@@ -15,22 +18,8 @@ enum class ExecutionStatus
 };
 
 //--------------------------------------------------------------------------------
-enum class PeekStatus
-{
-    Valid,
-    DecodeError
-};
-
-//--------------------------------------------------------------------------------
 struct StepResult 
 {
-    Instruction mInstruction;
+    std::optional<Instruction> mInstruction;
     ExecutionStatus mStatus;
-};
-
-//--------------------------------------------------------------------------------
-struct PeekResult
-{
-    Instruction mInstruction;
-    PeekStatus status;
 };
