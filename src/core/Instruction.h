@@ -12,9 +12,17 @@
 #include <string>
 
 //--------------------------------------------------------------------------------
+enum class DecodeStatus
+{
+    NOT_DECODED,
+    OK,
+    UNKNOWN_OPCODE,
+};
+
+//--------------------------------------------------------------------------------
 struct OperandInfo
 {
-    OperandLabel mLabel;
+    std::string mLabel;
     uint16_t mValue = 0;
 };
 
@@ -26,6 +34,14 @@ struct InstructionInfo
     std::string mPattern;               // e.g. "8xy1"
     std::string mMnemonic;              // e.g. "OR"
     std::vector<OperandInfo> mOperands; // e.g. [ {X, 1}, {Y, 2} ]
+    DecodeStatus mDecodeStatus = DecodeStatus::NOT_DECODED;
+};
+
+//--------------------------------------------------------------------------------
+struct InstructionZ
+{
+    OpcodeId mOpcodeId = OpcodeId::UNASSIGNED;
+    std::vector<uint16_t> mOperands;
 };
 
 //--------------------------------------------------------------------------------
@@ -60,7 +76,10 @@ struct Instruction
     }
 
     OpcodeId GetOpcodeId() const { return mOpcodeId; }
-    std::string GetPatternIdString() const { return GetOpcodePatternString(mOpcodeId); }
+    std::string GetPatternIdString() const 
+    { 
+        return GetOpcodeDisplayInfo(mOpcodeId).mPattern;
+    }
 
     uint16_t GetAddress() const { return mAddress; }
     uint16_t GetOpcode() const { return mOpcode; }

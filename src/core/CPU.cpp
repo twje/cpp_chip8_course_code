@@ -35,6 +35,45 @@ void CPU::Reset()
     mState.mSoundTimer = 0;
 }
 
+//--------------------------------------------------------------------------------
+AddressOpcode CPU::PeekZ() const
+{
+    const uint16_t address = mState.mPC;
+    assert(address % 2 == 0);
+    assert(address >= PROGRAM_START_ADDRESS && address + 1 < RAM_SIZE);
+
+    const uint8_t hByte = mBus.mRAM.Read(address);
+    const uint8_t lByte = mBus.mRAM.Read(address + 1);
+
+    const uint16_t opcode = (static_cast<uint16_t>(hByte) << 8) | lByte;
+    
+    return { address, opcode };
+}
+
+//--------------------------------------------------------------------------------
+DecodeResult CPU::Decode(uint16_t opcode) const
+{
+    for (const auto& [opcodeId, opcodeFormatDef] : OPCODE_FORMAT_MAP)
+    {
+        // Apply the mask to isolate pattern-relevant bits, then compare to expected pattern
+        // e.g. (0x8123 & 0xF00F) == 0x8003 for XOR_VX_VY
+        if ((opcode & opcodeFormatDef.mMask) == opcodeFormatDef.mPattern)
+        {
+            // Parse opcode operands
+            std::vector<uint16_t> operands;            
+            for (const auto& operandDef : opcodeFormatDef.mOperands)
+            {
+                uint16_t value = (opcode & operandDef.mMask) >> operandDef.mShift;
+                operands.push_back(value);
+            }
+        
+            return { DecodeStatus::OK, InstructionZ{ opcodeId, operands } };
+        }
+    }
+
+    return { DecodeStatus::UNKNOWN_OPCODE, std::nullopt };
+}
+
 // CHIP-8 stores opcodes as two consecutive bytes in big-endian format.
 // Read and combine the two bytes into a single 16-bit opcode.
 //--------------------------------------------------------------------------------

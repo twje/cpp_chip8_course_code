@@ -29,6 +29,7 @@ public:
 	void Reset();
 	bool LoadRom(const fs::path& romPath);	
 
+	InstructionInfo PreviewInstruction() const;
 	PeekResult PeekNextInstruction();
 	StepResult Step();
 	
@@ -37,6 +38,8 @@ public:
 	const Bus& GetBus() const { return mBus; }
 
 private:
+	std::vector<OperandInfo> FormatOperands(const std::vector<OperandDef>& defs, const std::vector<uint16_t>& values) const;
+
 	RAM mRAM;
 	Display mDisplay;
 	Keypad mKeypad;

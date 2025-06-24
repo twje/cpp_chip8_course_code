@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <string>
 
+// Enums
 //--------------------------------------------------------------------------------
 enum class OperandLabel
 {
@@ -37,5 +38,10 @@ struct OpcodeFormatDef
     std::vector<OperandDef> mOperands;
 };
 
+// Constants
 //--------------------------------------------------------------------------------
 extern const std::unordered_map<OpcodeId, OpcodeFormatDef> OPCODE_FORMAT_MAP;
+
+// Functions
+//--------------------------------------------------------------------------------
+std::string ToString(OperandLabel label);  // TODO: think about better function ame

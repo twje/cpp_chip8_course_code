@@ -10,10 +10,25 @@
 
 // System
 #include <array>
+#include <optional>
 
 // Macros
 //--------------------------------------------------------------------------------
 #define DECLARE_OPCODE_HANDLER(pattern, mnemonic) ExecutionStatus Execute_##pattern##_##mnemonic(const Instruction& instruction);
+
+//--------------------------------------------------------------------------------
+struct DecodeResult
+{
+	DecodeStatus status = DecodeStatus::UNKNOWN_OPCODE;
+	std::optional<InstructionZ> mInstruction;
+};
+
+//--------------------------------------------------------------------------------
+struct AddressOpcode
+{
+	uint16_t mAddress = 0;
+	uint16_t mOpcode = 0;
+};
 
 //--------------------------------------------------------------------------------
 struct CPUState
@@ -44,6 +59,9 @@ public:
 
 	void Reset();
 	const CPUState& GetState() const { return mState; }
+
+	AddressOpcode PeekZ() const;
+	DecodeResult Decode(uint16_t opcode) const;
 
 	Instruction Peek();
 	Instruction Fetch();

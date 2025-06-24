@@ -76,6 +76,35 @@ bool Emulator::LoadRom(const fs::path& romPath)
 }
 
 //--------------------------------------------------------------------------------
+InstructionInfo Emulator::PreviewInstruction() const
+{
+	InstructionInfo info;
+
+	AddressOpcode raw = mCPU.PeekZ();
+	info.mAddress = raw.mAddress;
+	info.mOpcode = raw.mOpcode;
+
+	DecodeResult result = mCPU.Decode(raw.mOpcode);
+	info.mDecodeStatus = result.status;
+
+	if (!result.mInstruction)
+	{
+		return info;
+	}
+
+	const InstructionZ& instruction = result.mInstruction.value();
+
+	OpcodeDisplayInfo display = GetOpcodeDisplayInfo(instruction.mOpcodeId);
+	info.mPattern = display.mPattern;
+	info.mMnemonic = display.mMnemonic;
+
+	const OpcodeFormatDef& def = OPCODE_FORMAT_MAP.at(instruction.mOpcodeId);
+	info.mOperands = FormatOperands(def.mOperands, instruction.mOperands);
+
+	return info;
+}
+
+//--------------------------------------------------------------------------------
 PeekResult Emulator::PeekNextInstruction()
 {
 	Instruction instruction = mCPU.Peek();
@@ -101,4 +130,20 @@ StepResult Emulator::Step()
 	mCycle++;
 	
 	return { instruction, result };
+}
+
+//--------------------------------------------------------------------------------
+std::vector<OperandInfo> Emulator::FormatOperands(const std::vector<OperandDef>& defs, const std::vector<uint16_t>& values) const
+{
+	assert(defs.size() == values.size() && "Operand defs and values size mismatch");
+
+	std::vector<OperandInfo> formatted;
+	formatted.reserve(defs.size());
+
+	for (size_t i = 0; i < defs.size(); ++i)
+	{
+		formatted.push_back({ ToString(defs[i].mLabel), values[i] });
+	}
+
+	return formatted;
 }

@@ -45,3 +45,18 @@ const std::unordered_map<OpcodeId, OpcodeFormatDef> OPCODE_FORMAT_MAP = {
     { OpcodeId::LD_I_VX,     { 0xF0FF, 0xF055, { ARG_X } } },
     { OpcodeId::LD_VX_I,     { 0xF0FF, 0xF065, { ARG_X } } },
 };
+
+//--------------------------------------------------------------------------------
+std::string ToString(OperandLabel label)
+{
+    switch (label)
+    {
+        case OperandLabel::NNN: return "NNN";
+        case OperandLabel::KK:  return "KK";
+        case OperandLabel::N:   return "N";
+        case OperandLabel::X:   return "X";
+        case OperandLabel::Y:   return "Y";
+        case OperandLabel::None: return "None";
+        default: return "Invalid";
+    }
+}

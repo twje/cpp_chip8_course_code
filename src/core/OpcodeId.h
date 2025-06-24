@@ -51,4 +51,11 @@ enum class OpcodeId : uint8_t
 };
 
 //--------------------------------------------------------------------------------
-std::string GetOpcodePatternString(OpcodeId id);
+struct OpcodeDisplayInfo
+{
+    std::string mPattern;   // e.g. "8xy1"
+    std::string mMnemonic;  // e.g. "OR"
+};
+
+//--------------------------------------------------------------------------------
+OpcodeDisplayInfo GetOpcodeDisplayInfo(OpcodeId id);
