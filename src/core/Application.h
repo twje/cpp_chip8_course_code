@@ -8,7 +8,6 @@
 #include "WidgetDecorators.h"
 #include "RomManager.h"
 #include "Emulator.h"
-#include "EmulationStatus.h"
 
 // Temp
 #include "Utils.h"

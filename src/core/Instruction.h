@@ -10,7 +10,10 @@
 #include <vector>
 #include <ostream>
 #include <string>
+#include <optional>
 
+//--------------------------------------------------------------------------------
+// Instruction decode status
 //--------------------------------------------------------------------------------
 enum class DecodeStatus
 {
@@ -19,6 +22,19 @@ enum class DecodeStatus
     UNKNOWN_OPCODE,
 };
 
+//--------------------------------------------------------------------------------
+// Instruction execution status
+//--------------------------------------------------------------------------------
+enum class ExecutionStatus
+{
+    Executed,
+    DecodeError,
+    NotImplemented,
+    MissingHandler
+};
+
+//--------------------------------------------------------------------------------
+// UI / Display metadata (used by debug panels and logs)
 //--------------------------------------------------------------------------------
 struct OperandInfo
 {
@@ -35,10 +51,12 @@ struct InstructionInfo
     std::string mMnemonic;              // e.g. "OR"
     std::vector<OperandInfo> mOperands; // e.g. [ {X, 1}, {Y, 2} ]
     DecodeStatus mDecodeStatus = DecodeStatus::NOT_DECODED;
-    
+
     size_t mPreviewCycle = 0; // Metadata: Emulator cycle of preview
 };
 
+//--------------------------------------------------------------------------------
+// Instruction data model
 //--------------------------------------------------------------------------------
 struct RawInstruction
 {
@@ -57,4 +75,14 @@ struct Instruction
     {
         return static_cast<T>(mOperands.at(index));
     }
+};
+
+//--------------------------------------------------------------------------------
+// Instruction execution result (returned by Emulator::Step)
+//--------------------------------------------------------------------------------
+struct StepResult
+{
+    std::optional<Instruction> mInstruction;
+    ExecutionStatus mStatus;
+    size_t mCycle = 0; // Cycle at which this instruction was executed
 };
