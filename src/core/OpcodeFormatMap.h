@@ -23,7 +23,7 @@ enum class OperandLabel
 };
 
 //--------------------------------------------------------------------------------
-struct OperandDef
+struct OperandFormat
 {
     uint16_t mMask;
     uint8_t mShift;
@@ -35,7 +35,7 @@ struct OpcodeFormat
 {
     uint16_t mMask;
     uint16_t mPattern;
-    std::vector<OperandDef> mOperands;
+    std::vector<OperandFormat> mOperands;
 };
 
 // Constants

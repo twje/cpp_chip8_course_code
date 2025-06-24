@@ -128,7 +128,7 @@ StepResult Emulator::Step()
 }
 
 //--------------------------------------------------------------------------------
-std::vector<OperandInfo> Emulator::FormatOperands(const std::vector<OperandDef>& defs, const std::vector<uint16_t>& values) const
+std::vector<OperandInfo> Emulator::FormatOperands(const std::vector<OperandFormat>& defs, const std::vector<uint16_t>& values) const
 {
 	assert(defs.size() == values.size() && "Operand defs and values size mismatch");
 

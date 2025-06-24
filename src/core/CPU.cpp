@@ -74,9 +74,9 @@ DecodeResult CPU::Decode(uint16_t opcode) const
         {
             // Parse opcode operands
             std::vector<uint16_t> operands;            
-            for (const auto& operandDef : opcodeFormat.mOperands)
+            for (const auto& operandFormat : opcodeFormat.mOperands)
             {
-                uint16_t value = (opcode & operandDef.mMask) >> operandDef.mShift;
+                uint16_t value = (opcode & operandFormat.mMask) >> operandFormat.mShift;
                 operands.push_back(value);
             }
         
