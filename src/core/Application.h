@@ -519,7 +519,7 @@ class StatusUI : public IWidget
 	static constexpr int32_t kPadding = 1;
 
 public:
-	StatusUI()		
+	StatusUI()
 	{
 		mFrame.SetContentSize({ 0, kCharPixelHeight + kPadding });
 	}
@@ -538,7 +538,7 @@ public:
 	virtual void Draw(olc::PixelGameEngine& pge) const override
 	{
 		mFrame.Draw(pge);
-		pge.DrawString(mFrame.GetContentOffset() + olc::vi2d{ kPadding, kPadding }, "Status: " + mText);
+		pge.DrawString(mFrame.GetContentOffset() + olc::vi2d{ kPadding, kPadding }, mText);
 		// TODO: Add text color, UIStyle is the source of truth
 	}
 
@@ -680,17 +680,15 @@ public:
 		PlaceRightOf(mRegisterUI, mStackUI, kSpacing, VertAlign::Top);
 		PlaceRightOf(mMemoryUI, mInstructionUI, kSpacing, VertAlign::Top);
 		PlaceRightOf(mCPUStateUI, mMemoryUI, kSpacing, VertAlign::Top);
-		//PlaceRightOf(mKeypadUI, mDisplayUI, kSpacing, VertAlign::Top);
 
-		// Special case
-		//PlaceKeypadUIBottomRight();
+		// Special case		
 		ResizeStatusToMatchContent();
 	}
 
-	void UpdateDisplay(const InstructionInfo& info, const CPUState& cpuState, uint16_t cycle)
+	void UpdateDisplay(const InstructionInfo& info, const CPUState& cpuState)
 	{
 		mInstructionUI.UpdateDisplay(info);
-		mCPUStateUI.UpdateDisplay(cpuState, cycle);
+		mCPUStateUI.UpdateDisplay(cpuState, info.mPreviewCycle);
 		mMemoryUI.SetAddress(info.mAddress);
 	}	
 
@@ -731,13 +729,6 @@ private:
 		}
 
 		return result;
-	}
-
-	void PlaceKeypadUIBottomRight()
-	{
-		const auto contentWidgets = GetWidgetsExcluding({ &mKeypadUI });
-		const olc::vi2d contentBounds = ComputeBoundsOf(contentWidgets);
-		mKeypadUI.SetPosition(contentBounds - mKeypadUI.GetSize());
 	}
 
 	void ResizeStatusToMatchContent()
@@ -842,9 +833,9 @@ public:
 
 		InstructionInfo instrInfo = mEmulator.PreviewInstruction();
 		CPUState cpuState = mEmulator.GetCPU().GetState();
-		uint16_t cycle = mEmulator.GetCycle();
 
-		mUIManager.UpdateDisplay(instrInfo, cpuState, cycle);
+		mUIManager.UpdateDisplay(instrInfo, cpuState);
+		LogInstructionPreview(instrInfo);
 
 		if (instrInfo.mDecodeStatus == DecodeStatus::UNKNOWN_OPCODE)
 		{
@@ -854,25 +845,16 @@ public:
 		}
 
 		StepResult stepResult = mEmulator.Step();
-
-		// Decode should have succeeded if preview did
 		assert(stepResult.mStatus != ExecutionStatus::DecodeError);
 
-		std::string statusText;
 		if (stepResult.mStatus != ExecutionStatus::Executed)
 		{
-			statusText = "Execution halted: " + ExecutionStatusToString(stepResult.mStatus);
+			mUIManager.SetStatusText("Execution halted: " + ExecutionStatusToString(stepResult.mStatus));
 			mIsHalted = true;
 		}
-		else
-		{
-			statusText = "Instruction executed";
-		}
-
-		LogCycle(instrInfo);
-		LogExecution(instrInfo, stepResult.mStatus);
-		mUIManager.SetStatusText(statusText);
-
+		
+		LogInstructionExecution(instrInfo, stepResult.mStatus);
+		
 		return true;
 	}
 
@@ -884,9 +866,9 @@ private:
 			<< std::dec << std::nouppercase << std::setfill(' ');
 	}
 
-	void LogCycle(const InstructionInfo& info)
+	void LogInstructionPreview(const InstructionInfo& info)
 	{
-		std::cout << "--- Cycle " << mEmulator.GetCycle() << " -----------------------------------\n";
+		std::cout << "--- Cycle " << info.mPreviewCycle << " -----------------------------------\n";
 		std::cout << "Fetch and decode opcode ";
 		LogHex(std::cout, info.mOpcode);
 		std::cout << " at ";
@@ -894,7 +876,7 @@ private:
 		std::cout << std::endl;
 	}
 
-	void LogExecution(const InstructionInfo& info, ExecutionStatus status)
+	void LogInstructionExecution(const InstructionInfo& info, ExecutionStatus status)
 	{
 		std::cout << "Execute opcode ";
 		LogHex(std::cout, info.mOpcode);

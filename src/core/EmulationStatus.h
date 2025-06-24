@@ -22,4 +22,5 @@ struct StepResult
 {
     std::optional<Instruction> mInstruction;
     ExecutionStatus mStatus;
+    size_t mCycle = 0; // Cycle at which this instruction was executed
 };

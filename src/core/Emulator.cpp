@@ -82,7 +82,7 @@ InstructionInfo Emulator::PreviewInstruction() const
 
 	AddressOpcode raw = mCPU.Peek();
 	info.mAddress = raw.mAddress;
-	info.mOpcode = raw.mOpcode;
+	info.mOpcode = raw.mOpcode;	
 
 	DecodeResult decode = mCPU.Decode(raw.mOpcode);
 	info.mDecodeStatus = decode.status;
@@ -102,6 +102,8 @@ InstructionInfo Emulator::PreviewInstruction() const
 	const OpcodeFormatDef& def = OPCODE_FORMAT_MAP.at(instruction.mOpcodeId);
 	info.mOperands = FormatOperands(def.mOperands, instruction.mOperands);
 
+	info.mPreviewCycle = mCycle;
+
 	return info;
 }
 
@@ -120,6 +122,7 @@ StepResult Emulator::Step()
 	const Instruction& instruction = decode.mInstruction.value();
 	
 	ExecutionStatus status = mCPU.Execute(instruction);
+	mCycle++;
 
 	return { decode.mInstruction, status };
 }

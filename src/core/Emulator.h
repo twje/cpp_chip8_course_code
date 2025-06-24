@@ -31,8 +31,7 @@ public:
 
 	InstructionInfo PreviewInstruction() const;
 	StepResult Step();
-	
-	size_t GetCycle() const { return mCycle; }
+
 	const CPU& GetCPU() const { return mCPU; }
 	const Bus& GetBus() const { return mBus; }
 

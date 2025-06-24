@@ -37,6 +37,7 @@ struct CPUState
 	std::array<uint8_t, REGISTER_COUNT> mV{ };
 	uint16_t mI = 0;
 	uint16_t mPC = 0;
+	uint16_t mCycle = 0;
 	
 	// Stack
 	uint8_t mSP = 0;
