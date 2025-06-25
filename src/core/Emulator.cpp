@@ -103,20 +103,20 @@ InstructionInfo Emulator::PreviewInstruction() const
 }
 
 //--------------------------------------------------------------------------------
-StepResult Emulator::Step()
+ExecutionStatus Emulator::Step()
 {	
 	uint16_t opcode = mCPU.FetchOpcode();
 	Instruction instruction = mCPU.Decode(opcode);
 
 	if (instruction.mOpcodeId == OpcodeId::UNASSIGNED)
 	{
-		return { instruction, ExecutionStatus::DecodeError };
+		return ExecutionStatus::DecodeError;
 	}
 
 	ExecutionStatus status = mCPU.Execute(instruction);
 	mCycle++;
 
-	return { instruction, status };
+	return status;
 }
 
 //--------------------------------------------------------------------------------

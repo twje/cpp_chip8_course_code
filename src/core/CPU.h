@@ -6,6 +6,7 @@
 #include "Config.h"
 #include "Bus.h"
 #include "Instruction.h"
+#include "ExecutionStatus.h"
 
 // System
 #include <array>
@@ -14,13 +15,6 @@
 // Macros
 //--------------------------------------------------------------------------------
 #define DECLARE_OPCODE_HANDLER(pattern, mnemonic) ExecutionStatus Execute_##pattern##_##mnemonic(const Instruction& instruction);
-
-//--------------------------------------------------------------------------------
-//struct DecodeResult
-//{
-//	DecodeStatus status = DecodeStatus::UNKNOWN_OPCODE;
-//	std::optional<Instruction> mInstruction;
-//};
 
 //--------------------------------------------------------------------------------
 struct CPUState

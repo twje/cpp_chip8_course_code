@@ -13,29 +13,13 @@
 #include <optional>
 
 //--------------------------------------------------------------------------------
-enum class DecodeStatus
-{
-    NOT_DECODED,
-    OK,
-    UNKNOWN_OPCODE,
-};
-
-//--------------------------------------------------------------------------------
-enum class ExecutionStatus
-{
-    Executed,
-    DecodeError,
-    NotImplemented,
-    MissingHandler
-};
-
-//--------------------------------------------------------------------------------
 struct OperandInfo
 {
     std::string mLabel;
     uint16_t mValue = 0;
 };
 
+// Metadata used for debug panels, logging, or UI preview
 //--------------------------------------------------------------------------------
 struct InstructionInfo
 {
@@ -49,8 +33,7 @@ struct InstructionInfo
     size_t mPreviewCycle = 0; // Metadata: Emulator cycle of preview
 };
 
-//--------------------------------------------------------------------------------
-// Instruction data model
+// Runtime instruction with decoded operands, used for execution
 //--------------------------------------------------------------------------------
 struct Instruction
 {
@@ -62,12 +45,4 @@ struct Instruction
     {
         return static_cast<T>(mOperands.at(index));
     }
-};
-
-//--------------------------------------------------------------------------------
-struct StepResult
-{
-    std::optional<Instruction> mInstruction;
-    ExecutionStatus mStatus;
-    size_t mCycle = 0; // Cycle at which this instruction was executed
 };

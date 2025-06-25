@@ -28,6 +28,12 @@ protected:
     // Expose internal CPU state for test access only; this class is declared as a friend.
     CPUState& GetCPUStateRef() { return mEmulator.mCPU.mState; }
 
+    template<typename T>
+    T GetOperand(const InstructionInfo& info, size_t index)
+    {
+        return static_cast<T>(info.mOperands.at(index).mValue);
+    }
+
     Emulator mEmulator;  
 };
 
@@ -67,7 +73,7 @@ TEST_F(OpcodeTest, 2nnn_CALL_ADDR)
     LoadInstruction(PROGRAM_START_ADDRESS, 0x2F23);    
 
     // Act
-    StepResult step = mEmulator.Step();
+    ASSERT_EQ(ExecutionStatus::Executed, mEmulator.Step());
 
     // Assert
     ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mStack[0]);
@@ -87,10 +93,9 @@ TEST_F(OpcodeTest, 3xkk_SE_VX_KK)
         GetCPUStateRef().mV[2] = 0x05;
 
         // Act
-        StepResult step = mEmulator.Step();
+        ASSERT_EQ(ExecutionStatus::Executed, mEmulator.Step());
         
-        // Assert
-        ASSERT_EQ(ExecutionStatus::Executed, step.mStatus);
+        // Assert        
         ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mPC);
     }
 
@@ -102,10 +107,9 @@ TEST_F(OpcodeTest, 3xkk_SE_VX_KK)
         GetCPUStateRef().mV[2] = 0x04;
 
         // Act
-        StepResult step = mEmulator.Step();
+        ASSERT_EQ(ExecutionStatus::Executed, mEmulator.Step());
         
-        // Assert
-        ASSERT_EQ(ExecutionStatus::Executed, step.mStatus);
+        // Assert        
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mPC);
     }    
 }
@@ -134,18 +138,16 @@ TEST(OpcodeExecutionTests, DISABLED_5xy0_SE_VX_VY)
 TEST_F(OpcodeTest, 6xkk_LD_VX_KK)
 {
     // Arrange
-    LoadInstruction(PROGRAM_START_ADDRESS, 0x6206);    
+    LoadInstruction(PROGRAM_START_ADDRESS, 0x6206);
 
     // Act
-    const StepResult step = mEmulator.Step();
+    InstructionInfo info = mEmulator.PreviewInstruction();
+    ASSERT_EQ(ExecutionStatus::Executed, mEmulator.Step());
     
     // Assert
-    ASSERT_EQ(ExecutionStatus::Executed, step.mStatus);
+    const size_t vxIndex = GetOperand<size_t>(info, 0);
+    const uint8_t value = GetOperand<uint8_t>(info, 1);
 
-    const Instruction& instruction = *step.mInstruction;
-    const size_t vxIndex = instruction.GetOperand<size_t>(0);
-    const uint8_t value = instruction.GetOperand<uint8_t>(1);
-   
     ASSERT_EQ(GetCPUStateRef().mV[vxIndex], value);
 }
 

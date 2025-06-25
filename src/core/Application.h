@@ -843,16 +843,16 @@ public:
 			return true;
 		}
 
-		StepResult stepResult = mEmulator.Step();
-		assert(stepResult.mStatus != ExecutionStatus::DecodeError);
+		ExecutionStatus status = mEmulator.Step();
+		assert(status != ExecutionStatus::DecodeError);
 
-		if (stepResult.mStatus != ExecutionStatus::Executed)
+		if (status != ExecutionStatus::Executed)
 		{
-			mUIManager.SetStatusText("Execution halted: " + ExecutionStatusToString(stepResult.mStatus));
+			mUIManager.SetStatusText("Execution halted: " + ExecutionStatusToString(status));
 			mIsHalted = true;
 		}
 		
-		LogInstructionExecution(info, stepResult.mStatus);
+		LogInstructionExecution(info, status);
 		
 		return true;
 	}

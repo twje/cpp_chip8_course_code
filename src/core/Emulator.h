@@ -4,6 +4,7 @@
 //--------------------------------------------------------------------------------
 // Chip 8
 #include "Common.h"
+#include "ExecutionStatus.h"
 #include "RAM.h"
 #include "Display.h"
 #include "Keypad.h"
@@ -29,7 +30,7 @@ public:
 	bool LoadRom(const fs::path& romPath);	
 
 	InstructionInfo PreviewInstruction() const;
-	StepResult Step();
+	ExecutionStatus Step();
 
 	const CPU& GetCPU() const { return mCPU; }
 	const Bus& GetBus() const { return mBus; }
