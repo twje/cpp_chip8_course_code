@@ -1,12 +1,20 @@
 #include "RomManager.h"
 
-//--------------------------------------------------------------------------------
+// Includes
+//------------------------------------------------------------------------------
+// Emulator
+
+// Third Party
+
+// System
+
+//------------------------------------------------------------------------------
 RomManager::RomManager(const fs::path& romsRoot)
-	: mRomsRoot(romsRoot)
+        : mRomsRoot(romsRoot)
 { }
 
-//--------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 fs::path RomManager::ResolveRom(const std::string& relativePath) const
 {
-	return mRomsRoot / relativePath;
+        return mRomsRoot / relativePath;
 }

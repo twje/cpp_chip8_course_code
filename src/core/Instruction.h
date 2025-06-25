@@ -3,14 +3,12 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
-#include "OpcodeTable.h"
 #include "OpcodeId.h"
+#include "OpcodeTable.h"
 
 // System
-#include <vector>
-#include <ostream>
 #include <string>
-#include <optional>
+#include <vector>
 
 //--------------------------------------------------------------------------------
 struct OperandInfo

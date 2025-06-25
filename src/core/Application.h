@@ -3,17 +3,31 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
-#include "IWidget.h"
-#include "WidgetFrame.h"
-#include "WidgetDecorators.h"
-#include "RomManager.h"
+#include "Bus.h"
+#include "CPU.h"
+#include "Config.h"
+#include "Display.h"
 #include "Emulator.h"
+#include "IWidget.h"
+#include "Instruction.h"
+#include "RAM.h"
+#include "RomManager.h"
+#include "UIStyle.h"
+#include "WidgetFrame.h"
 
 // Third Party
 #include "olcPixelGameEngine.h"
 
 // System
+#include <algorithm>
+#include <cassert>
+#include <cstdint>
+#include <iomanip>
+#include <initializer_list>
+#include <iostream>
 #include <string>
+#include <string_view>
+#include <vector>
 
 //--------------------------------------------------------------------------------
 class DisplayUI : public IWidget

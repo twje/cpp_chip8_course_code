@@ -2,19 +2,22 @@
 
 // Includes
 //--------------------------------------------------------------------------------
-// Chip 8
-#include "Common.h"
-#include "ExecutionStatus.h"
-#include "RAM.h"
-#include "Display.h"
-#include "Keypad.h"
-#include "DelayTimer.h"
-#include "SoundTimer.h"
+// Emulator
 #include "Bus.h"
 #include "CPU.h"
+#include "Common.h"
+#include "DelayTimer.h"
+#include "Display.h"
+#include "ExecutionStatus.h"
+#include "Instruction.h"
+#include "Keypad.h"
+#include "RAM.h"
+#include "SoundTimer.h"
+
+// Third Party
 
 // System
-#include <array>
+#include <vector>
 
 //--------------------------------------------------------------------------------
 class Emulator

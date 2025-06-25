@@ -4,8 +4,8 @@
 #include "Common.h"
 
 // System
-#include <vector>
 #include <string>
+#include <vector>
 
 //--------------------------------------------------------------------------------
 class RomManager

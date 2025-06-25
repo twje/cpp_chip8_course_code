@@ -4,16 +4,14 @@
 //--------------------------------------------------------------------------------
 // Emulator
 #include "Config.h"
-#include "Instruction.h"
-#include "RAM.h"
-#include "Display.h"
-#include "Keypad.h"
 #include "DelayTimer.h"
+#include "Display.h"
+#include "Instruction.h"
+#include "Keypad.h"
+#include "RAM.h"
 #include "SoundTimer.h"
 
 // System
-#include <optional>
-#include <iostream>
 #include <cassert>
 
 //--------------------------------------------------------------------------------

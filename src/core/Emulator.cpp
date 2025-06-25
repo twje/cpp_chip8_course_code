@@ -6,8 +6,10 @@
 #include "Config.h"
 
 // System
+#include <cassert>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 //--------------------------------------------------------------------------------
 Emulator::Emulator()

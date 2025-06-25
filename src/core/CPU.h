@@ -3,14 +3,13 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
-#include "Config.h"
 #include "Bus.h"
-#include "Instruction.h"
+#include "Config.h"
 #include "ExecutionStatus.h"
+#include "Instruction.h"
 
 // System
 #include <array>
-#include <optional>
 
 // Macros
 //--------------------------------------------------------------------------------
