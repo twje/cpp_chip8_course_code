@@ -9,9 +9,6 @@
 #include "RomManager.h"
 #include "Emulator.h"
 
-// Temp
-#include "Utils.h"
-
 // Third Party
 #include "olcPixelGameEngine.h"
 
