@@ -64,7 +64,7 @@ uint16_t CPU::FetchOpcode()
 }
 
 //--------------------------------------------------------------------------------
-DecodeResult CPU::Decode(uint16_t opcode) const
+Instruction CPU::Decode(uint16_t opcode) const
 {
     for (const auto& [opcodeId, opcodeSpec] : OPCODE_TABLE)
     {
@@ -80,11 +80,11 @@ DecodeResult CPU::Decode(uint16_t opcode) const
                 operands.push_back(value);
             }
         
-            return { DecodeStatus::OK, Instruction{ opcodeId, operands } };
+            return { opcodeId, operands };
         }
     }
 
-    return { DecodeStatus::UNKNOWN_OPCODE, std::nullopt };
+    return { };
 }
 
 //--------------------------------------------------------------------------------

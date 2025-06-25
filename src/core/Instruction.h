@@ -44,7 +44,7 @@ struct InstructionInfo
     std::string mPattern;               // e.g. "8xy1"
     std::string mMnemonic;              // e.g. "OR"
     std::vector<OperandInfo> mOperands; // e.g. [ {X, 1}, {Y, 2} ]
-    DecodeStatus mDecodeStatus = DecodeStatus::NOT_DECODED;
+    bool mDecodeSucceeded = false;
 
     size_t mPreviewCycle = 0; // Metadata: Emulator cycle of preview
 };

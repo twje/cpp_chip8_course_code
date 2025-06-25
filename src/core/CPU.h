@@ -16,11 +16,11 @@
 #define DECLARE_OPCODE_HANDLER(pattern, mnemonic) ExecutionStatus Execute_##pattern##_##mnemonic(const Instruction& instruction);
 
 //--------------------------------------------------------------------------------
-struct DecodeResult
-{
-	DecodeStatus status = DecodeStatus::UNKNOWN_OPCODE;
-	std::optional<Instruction> mInstruction;
-};
+//struct DecodeResult
+//{
+//	DecodeStatus status = DecodeStatus::UNKNOWN_OPCODE;
+//	std::optional<Instruction> mInstruction;
+//};
 
 //--------------------------------------------------------------------------------
 struct CPUState
@@ -56,8 +56,8 @@ public:
 	uint16_t PeekNextOpcode() const;
 	uint16_t FetchOpcode();
 
-	DecodeResult Decode(uint16_t opcode) const;
-	ExecutionStatus Execute(const Instruction& instruction);	
+	Instruction Decode(uint16_t opcode) const;
+	ExecutionStatus Execute(const Instruction& instruction);
 
 private:
 	// One method per opcode

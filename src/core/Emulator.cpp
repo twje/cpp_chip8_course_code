@@ -78,51 +78,45 @@ bool Emulator::LoadRom(const fs::path& romPath)
 //--------------------------------------------------------------------------------
 InstructionInfo Emulator::PreviewInstruction() const
 {
-	InstructionInfo instrInfo;
+	const uint16_t address = mCPU.GetState().mPC;
+	const uint16_t opcode = mCPU.PeekNextOpcode();
 
-	uint16_t opcode = mCPU.PeekNextOpcode();
-	instrInfo.mAddress = mCPU.GetState().mPC;
-	instrInfo.mOpcode = opcode;
+	Instruction instruction = mCPU.Decode(opcode);
 
-	DecodeResult decode = mCPU.Decode(opcode);
-	instrInfo.mDecodeStatus = decode.status;
+	InstructionInfo info;
+	info.mAddress = address;
+	info.mOpcode = opcode;
+	info.mDecodeSucceeded = (instruction.mOpcodeId != OpcodeId::UNASSIGNED);
 
-	if (decode.status == DecodeStatus::UNKNOWN_OPCODE)
+	if (!info.mDecodeSucceeded)
 	{
-		return instrInfo;
+		return info;
 	}
 
-	assert(decode.mInstruction);
-	const Instruction& instruction = decode.mInstruction.value();
+	const OpcodeSpec& spec = OPCODE_TABLE.at(instruction.mOpcodeId);
+	info.mPattern = spec.mPatternStr;
+	info.mMnemonic = spec.mMnemonic;
+	info.mOperands = FormatOperands(spec.mOperands, instruction.mOperands);
+	info.mPreviewCycle = mCycle;
 
-	const OpcodeSpec& opcodeSpec = OPCODE_TABLE.at(instruction.mOpcodeId);
-	instrInfo.mPattern = opcodeSpec.mPatternStr;
-	instrInfo.mMnemonic = opcodeSpec.mMnemonic;
-	instrInfo.mOperands = FormatOperands(opcodeSpec.mOperands, instruction.mOperands);
-	
-	instrInfo.mPreviewCycle = mCycle;
-
-	return instrInfo;
+	return info;
 }
 
 //--------------------------------------------------------------------------------
 StepResult Emulator::Step()
 {	
 	uint16_t opcode = mCPU.FetchOpcode();
-	DecodeResult decode = mCPU.Decode(opcode);
+	Instruction instruction = mCPU.Decode(opcode);
 
-	if (decode.status == DecodeStatus::UNKNOWN_OPCODE)
+	if (instruction.mOpcodeId == OpcodeId::UNASSIGNED)
 	{
-		return { decode.mInstruction, ExecutionStatus::DecodeError };
+		return { instruction, ExecutionStatus::DecodeError };
 	}
 
-	assert(decode.mInstruction);
-	const Instruction& instruction = decode.mInstruction.value();
-	
 	ExecutionStatus status = mCPU.Execute(instruction);
 	mCycle++;
 
-	return { decode.mInstruction, status };
+	return { instruction, status };
 }
 
 //--------------------------------------------------------------------------------

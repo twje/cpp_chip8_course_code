@@ -830,13 +830,13 @@ public:
 			return true;
 		}
 
-		InstructionInfo instrInfo = mEmulator.PreviewInstruction();
+		InstructionInfo info = mEmulator.PreviewInstruction();
 		CPUState cpuState = mEmulator.GetCPU().GetState();
 
-		mUIManager.UpdateDisplay(instrInfo, cpuState);
-		LogInstructionPreview(instrInfo);
+		mUIManager.UpdateDisplay(info, cpuState);
+		LogInstructionPreview(info);
 
-		if (instrInfo.mDecodeStatus == DecodeStatus::UNKNOWN_OPCODE)
+		if (!info.mDecodeSucceeded)
 		{
 			mUIManager.SetStatusText("Execution halted: Decode Error");
 			mIsHalted = true;
@@ -852,7 +852,7 @@ public:
 			mIsHalted = true;
 		}
 		
-		LogInstructionExecution(instrInfo, stepResult.mStatus);
+		LogInstructionExecution(info, stepResult.mStatus);
 		
 		return true;
 	}
