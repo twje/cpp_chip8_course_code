@@ -53,8 +53,8 @@ public:
 	void Reset();
 	const CPUState& GetState() const { return mState; }
 
-	RawInstruction PeekNextInstruction() const;
-	RawInstruction FetchInstruction();
+	uint16_t PeekNextOpcode() const;
+	uint16_t FetchOpcode();
 
 	DecodeResult Decode(uint16_t opcode) const;
 	ExecutionStatus Execute(const Instruction& instruction);	

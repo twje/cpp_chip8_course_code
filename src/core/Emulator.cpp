@@ -80,11 +80,11 @@ InstructionInfo Emulator::PreviewInstruction() const
 {
 	InstructionInfo info;
 
-	RawInstruction raw = mCPU.PeekNextInstruction();
-	info.mAddress = raw.mAddress;
-	info.mOpcode = raw.mOpcode;	
+	uint16_t opcode = mCPU.PeekNextOpcode();
+	info.mAddress = mCPU.GetState().mPC;
+	info.mOpcode = opcode;
 
-	DecodeResult decode = mCPU.Decode(raw.mOpcode);
+	DecodeResult decode = mCPU.Decode(opcode);
 	info.mDecodeStatus = decode.status;
 
 	if (decode.status == DecodeStatus::UNKNOWN_OPCODE)
@@ -110,8 +110,8 @@ InstructionInfo Emulator::PreviewInstruction() const
 //--------------------------------------------------------------------------------
 StepResult Emulator::Step()
 {	
-	RawInstruction raw = mCPU.FetchInstruction();
-	DecodeResult decode = mCPU.Decode(raw.mOpcode);
+	uint16_t opcode = mCPU.FetchOpcode();
+	DecodeResult decode = mCPU.Decode(opcode);
 
 	if (decode.status == DecodeStatus::UNKNOWN_OPCODE)
 	{

@@ -38,7 +38,7 @@ void CPU::Reset()
 // CHIP-8 stores opcodes as two consecutive bytes in big-endian format.
 // Read and combine the two bytes into a single 16-bit opcode.
 //--------------------------------------------------------------------------------
-RawInstruction CPU::PeekNextInstruction() const
+uint16_t CPU::PeekNextOpcode() const
 {
     const uint16_t address = mState.mPC;
     assert(address % 2 == 0);
@@ -49,18 +49,18 @@ RawInstruction CPU::PeekNextInstruction() const
 
     const uint16_t opcode = (static_cast<uint16_t>(hByte) << 8) | lByte;
     
-    return { address, opcode };
+    return opcode;
 }
 
 //--------------------------------------------------------------------------------
-RawInstruction CPU::FetchInstruction()
+uint16_t CPU::FetchOpcode()
 {
-    RawInstruction raw = PeekNextInstruction();
+    uint16_t opcode = PeekNextOpcode();
 
     // Advance PC early (some instructions override it)
     mState.mPC += 2;
 
-    return raw;
+    return opcode;
 }
 
 //--------------------------------------------------------------------------------
