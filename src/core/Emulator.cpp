@@ -78,33 +78,31 @@ bool Emulator::LoadRom(const fs::path& romPath)
 //--------------------------------------------------------------------------------
 InstructionInfo Emulator::PreviewInstruction() const
 {
-	InstructionInfo info;
+	InstructionInfo instrInfo;
 
 	uint16_t opcode = mCPU.PeekNextOpcode();
-	info.mAddress = mCPU.GetState().mPC;
-	info.mOpcode = opcode;
+	instrInfo.mAddress = mCPU.GetState().mPC;
+	instrInfo.mOpcode = opcode;
 
 	DecodeResult decode = mCPU.Decode(opcode);
-	info.mDecodeStatus = decode.status;
+	instrInfo.mDecodeStatus = decode.status;
 
 	if (decode.status == DecodeStatus::UNKNOWN_OPCODE)
 	{
-		return info;
+		return instrInfo;
 	}
 
 	assert(decode.mInstruction);
 	const Instruction& instruction = decode.mInstruction.value();
 
-	OpcodeDisplayInfo display = GetOpcodeDisplayInfo(instruction.mOpcodeId);
-	info.mPattern = display.mPattern;
-	info.mMnemonic = display.mMnemonic;
+	const OpcodeSpec& opcodeSpec = OPCODE_TABLE.at(instruction.mOpcodeId);
+	instrInfo.mPattern = opcodeSpec.mPatternStr;
+	instrInfo.mMnemonic = opcodeSpec.mMnemonic;
+	instrInfo.mOperands = FormatOperands(opcodeSpec.mOperands, instruction.mOperands);
+	
+	instrInfo.mPreviewCycle = mCycle;
 
-	const OpcodeFormat& def = OPCODE_FORMAT_MAP.at(instruction.mOpcodeId);
-	info.mOperands = FormatOperands(def.mOperands, instruction.mOperands);
-
-	info.mPreviewCycle = mCycle;
-
-	return info;
+	return instrInfo;
 }
 
 //--------------------------------------------------------------------------------
@@ -128,16 +126,16 @@ StepResult Emulator::Step()
 }
 
 //--------------------------------------------------------------------------------
-std::vector<OperandInfo> Emulator::FormatOperands(const std::vector<OperandFormat>& defs, const std::vector<uint16_t>& values) const
+std::vector<OperandInfo> Emulator::FormatOperands(const std::vector<OperandSpec>& operandSpecs, const std::vector<uint16_t>& values) const
 {
-	assert(defs.size() == values.size() && "Operand defs and values size mismatch");
+	assert(operandSpecs.size() == values.size() && "Operand defs and values size mismatch");
 
 	std::vector<OperandInfo> formatted;
-	formatted.reserve(defs.size());
+	formatted.reserve(operandSpecs.size());
 
-	for (size_t i = 0; i < defs.size(); ++i)
+	for (size_t i = 0; i < operandSpecs.size(); ++i)
 	{
-		formatted.push_back({ OperandLabelToString(defs[i].mLabel), values[i] });
+		formatted.push_back({ operandSpecs[i].mLabel, values[i] });
 	}
 
 	return formatted;

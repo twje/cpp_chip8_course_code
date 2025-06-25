@@ -66,17 +66,17 @@ uint16_t CPU::FetchOpcode()
 //--------------------------------------------------------------------------------
 DecodeResult CPU::Decode(uint16_t opcode) const
 {
-    for (const auto& [opcodeId, opcodeFormat] : OPCODE_FORMAT_MAP)
+    for (const auto& [opcodeId, opcodeSpec] : OPCODE_TABLE)
     {
         // Apply the mask to isolate pattern-relevant bits, then compare to expected pattern
         // e.g. (0x8123 & 0xF00F) == 0x8003 for XOR_VX_VY
-        if ((opcode & opcodeFormat.mMask) == opcodeFormat.mPattern)
+        if ((opcode & opcodeSpec.mMask) == opcodeSpec.mPattern)
         {
             // Parse opcode operands
             std::vector<uint16_t> operands;            
-            for (const auto& operandFormat : opcodeFormat.mOperands)
+            for (const auto& operandSpec : opcodeSpec.mOperands)
             {
-                uint16_t value = (opcode & operandFormat.mMask) >> operandFormat.mShift;
+                uint16_t value = (opcode & operandSpec.mMask) >> operandSpec.mShift;
                 operands.push_back(value);
             }
         

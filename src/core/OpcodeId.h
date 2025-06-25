@@ -49,13 +49,3 @@ enum class OpcodeId : uint8_t
     
     UNASSIGNED,    // Default value until pattern is decoded
 };
-
-//--------------------------------------------------------------------------------
-struct OpcodeDisplayInfo
-{
-    std::string mPattern;   // e.g. "8xy1"
-    std::string mMnemonic;  // e.g. "OR"
-};
-
-//--------------------------------------------------------------------------------
-OpcodeDisplayInfo GetOpcodeDisplayInfo(OpcodeId id);

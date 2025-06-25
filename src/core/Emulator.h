@@ -35,7 +35,7 @@ public:
 	const Bus& GetBus() const { return mBus; }
 
 private:
-	std::vector<OperandInfo> FormatOperands(const std::vector<OperandFormat>& defs, const std::vector<uint16_t>& values) const;
+	std::vector<OperandInfo> FormatOperands(const std::vector<OperandSpec>& operandSpecs, const std::vector<uint16_t>& values) const;
 
 	RAM mRAM;
 	Display mDisplay;

@@ -3,7 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Emulator
-#include "OpcodeFormatMap.h"
+#include "OpcodeTable.h"
 #include "OpcodeId.h"
 
 // System
@@ -13,8 +13,6 @@
 #include <optional>
 
 //--------------------------------------------------------------------------------
-// Instruction decode status
-//--------------------------------------------------------------------------------
 enum class DecodeStatus
 {
     NOT_DECODED,
@@ -22,8 +20,6 @@ enum class DecodeStatus
     UNKNOWN_OPCODE,
 };
 
-//--------------------------------------------------------------------------------
-// Instruction execution status
 //--------------------------------------------------------------------------------
 enum class ExecutionStatus
 {
@@ -33,8 +29,6 @@ enum class ExecutionStatus
     MissingHandler
 };
 
-//--------------------------------------------------------------------------------
-// UI / Display metadata (used by debug panels and logs)
 //--------------------------------------------------------------------------------
 struct OperandInfo
 {
@@ -70,8 +64,6 @@ struct Instruction
     }
 };
 
-//--------------------------------------------------------------------------------
-// Instruction execution result (returned by Emulator::Step)
 //--------------------------------------------------------------------------------
 struct StepResult
 {
