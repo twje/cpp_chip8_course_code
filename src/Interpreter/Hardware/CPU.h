@@ -25,6 +25,7 @@ public:
 	CPU(Bus& bus);
 
 	void Reset();
+	void DecrementTimers();
 	const CPUState& GetState() const { return mState; }
 		
 	FetchResult Fetch() const;

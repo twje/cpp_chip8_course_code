@@ -35,6 +35,20 @@ void CPU::Reset()
 }
 
 //--------------------------------------------------------------------------------
+void CPU::DecrementTimers()
+{
+    if (mState.mDelayTimer > 0)
+    {
+        --mState.mDelayTimer;
+	}
+
+    if (mState.mSoundTimer > 0)
+    {
+        --mState.mSoundTimer;
+    }
+}
+
+//--------------------------------------------------------------------------------
 FetchResult CPU::Fetch() const
 {
     FetchResult result;
@@ -424,12 +438,13 @@ ExecutionStatus CPU::Execute_Dxyn_DRW_VX_VY_N(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Ex9E_SKP_VX(const Instruction& instruction)
 {
     const size_t index = instruction.GetOperandX();
 	uint8_t key = mState.mRegisters[index];
-
+	
 	if (mBus.mKeypad.IsKeyPressed(Keypad::IndexToKey(key)))
 	{
 		mState.mProgramCounter += INSTRUCTION_SIZE; // Skip next instruction

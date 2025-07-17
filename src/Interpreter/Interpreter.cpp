@@ -84,5 +84,5 @@ StepResult Interpreter::Step()
 //--------------------------------------------------------------------------------
 void Interpreter::DecrementTimers()
 {
-
+	mCPU.DecrementTimers();
 }
