@@ -47,7 +47,7 @@ protected:
         Instruction instruction = cpu.Decode(cpu.PeekNextOpcode());
 
         EXPECT_TRUE(instruction.IsValid()) << "Decode failed";
-        EXPECT_TRUE(mInterpreter.Step() == ExecutionStatus::Executed) << "Execution failed";
+        EXPECT_TRUE(mInterpreter.Step().mStatus == ExecutionStatus::Executed) << "Execution failed";
 
         return instruction;
     }

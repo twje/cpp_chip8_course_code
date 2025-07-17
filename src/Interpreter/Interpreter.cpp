@@ -54,7 +54,7 @@ Snapshot Interpreter::PeekNextInstruction() const
 
 // Interpreter state remains unchanged if instruction fails to execute.
 //--------------------------------------------------------------------------------
-ExecutionStatus Interpreter::Step()
+StepResult Interpreter::Step()
 {
 	FetchResult fetch = mCPU.FetchOpcode();
 
@@ -64,7 +64,7 @@ ExecutionStatus Interpreter::Step()
 	if (!instruction.IsValid())
 	{
 		mCPU.UndoFetch(fetch.mPreviousPC);
-		return ExecutionStatus::DecodeError;
+		return { ExecutionStatus::DecodeError, true };
 	}
 
 	// Attempt to execute the decoded instruction
@@ -73,11 +73,11 @@ ExecutionStatus Interpreter::Step()
 	if (status != ExecutionStatus::Executed)
 	{
 		mCPU.UndoFetch(fetch.mPreviousPC);
-		return status;
+		return { status, true };
 	}
 
 	mCycleCount++;
-	return status;
+	return { status, false };
 }
 
 //--------------------------------------------------------------------------------

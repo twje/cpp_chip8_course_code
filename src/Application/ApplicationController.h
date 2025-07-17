@@ -188,11 +188,11 @@ private:
 	{
 		PollInput();
 
-		const ExecutionStatus status = mInterpreter.Step();
-		if (status != ExecutionStatus::Executed)
+		const StepResult result = mInterpreter.Step();
+		if (result.mShouldHalt)
 		{
 			TransitionState(ExecutionState::kHalted);
-			mUIManager->DisplayNotification("Execution Halted (" + Strings::ExecutionStatusToString(status) + ")");
+			mUIManager->DisplayNotification("Execution Halted (" + Strings::ExecutionStatusToString(result.mStatus) + ")");
 			return false;
 		}
 

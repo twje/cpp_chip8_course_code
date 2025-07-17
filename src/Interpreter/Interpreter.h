@@ -6,7 +6,7 @@
 #include "Constants.h"
 #include "Interpreter/Bus.h"
 #include "Interpreter/Hardware/CPU.h"
-#include "Types/ExecutionStatus.h"
+#include "Types/StepResult.h"
 #include "Interpreter/Instruction/Instruction.h"
 #include "Interpreter/Snapshot/Snapshot.h"
 
@@ -28,7 +28,7 @@ public:
 	bool LoadRom(const std::vector<uint8_t>& data);
 
 	Snapshot PeekNextInstruction() const;	
-	ExecutionStatus Step();
+	StepResult Step();
 	void DecrementTimers();
 
 	const CPU& GetCPU() const { return mCPU; }
