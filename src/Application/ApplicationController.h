@@ -4,6 +4,7 @@
 //--------------------------------------------------------------------------------
 // Interpreter
 #include "Application/Timer.h"
+#include "Application/TextSpinner.h"
 #include "Interfaces/IUIManager.h"
 #include "Interfaces/IRomLoader.h"
 #include "Types/Commands.h"
@@ -16,44 +17,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
-#include <vector>
-#include <string>
-
-class TextSpinner
-{
-public:
-	// Construct with a custom sequence and frame time in seconds
-	TextSpinner(std::vector<std::string> frames, float frameDurationSeconds)
-		: mFrames(std::move(frames))
-		, mFrameDuration(frameDurationSeconds)
-		, mCurrentIndex(0)
-		, mTimeAccumulator(0.0f)
-	{
-		if (mFrames.empty())
-			mFrames.emplace_back(""); // fallback to empty
-	}
-
-	// Call this each frame with elapsed time
-	const std::string& Update(float deltaTime)
-	{
-		mTimeAccumulator += deltaTime;
-
-		while (mTimeAccumulator >= mFrameDuration)
-		{
-			mTimeAccumulator -= mFrameDuration;
-			mCurrentIndex = (mCurrentIndex + 1) % mFrames.size();
-		}
-
-		return mFrames[mCurrentIndex];
-	}
-
-private:
-	std::vector<std::string> mFrames;
-	float mFrameDuration;
-	std::size_t mCurrentIndex;
-	float mTimeAccumulator;
-};
 
 //--------------------------------------------------------------------------------
 class ApplicationController
@@ -90,11 +53,7 @@ public:
 			mInterpreter.Reset();
 
 			const auto& roms = mRomLoader->GetRoms();
-			if (index >= roms.size())
-			{
-				std::cerr << "Error: Selected ROM index out of bounds: " << index << std::endl;
-				return;
-			}
+			assert(index < roms.size() && "ROM index out of bounds");
 
 			const bool success = TrySelectRomByName(roms[index]);
 			if (success)
