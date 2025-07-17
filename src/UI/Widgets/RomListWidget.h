@@ -28,7 +28,7 @@ public:
     RomListWidget(olc::PixelGameEngine& pge)
         : FramedWidgetBase(pge, "Roms")        
         , mStartIndex(0)
-        , mVisibleRows(4)
+        , mVisibleRows(5)
         , mScrollHoldTimer(0.0f)
         , mScrollRepeatTimer(0.0f)
         , mIsScrollingUpHeld(false)

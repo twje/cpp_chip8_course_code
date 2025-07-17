@@ -14,7 +14,7 @@ namespace fs = std::filesystem;
 //--------------------------------------------------------------------------------
 // Screen config
 inline constexpr int32_t SCREEN_WIDTH = 452;
-inline constexpr int32_t SCREEN_HEIGHT = 315;
+inline constexpr int32_t SCREEN_HEIGHT = 323;
 inline constexpr int32_t SCREEN_PIXEL_SCALE = 2;
 
 // Memory config
