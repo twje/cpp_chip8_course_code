@@ -17,6 +17,44 @@
 #include <string>
 #include <vector>
 
+#include <vector>
+#include <string>
+
+class TextSpinner
+{
+public:
+	// Construct with a custom sequence and frame time in seconds
+	TextSpinner(std::vector<std::string> frames, float frameDurationSeconds)
+		: mFrames(std::move(frames))
+		, mFrameDuration(frameDurationSeconds)
+		, mCurrentIndex(0)
+		, mTimeAccumulator(0.0f)
+	{
+		if (mFrames.empty())
+			mFrames.emplace_back(""); // fallback to empty
+	}
+
+	// Call this each frame with elapsed time
+	const std::string& Update(float deltaTime)
+	{
+		mTimeAccumulator += deltaTime;
+
+		while (mTimeAccumulator >= mFrameDuration)
+		{
+			mTimeAccumulator -= mFrameDuration;
+			mCurrentIndex = (mCurrentIndex + 1) % mFrames.size();
+		}
+
+		return mFrames[mCurrentIndex];
+	}
+
+private:
+	std::vector<std::string> mFrames;
+	float mFrameDuration;
+	std::size_t mCurrentIndex;
+	float mTimeAccumulator;
+};
+
 //--------------------------------------------------------------------------------
 class ApplicationController
 {
@@ -31,6 +69,7 @@ public:
 		, mState(ExecutionState::kNone)
 		, mInstructionTimer(CPU_FREQUENCY_HZ)
 		, mSystemTimer(SYSTEM_TIMER_HZ)
+		, mTextSpinner({ ".", "..", "..." }, 0.5f)
 	{ }
 
 	bool Initialize(std::unique_ptr<IKeyInputProvider> inputProvider)
@@ -82,7 +121,7 @@ public:
 	bool RunFrame(float elapsedTime)
 	{		
 		// Update
-		mUIManager->Update(elapsedTime);
+		mUIManager->Update(elapsedTime);		
 		PollInput();		
 		TickExecution(elapsedTime);
 		UpdateSystemTimer(elapsedTime);
@@ -166,6 +205,10 @@ private:
 		{
 			return;
 		}
+		
+		// Append animated spinner to the "Running" notification
+		std::string notification = std::format("{}{}", Strings::Notifications::kRunning, mTextSpinner.Update(elapsedTime));
+		DisplayNotification(notification, false);
 
 		for (size_t i = 0; i < mInstructionTimer.ComputeStepCount(elapsedTime); i++)
 		{
@@ -296,4 +339,5 @@ private:
 	// Timers
 	Timer mInstructionTimer;
 	Timer mSystemTimer;
+	TextSpinner mTextSpinner;
 };

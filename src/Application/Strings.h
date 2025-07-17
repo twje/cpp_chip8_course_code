@@ -13,7 +13,7 @@ namespace Strings
 	{
 		static inline constexpr const char* kPleaseSelectRom = "Please select a ROM";
 		static inline constexpr const char* kWaitingForStepInput = "Waiting for Step Input";
-		static inline constexpr const char* kRunning = "Running...";
+		static inline constexpr const char* kRunning = "Running";
 	};
 
 	//--------------------------------------------------------------------------------
