@@ -1,0 +1,3 @@
+- document vsync (if decide to add it)
+- Disabling Window Resizing
+  - Windows only (edit to one lone coder source - if applicable)
