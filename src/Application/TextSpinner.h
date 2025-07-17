@@ -16,7 +16,9 @@ public:
 		, mTimeAccumulator(0.0f)
 	{
 		if (mFrames.empty())
+		{
 			mFrames.emplace_back(""); // fallback to empty
+		}
 	}
 
 	const std::string& Update(float deltaTime)
