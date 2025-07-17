@@ -410,9 +410,14 @@ ExecutionStatus CPU::Execute_Annn_LD_I_ADDR(const Instruction& instruction)
 }
 
 //--------------------------------------------------------------------------------
-ExecutionStatus CPU::Execute_Bnnn_JP_V0_ADDR(const Instruction&)
+ExecutionStatus CPU::Execute_Bnnn_JP_V0_ADDR(const Instruction& instruction)
 {
-    return ExecutionStatus::NotImplemented;
+    const uint16_t address = instruction.GetOperandNNN();
+	const uint8_t offset = mState.mRegisters[0];
+
+    mState.mProgramCounter = address + offset;
+
+    return ExecutionStatus::Executed;
 }
 
 //--------------------------------------------------------------------------------
@@ -494,9 +499,13 @@ ExecutionStatus CPU::Execute_Fx15_LD_DT_VX(const Instruction& instruction)
 }
 
 //--------------------------------------------------------------------------------
-ExecutionStatus CPU::Execute_Fx18_LD_ST_VX(const Instruction&)
+ExecutionStatus CPU::Execute_Fx18_LD_ST_VX(const Instruction& instruction)
 {
-    return ExecutionStatus::NotImplemented;
+    const size_t index = instruction.GetOperandX();
+
+    mState.mSoundTimer = mState.mRegisters[index];
+
+    return ExecutionStatus::Executed;
 }
 
 //--------------------------------------------------------------------------------

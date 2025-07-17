@@ -730,13 +730,19 @@ TEST_F(OpcodeTest, Annn_LD_I_ADDR)
     ASSERT_EQ(0x0215, GetCPUStateRef().mIndexRegister);	
 }
 
+// Jump to location nnn + V0.
 //--------------------------------------------------------------------------------
-TEST(OpcodeExecutionTests, DISABLED_Bnnn_JP_V0_ADDR)
+TEST_F(OpcodeTest, Bnnn_JP_V0_ADDR)
 {
-    /*
-        TODO: Implement test for opcode Bnnn (JP_V0_ADDR).
-        Refer to: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
-    */
+    // Arrange
+    WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xB202);
+    GetCPUStateRef().mRegisters[0] = 0x02;
+
+    // Act
+    const Instruction& instruction = ExecuteInstruction();
+
+    // Assert
+    ASSERT_EQ(0x204, GetCPUStateRef().mProgramCounter);
 }
 
 //--------------------------------------------------------------------------------
@@ -884,13 +890,22 @@ TEST_F(OpcodeTest, Fx15_LD_DT_VX)
     ASSERT_EQ(value, GetCPUStateRef().mDelayTimer);
 }
 
+// Set sound timer = Vx.
 //--------------------------------------------------------------------------------
-TEST(OpcodeExecutionTests, DISABLED_Fx18_LD_ST_VX)
+TEST_F(OpcodeTest, Fx18_LD_ST_VX)
 {
-    /*
-        TODO: Implement test for opcode Fx18 (LD_ST_VX).
-        Refer to: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
-    */
+    // Arrange
+    const uint8_t value = 120;
+
+    WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xF318);
+    GetCPUStateRef().mRegisters[3] = value;
+
+    // Act
+    const Instruction& instruction = ExecuteInstruction();
+
+    // Assert
+    ASSERT_EQ(3, instruction.GetOperandX());
+    ASSERT_EQ(value, GetCPUStateRef().mSoundTimer);
 }
 
 // Set I = I + Vx.
