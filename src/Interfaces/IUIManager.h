@@ -25,7 +25,6 @@ public:
 	virtual void SetRomList(const std::vector<std::string>& roms) = 0;
 	virtual void SetOnRomSelectedCallback(const std::function<void(size_t)>& callback) = 0;
 	virtual void SelectRomAtIndex(size_t index) = 0;
-	virtual void DisplayNotification(const std::string& message) = 0;
 
 	// Per-Frame Operations
 	virtual void Update(float elapsedTime) = 0;

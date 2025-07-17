@@ -28,21 +28,16 @@ public:
 		mFrame.SetOuterSize({ width, mFrame.GetOuterSize().mY });
 	}
 
-	void SetText(const std::string& text)
-	{
-		mText = text;
-	}
-
 	virtual void Draw(const ViewModel& viewModel) override
-	{		
-		(void)viewModel; // Unused parameter
-
+	{				
 		mFrame.Draw(mPge);
 
-		const olc::vi2d position = ToOLCVecInt(mFrame.GetContentOffset()) + olc::vi2d{ kPadding, kPadding };
-		mPge.DrawString(position, mText, UITheme::kColorText);
-	}
+		const olc::Pixel color = viewModel.mIsNotificationError
+			? olc::Pixel(255, 99, 71)  // TODO: update UITheme (Rich but muted red)
+			: UITheme::kColorText;
 
-private:
-	std::string mText;
+		const olc::vi2d position = ToOLCVecInt(mFrame.GetContentOffset()) + olc::vi2d{ kPadding, kPadding };
+
+		mPge.DrawString(position, viewModel.mNotficationText, color);
+	}
 };

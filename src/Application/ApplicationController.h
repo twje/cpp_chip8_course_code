@@ -41,7 +41,7 @@ public:
 
 		// Set initial execution state and show ROM prompt
 		TransitionState(ExecutionState::kWaitingForRom);
-		mUIManager->DisplayNotification(Strings::Notifications::kPleaseSelectRom);
+		DisplayNotification(Strings::Notifications::kPleaseSelectRom);
 
 		// Initialize UI with ROM list
 		mUIManager->SetRomList(mRomLoader->GetRoms());
@@ -61,12 +61,12 @@ public:
 			if (success)
 			{
 				TransitionState(ExecutionState::kStepping);
-				mUIManager->DisplayNotification(Strings::Notifications::kWaitingForStepInput);
+				DisplayNotification(Strings::Notifications::kWaitingForStepInput);
 			}
 			else
 			{
 				TransitionState(ExecutionState::kWaitingForRom);
-				mUIManager->DisplayNotification("Unable to load ROM: " + roms[index]);
+				DisplayNotification("Unable to load ROM: " + roms[index]);
 			}
 		});
 
@@ -127,13 +127,13 @@ private:
 	void OnPlayCommand()
 	{
 		TransitionState(ExecutionState::kPlaying);
-		mUIManager->DisplayNotification(Strings::Notifications::kRunning);
+		DisplayNotification(Strings::Notifications::kRunning);
 	}
 
 	void OnPauseCommand()
 	{
 		TransitionState(ExecutionState::kStepping);
-		mUIManager->DisplayNotification(Strings::Notifications::kWaitingForStepInput);
+		DisplayNotification(Strings::Notifications::kWaitingForStepInput);
 	}
 
 	void OnStepCommand()
@@ -154,7 +154,7 @@ private:
 	{
 		mInterpreter.Reset();
 		TransitionState(ExecutionState::kStepping);
-		mUIManager->DisplayNotification(Strings::Notifications::kWaitingForStepInput);
+		DisplayNotification(Strings::Notifications::kWaitingForStepInput);
 	}
 
 	//-------------------
@@ -192,7 +192,7 @@ private:
 		if (result.mShouldHalt)
 		{
 			TransitionState(ExecutionState::kHalted);
-			mUIManager->DisplayNotification("Execution Halted (" + Strings::ExecutionStatusToString(result.mStatus) + ")");
+			DisplayNotification("Execution Halted (" + Strings::ExecutionStatusToString(result.mStatus) + ")");
 			return false;
 		}
 
@@ -213,9 +213,12 @@ private:
 		PrintInstruction(mViewModel.mSnapshot);
 	}
 
-	void SyncDisplayInteractivity()
+	void SyncViewModel()
 	{
-		mViewModel.mIsDisplayInteractive = (mState == ExecutionState::kStepping || mState == ExecutionState::kHalted);
+		const bool isSteppingOrHalted = (mState == ExecutionState::kStepping || mState == ExecutionState::kHalted);
+
+		mViewModel.mIsDisplayInteractive = isSteppingOrHalted;
+		mViewModel.mIsNotificationError = (mState == ExecutionState::kHalted);
 	}
 
 	void PrintInstruction(const Snapshot& snapshot) const
@@ -226,6 +229,11 @@ private:
 			<< "  Opcode  : 0x" << ToHexString(snapshot.mOpcode, 4) << "\n"
 			<< "  Pattern : " << (snapshot.mDecodeSucceeded ? snapshot.mPattern : "-") << "\n"
 			<< "  Mnemonic: " << (snapshot.mDecodeSucceeded ? snapshot.mMnemonic : "-") << "\n\n";
+	}
+
+	void DisplayNotification(const std::string& message)
+	{
+		mViewModel.mNotficationText = message;		
 	}
 
 	//---------------
@@ -256,8 +264,8 @@ private:
 		{
 			CaptureNextInstruction();
 		}
-
-		SyncDisplayInteractivity();
+	
+		SyncViewModel();
 	}
 
 	bool IsCommandAllowed(Commands command) const

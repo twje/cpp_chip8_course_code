@@ -56,7 +56,6 @@ public:
 	MOCK_METHOD(void, SetRomList, (const std::vector<std::string>&), (override));
 	MOCK_METHOD(void, SetOnRomSelectedCallback, (const std::function<void(size_t)>&), (override));
 	MOCK_METHOD(void, SelectRomAtIndex, (size_t), (override));
-	MOCK_METHOD(void, DisplayNotification, (const std::string&), (override));
 	MOCK_METHOD(void, Update, (float), (override));
 	MOCK_METHOD(void, Draw, (const ViewModel&), (override));
 };
@@ -110,6 +109,11 @@ public:
 		mController->HandleCommand(command);
 	}
 
+	const ViewModel& GetViewModel() const
+	{
+		return mController->mViewModel;
+	}
+
 	void RunFrame()
 	{
 		float secondsPerFrame = 1.0f / 60.0f; // Simulate 60 FPS
@@ -137,6 +141,21 @@ protected:
 	{
 		return std::make_unique<ApplicationControllerTestDriver>(std::move(config));
 	}	
+
+	void AssertNotificationEquals(const ViewModel& vm, const std::string& expected)
+	{
+		ASSERT_EQ(vm.mNotficationText, expected);
+		ASSERT_FALSE(vm.mIsNotificationError);
+	}
+
+	void AssertNotificationHalted(const ViewModel& vm, ExecutionStatus expectedStatus)
+	{
+		ASSERT_THAT(vm.mNotficationText, testing::HasSubstr("Execution Halted"));
+		ASSERT_TRUE(vm.mIsNotificationError);
+
+		const std::string expectedSubstr = Strings::ExecutionStatusToString(expectedStatus);
+		ASSERT_THAT(vm.mNotficationText, testing::HasSubstr(expectedSubstr));
+	}
 };
 
 //--------------------------------------------------------------------------------
@@ -152,14 +171,16 @@ TEST_F(ApplicationControllerTestFixture, Initialize_ShouldShowWaitingForRom)
 
 	// Arrange
 	std::vector<uint8_t> romData = { };
-	AppControllerDriverConfig config(romData);
-	EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
+	AppControllerDriverConfig config(romData);	
 		
 	// Act
 	auto driver = CreateAppControllerDriver(std::move(config));
 
 	// Assert
+	const auto& vm = driver->GetViewModel();
+
 	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kWaitingForRom);
+	AssertNotificationEquals(vm, Strings::Notifications::kPleaseSelectRom);
 }
 
 //--------------------------------------------------------------------------------
@@ -176,21 +197,18 @@ TEST_F(ApplicationControllerTestFixture, SelectRom_ShouldLoadRomAndEnterStepping
 	// Arrange
 	std::vector<uint8_t> romData{ 0x10, 0x01 };  // Dummy ROM with one instruction
 	AppControllerDriverConfig config(romData);
-		
-	{
-		testing::InSequence seq;
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
-	}
 
 	// Act
 	auto driver = CreateAppControllerDriver(std::move(config));
 	driver->SelectRom(0);	
 
 	// Assert
+	const auto& vm = driver->GetViewModel();
+
 	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kStepping);
 	ASSERT_EQ(driver->GetSnapshot().mAddress, 0x0200);
 	ASSERT_EQ(driver->GetSnapshot().mOpcode, 0x1001);
+	AssertNotificationEquals(vm, Strings::Notifications::kWaitingForStepInput);
 }
 
 //--------------------------------------------------------------------------------
@@ -206,12 +224,7 @@ TEST_F(ApplicationControllerTestFixture, StepInstruction_ShouldExecuteAndUpdateI
 
 	// Arrange
 	std::vector<uint8_t> romData = { 0x60, 0x01, 0x00, 0xE0 };  // LD V0, 1; CLS
-	AppControllerDriverConfig config(romData);
-	{
-		testing::InSequence seq;
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
-	}
+	AppControllerDriverConfig config(romData);	
 	auto driver = CreateAppControllerDriver(std::move(config));
 	driver->SelectRom(0);
 
@@ -219,8 +232,11 @@ TEST_F(ApplicationControllerTestFixture, StepInstruction_ShouldExecuteAndUpdateI
 	driver->HandleCommand(Commands::kStep);
 
 	// Assert
+	const auto& vm = driver->GetViewModel();
+
 	ASSERT_EQ(driver->GetSnapshot().mCycleCount, 1);
 	ASSERT_EQ(driver->GetSnapshot().mAddress, 0x0202);
+	AssertNotificationEquals(vm, Strings::Notifications::kWaitingForStepInput);
 }
 
 //--------------------------------------------------------------------------------
@@ -237,12 +253,6 @@ TEST_F(ApplicationControllerTestFixture, InvalidInstruction_ShouldHaltAndShowIns
 	// Arrange
 	std::vector<uint8_t> romData = { 0xFF, 0xFF };  // Invalid opcode
 	AppControllerDriverConfig config(romData);
-	{
-		testing::InSequence seq;
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(testing::StartsWith("Execution Halted")));
-	}
 	auto driver = CreateAppControllerDriver(std::move(config));
 	driver->SelectRom(0);
 
@@ -250,8 +260,11 @@ TEST_F(ApplicationControllerTestFixture, InvalidInstruction_ShouldHaltAndShowIns
 	driver->HandleCommand(Commands::kStep);
 
 	// Assert
+	const auto& vm = driver->GetViewModel();
+
 	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kHalted);
 	ASSERT_EQ(driver->GetSnapshot().mOpcode, 0xFFFF);
+	AssertNotificationHalted(vm, ExecutionStatus::DecodeError);
 }
 
 //--------------------------------------------------------------------------------
@@ -267,13 +280,7 @@ TEST_F(ApplicationControllerTestFixture, Play_ShouldHaltWhenInvalidInstructionEx
 	// Arrange
 	std::vector<uint8_t> romData = { 0xFF, 0xFF };  // Invalid opcode
 	AppControllerDriverConfig config(romData);
-	{
-		testing::InSequence seq;
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kRunning));		
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(testing::StartsWith("Execution Halted")));
-	}
+
 	auto driver = CreateAppControllerDriver(std::move(config));
 	driver->SelectRom(0);
 
@@ -282,7 +289,10 @@ TEST_F(ApplicationControllerTestFixture, Play_ShouldHaltWhenInvalidInstructionEx
 	driver->RunFrame();
 
 	// Assert
+	const auto& vm = driver->GetViewModel();
+
 	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kHalted);
+	AssertNotificationHalted(vm, ExecutionStatus::DecodeError);
 }
 
 //--------------------------------------------------------------------------------
@@ -303,13 +313,6 @@ TEST_F(ApplicationControllerTestFixture, InstructionInfo_ShouldRemainFrozenWhile
 		0x12, 0x02   // JP 0x202 (loop)
 	};
 	AppControllerDriverConfig config(romData);
-	{
-		testing::InSequence seq;
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kRunning));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
-	}
 	auto driver = CreateAppControllerDriver(std::move(config));
 	driver->SelectRom(0);
 
@@ -346,15 +349,6 @@ TEST_F(ApplicationControllerTestFixture, OutOfBoundsLowerAddress_ShouldHalt)
 		0x11, 0xFE  // JP 0x1FE — invalid (below program range)
 	};
 	AppControllerDriverConfig config(romData);
-	{
-		testing::InSequence seq;
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kRunning));
-
-		std::string subString = Strings::ExecutionStatusToString(ExecutionStatus::InvalidAddressOutOfBounds);
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(testing::HasSubstr(subString)));
-	}
 	auto driver = CreateAppControllerDriver(std::move(config));
 	driver->SelectRom(0);
 
@@ -363,7 +357,10 @@ TEST_F(ApplicationControllerTestFixture, OutOfBoundsLowerAddress_ShouldHalt)
 	driver->RunFrame();
 
 	// Assert
+	const auto& vm = driver->GetViewModel();
+
 	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kHalted);
+	AssertNotificationHalted(vm, ExecutionStatus::InvalidAddressOutOfBounds);
 }
 
 //--------------------------------------------------------------------------------
@@ -383,15 +380,6 @@ TEST_F(ApplicationControllerTestFixture, OutOfBoundsUpperAddress_ShouldHalt)
 		0x00, 0xE0   // CLS — will be fetched from invalid memory (past 0x0FFF)
 	};
 	AppControllerDriverConfig config(romData);
-	{
-		testing::InSequence seq;
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kRunning));
-
-		std::string subString = Strings::ExecutionStatusToString(ExecutionStatus::InvalidAddressOutOfBounds);
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(testing::HasSubstr(subString)));
-	}
 	auto driver = CreateAppControllerDriver(std::move(config));
 	driver->SelectRom(0);
 
@@ -400,7 +388,10 @@ TEST_F(ApplicationControllerTestFixture, OutOfBoundsUpperAddress_ShouldHalt)
 	driver->RunFrame();
 
 	// Assert
+	const auto& vm = driver->GetViewModel();
+
 	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kHalted);
+	AssertNotificationHalted(vm, ExecutionStatus::InvalidAddressOutOfBounds);
 }
 
 //--------------------------------------------------------------------------------
@@ -420,15 +411,6 @@ TEST_F(ApplicationControllerTestFixture, UnalignedAddress_ShouldHalt)
 		0x00, 0xE0
 	};
 	AppControllerDriverConfig config(romData);
-	{
-		testing::InSequence seq;
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kRunning));
-
-		std::string subString = Strings::ExecutionStatusToString(ExecutionStatus::InvalidAddressUnaligned);
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(testing::HasSubstr(subString)));
-	}
 	auto driver = CreateAppControllerDriver(std::move(config));
 	driver->SelectRom(0);
 
@@ -437,5 +419,8 @@ TEST_F(ApplicationControllerTestFixture, UnalignedAddress_ShouldHalt)
 	driver->RunFrame();
 
 	// Assert
+	const auto& vm = driver->GetViewModel();
+
 	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kHalted);
+	AssertNotificationHalted(vm, ExecutionStatus::InvalidAddressUnaligned);
 }

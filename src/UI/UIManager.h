@@ -74,11 +74,6 @@ public:
 		mRomListWidget.SelectRomAtIndex(index);
 	}
 
-	virtual void DisplayNotification(const std::string& message) override
-	{
-		mNotificationWidget.SetText(message);
-	}
-
 	virtual void Update(float elapsedTime) override
 	{
 		mControlsWidget.Update(elapsedTime);
