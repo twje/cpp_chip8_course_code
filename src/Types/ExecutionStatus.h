@@ -6,5 +6,7 @@ enum class ExecutionStatus
 	Executed,
 	DecodeError,
 	NotImplemented,
-	MissingHandler
+	MissingHandler,
+	InvalidAddressUnaligned,
+	InvalidAddressOutOfBounds
 };

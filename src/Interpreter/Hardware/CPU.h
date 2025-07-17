@@ -4,6 +4,7 @@
 //--------------------------------------------------------------------------------
 // Interpreter
 #include "Constants.h"
+#include "Types/FetchResult.h"
 #include "Interpreter/Hardware/CPUState.h"
 #include "Types/ExecutionStatus.h"
 #include "Interpreter/Bus.h"  // TODO: forward declare
@@ -12,13 +13,6 @@
 // Macros
 //--------------------------------------------------------------------------------
 #define DECLARE_OPCODE_HANDLER(pattern, mnemonic) ExecutionStatus Execute_##pattern##_##mnemonic(const Instruction& instruction);
-
-//--------------------------------------------------------------------------------
-struct FetchResult
-{
-	uint16_t mOpcode = 0;
-	uint16_t mPreviousPC = 0;
-};
 
 //--------------------------------------------------------------------------------
 class CPU
@@ -32,11 +26,8 @@ public:
 
 	void Reset();
 	const CPUState& GetState() const { return mState; }
-
-	uint16_t PeekNextOpcode() const;
-	FetchResult FetchOpcode();
-	void UndoFetch(uint16_t previousPC);
-
+		
+	FetchResult Fetch() const;
 	Instruction Decode(uint16_t opcode) const;
 	ExecutionStatus Execute(const Instruction& instruction);
 

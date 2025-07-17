@@ -22,7 +22,7 @@ private:
     std::vector<OperandInfo> ToOperandInfoList();
 
     const CPU& mCPU;
-    const uint64_t mCycleCount;
+    uint64_t mCycleCount;
     Instruction mInstruction;
     Snapshot mSnapshot;
 };

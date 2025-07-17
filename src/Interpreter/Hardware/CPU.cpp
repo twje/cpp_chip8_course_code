@@ -34,38 +34,32 @@ void CPU::Reset()
     mState.mSoundTimer = 0;
 }
 
-// CHIP-8 stores opcodes as two consecutive bytes in big-endian format.
-// Read and combine the two bytes into a single 16-bit opcode.
 //--------------------------------------------------------------------------------
-uint16_t CPU::PeekNextOpcode() const
+FetchResult CPU::Fetch() const
 {
+    FetchResult result;
+
     const uint16_t address = mState.mProgramCounter;
-    assert(address % 2 == 0);
-    assert(address >= PROGRAM_START_ADDRESS && address + 1 < RAM_SIZE);
 
-    const uint8_t hByte = mBus.mRAM.Read(address);
-    const uint8_t lByte = mBus.mRAM.Read(address + 1);
+    if (address % 2 != 0)
+    {
+        result.mStatus = ExecutionStatus::InvalidAddressUnaligned;
+        result.mIsValidAddress = false;
+        return result;
+    }
 
-    const uint16_t opcode = (static_cast<uint16_t>(hByte) << 8) | lByte;
-    
-    return opcode;
-}
+    if (address < PROGRAM_START_ADDRESS || (address + 1) >= RAM_SIZE)
+    {
+        result.mStatus = ExecutionStatus::InvalidAddressOutOfBounds;
+        result.mIsValidAddress = false;
+        return result;
+    }
 
-//--------------------------------------------------------------------------------
-FetchResult CPU::FetchOpcode()
-{
-    FetchResult result{ PeekNextOpcode(), mState.mProgramCounter };
-    
-    // Advance PC early (some instructions override it)
-    mState.mProgramCounter += 2;
+    const uint8_t highByte = mBus.mRAM.Read(address);
+    const uint8_t lowByte = mBus.mRAM.Read(address + 1);
+    result.mOpcode = (static_cast<uint16_t>(highByte) << 8) | lowByte;
 
     return result;
-}
-
-//--------------------------------------------------------------------------------
-void CPU::UndoFetch(uint16_t previousPC)
-{
-    mState.mProgramCounter = previousPC;
 }
 
 //--------------------------------------------------------------------------------
@@ -95,46 +89,60 @@ Instruction CPU::Decode(uint16_t opcode) const
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute(const Instruction& instruction)
 {
+    assert(instruction.IsValid());
+
+    // Advance PC early; some instructions may override this
+    mState.mProgramCounter += INSTRUCTION_SIZE;
+
+    ExecutionStatus status = ExecutionStatus::MissingHandler;
+
     switch (instruction.GetOpcodeId())
     {
-        case OpcodeId::SYS_ADDR:    return Execute_0nnn_SYS_ADDR(instruction);
-        case OpcodeId::CLS:         return Execute_00E0_CLS(instruction);
-        case OpcodeId::RET:         return Execute_00EE_RET(instruction);
-        case OpcodeId::JP_ADDR:     return Execute_1nnn_JP_ADDR(instruction);
-        case OpcodeId::CALL_ADDR:   return Execute_2nnn_CALL_ADDR(instruction);
-        case OpcodeId::SE_VX_KK:    return Execute_3xkk_SE_VX_KK(instruction);
-        case OpcodeId::SNE_VX_KK:   return Execute_4xkk_SNE_VX_KK(instruction);
-        case OpcodeId::SE_VX_VY:    return Execute_5xy0_SE_VX_VY(instruction);
-        case OpcodeId::LD_VX_KK:    return Execute_6xkk_LD_VX_KK(instruction);
-        case OpcodeId::ADD_VX_KK:   return Execute_7xkk_ADD_VX_KK(instruction);
-        case OpcodeId::LD_VX_VY:    return Execute_8xy0_LD_VX_VY(instruction);
-        case OpcodeId::OR_VX_VY:    return Execute_8xy1_OR_VX_VY(instruction);
-        case OpcodeId::AND_VX_VY:   return Execute_8xy2_AND_VX_VY(instruction);
-        case OpcodeId::XOR_VX_VY:   return Execute_8xy3_XOR_VX_VY(instruction);
-        case OpcodeId::ADD_VX_VY:   return Execute_8xy4_ADD_VX_VY(instruction);
-        case OpcodeId::SUB_VX_VY:   return Execute_8xy5_SUB_VX_VY(instruction);
-        case OpcodeId::SHR_VX_VY:   return Execute_8xy6_SHR_VX_VY(instruction);
-        case OpcodeId::SUBN_VX_VY:  return Execute_8xy7_SUBN_VX_VY(instruction);
-        case OpcodeId::SHL_VX_VY:   return Execute_8xyE_SHL_VX_VY(instruction);
-        case OpcodeId::SNE_VX_VY:   return Execute_9xy0_SNE_VX_VY(instruction);
-        case OpcodeId::LD_I_ADDR:   return Execute_Annn_LD_I_ADDR(instruction);
-        case OpcodeId::JP_V0_ADDR:  return Execute_Bnnn_JP_V0_ADDR(instruction);
-        case OpcodeId::RND_VX_KK:   return Execute_Cxkk_RND_VX_KK(instruction);
-        case OpcodeId::DRW_VX_VY_N: return Execute_Dxyn_DRW_VX_VY_N(instruction);
-        case OpcodeId::SKP_VX:      return Execute_Ex9E_SKP_VX(instruction);
-        case OpcodeId::SKNP_VX:     return Execute_ExA1_SKNP_VX(instruction);
-        case OpcodeId::LD_VX_DT:    return Execute_Fx07_LD_VX_DT(instruction);
-        case OpcodeId::LD_VX_K:     return Execute_Fx0A_LD_VX_K(instruction);
-        case OpcodeId::LD_DT_VX:    return Execute_Fx15_LD_DT_VX(instruction);
-        case OpcodeId::LD_ST_VX:    return Execute_Fx18_LD_ST_VX(instruction);
-        case OpcodeId::ADD_I_VX:    return Execute_Fx1E_ADD_I_VX(instruction);
-        case OpcodeId::LD_F_VX:     return Execute_Fx29_LD_F_VX(instruction);
-        case OpcodeId::LD_B_VX:     return Execute_Fx33_LD_B_VX(instruction);
-        case OpcodeId::LD_I_VX:     return Execute_Fx55_LD_I_VX(instruction);
-        case OpcodeId::LD_VX_I:     return Execute_Fx65_LD_VX_I(instruction);
+        case OpcodeId::SYS_ADDR:    status = Execute_0nnn_SYS_ADDR(instruction); break;
+        case OpcodeId::CLS:         status = Execute_00E0_CLS(instruction); break;
+        case OpcodeId::RET:         status = Execute_00EE_RET(instruction); break;
+        case OpcodeId::JP_ADDR:     status = Execute_1nnn_JP_ADDR(instruction); break;
+        case OpcodeId::CALL_ADDR:   status = Execute_2nnn_CALL_ADDR(instruction); break;
+        case OpcodeId::SE_VX_KK:    status = Execute_3xkk_SE_VX_KK(instruction); break;
+        case OpcodeId::SNE_VX_KK:   status = Execute_4xkk_SNE_VX_KK(instruction); break;
+        case OpcodeId::SE_VX_VY:    status = Execute_5xy0_SE_VX_VY(instruction); break;
+        case OpcodeId::LD_VX_KK:    status = Execute_6xkk_LD_VX_KK(instruction); break;
+        case OpcodeId::ADD_VX_KK:   status = Execute_7xkk_ADD_VX_KK(instruction); break;
+        case OpcodeId::LD_VX_VY:    status = Execute_8xy0_LD_VX_VY(instruction); break;
+        case OpcodeId::OR_VX_VY:    status = Execute_8xy1_OR_VX_VY(instruction); break;
+        case OpcodeId::AND_VX_VY:   status = Execute_8xy2_AND_VX_VY(instruction); break;
+        case OpcodeId::XOR_VX_VY:   status = Execute_8xy3_XOR_VX_VY(instruction); break;
+        case OpcodeId::ADD_VX_VY:   status = Execute_8xy4_ADD_VX_VY(instruction); break;
+        case OpcodeId::SUB_VX_VY:   status = Execute_8xy5_SUB_VX_VY(instruction); break;
+        case OpcodeId::SHR_VX_VY:   status = Execute_8xy6_SHR_VX_VY(instruction); break;
+        case OpcodeId::SUBN_VX_VY:  status = Execute_8xy7_SUBN_VX_VY(instruction); break;
+        case OpcodeId::SHL_VX_VY:   status = Execute_8xyE_SHL_VX_VY(instruction); break;
+        case OpcodeId::SNE_VX_VY:   status = Execute_9xy0_SNE_VX_VY(instruction); break;
+        case OpcodeId::LD_I_ADDR:   status = Execute_Annn_LD_I_ADDR(instruction); break;
+        case OpcodeId::JP_V0_ADDR:  status = Execute_Bnnn_JP_V0_ADDR(instruction); break;
+        case OpcodeId::RND_VX_KK:   status = Execute_Cxkk_RND_VX_KK(instruction); break;
+        case OpcodeId::DRW_VX_VY_N: status = Execute_Dxyn_DRW_VX_VY_N(instruction); break;
+        case OpcodeId::SKP_VX:      status = Execute_Ex9E_SKP_VX(instruction); break;
+        case OpcodeId::SKNP_VX:     status = Execute_ExA1_SKNP_VX(instruction); break;
+        case OpcodeId::LD_VX_DT:    status = Execute_Fx07_LD_VX_DT(instruction); break;
+        case OpcodeId::LD_VX_K:     status = Execute_Fx0A_LD_VX_K(instruction); break;
+        case OpcodeId::LD_DT_VX:    status = Execute_Fx15_LD_DT_VX(instruction); break;
+        case OpcodeId::LD_ST_VX:    status = Execute_Fx18_LD_ST_VX(instruction); break;
+        case OpcodeId::ADD_I_VX:    status = Execute_Fx1E_ADD_I_VX(instruction); break;
+        case OpcodeId::LD_F_VX:     status = Execute_Fx29_LD_F_VX(instruction); break;
+        case OpcodeId::LD_B_VX:     status = Execute_Fx33_LD_B_VX(instruction); break;
+        case OpcodeId::LD_I_VX:     status = Execute_Fx55_LD_I_VX(instruction); break;
+        case OpcodeId::LD_VX_I:     status = Execute_Fx65_LD_VX_I(instruction); break;
     }
 
-    return ExecutionStatus::MissingHandler;
+    // Roll back PC on failure
+    if (status != ExecutionStatus::Executed)
+    {
+        // No side effects occurred; since only PC was modified, rolling back is safe
+		mState.mProgramCounter -= INSTRUCTION_SIZE;
+    }
+
+    return status;
 }
 
 //--------------------------------------------------------------------------------

@@ -16,11 +16,18 @@ SnapshotBuilder::SnapshotBuilder(const CPU& cpu, uint64_t cycleCount)
     : mCPU(cpu)
     , mCycleCount(cycleCount)
 {
+	const FetchResult fetch = cpu.Fetch();
+    
     mSnapshot.mCPUState = cpu.GetState();
     mSnapshot.mAddress = mSnapshot.mCPUState.mProgramCounter;
-    mSnapshot.mOpcode = cpu.PeekNextOpcode();
+    mSnapshot.mOpcode = fetch.mOpcode;
 
-    mInstruction = cpu.Decode(mSnapshot.mOpcode);
+	// Only try to decode if address is valid
+    if (fetch.mIsValidAddress)
+    {
+        mInstruction = cpu.Decode(fetch.mOpcode);
+    }
+
     mSnapshot.mDecodeSucceeded = mInstruction.IsValid();
 }
 

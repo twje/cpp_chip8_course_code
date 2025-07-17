@@ -56,28 +56,29 @@ Snapshot Interpreter::PeekNextInstruction() const
 //--------------------------------------------------------------------------------
 StepResult Interpreter::Step()
 {
-	FetchResult fetch = mCPU.FetchOpcode();
-
-	// Attempt to decode the fetched opcode
-	Instruction instruction = mCPU.Decode(fetch.mOpcode);
+	// Fetch
+	const FetchResult fetch = mCPU.Fetch();	
+	if (!fetch.mIsValidAddress)
+	{
+		return { fetch.mStatus, true };
+	}
 	
+	// Decode
+	const Instruction instruction = mCPU.Decode(fetch.mOpcode);
 	if (!instruction.IsValid())
 	{
-		mCPU.UndoFetch(fetch.mPreviousPC);
 		return { ExecutionStatus::DecodeError, true };
 	}
 
-	// Attempt to execute the decoded instruction
-	ExecutionStatus status = mCPU.Execute(instruction); // No side effects if execution fails
-
+	// Execute
+	const ExecutionStatus status = mCPU.Execute(instruction);
 	if (status != ExecutionStatus::Executed)
 	{
-		mCPU.UndoFetch(fetch.mPreviousPC);
 		return { status, true };
 	}
 
 	mCycleCount++;
-	return { status, false };
+	return { ExecutionStatus::Executed, false };
 }
 
 //--------------------------------------------------------------------------------

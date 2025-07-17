@@ -271,7 +271,7 @@ TEST_F(ApplicationControllerTestFixture, Play_ShouldHaltWhenInvalidInstructionEx
 		testing::InSequence seq;
 		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
 		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
-		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kRunning));
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kRunning));		
 		EXPECT_CALL(*config.mUIManager, DisplayNotification(testing::StartsWith("Execution Halted")));
 	}
 	auto driver = CreateAppControllerDriver(std::move(config));
@@ -328,4 +328,114 @@ TEST_F(ApplicationControllerTestFixture, InstructionInfo_ShouldRemainFrozenWhile
 
 	// Assert: Instruction info updates after Pause
 	ASSERT_GT(driver->GetSnapshot().mCycleCount, cycleBeforePlay);
+}
+
+//--------------------------------------------------------------------------------
+TEST_F(ApplicationControllerTestFixture, OutOfBoundsLowerAddress_ShouldHalt)
+{
+	/*
+		Verifies execution halts if a jump targets a low out-of-bounds address.
+
+		Checks:
+		- Emulator transitions to Halted state.
+		- Displays correct halt reason.
+	*/
+
+	// Arrange
+	std::vector<uint8_t> romData = {
+		0x11, 0xFE  // JP 0x1FE — invalid (below program range)
+	};
+	AppControllerDriverConfig config(romData);
+	{
+		testing::InSequence seq;
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kRunning));
+
+		std::string subString = Strings::ExecutionStatusToString(ExecutionStatus::InvalidAddressOutOfBounds);
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(testing::HasSubstr(subString)));
+	}
+	auto driver = CreateAppControllerDriver(std::move(config));
+	driver->SelectRom(0);
+
+	// Act
+	driver->HandleCommand(Commands::kPlay);
+	driver->RunFrame();
+
+	// Assert
+	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kHalted);
+}
+
+//--------------------------------------------------------------------------------
+TEST_F(ApplicationControllerTestFixture, OutOfBoundsUpperAddress_ShouldHalt)
+{
+	/*
+		Verifies execution halts if an instruction attempts to read beyond memory bounds.
+
+		Checks:
+		- Emulator transitions to Halted state.
+		- Displays correct halt reason.
+	*/
+
+	// Arrange
+	std::vector<uint8_t> romData = {
+		0x1F, 0xFE,  // JP 0x0FFE — valid (jumps to last valid instruction)
+		0x00, 0xE0   // CLS — will be fetched from invalid memory (past 0x0FFF)
+	};
+	AppControllerDriverConfig config(romData);
+	{
+		testing::InSequence seq;
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kRunning));
+
+		std::string subString = Strings::ExecutionStatusToString(ExecutionStatus::InvalidAddressOutOfBounds);
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(testing::HasSubstr(subString)));
+	}
+	auto driver = CreateAppControllerDriver(std::move(config));
+	driver->SelectRom(0);
+
+	// Act
+	driver->HandleCommand(Commands::kPlay);
+	driver->RunFrame();
+
+	// Assert
+	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kHalted);
+}
+
+//--------------------------------------------------------------------------------
+TEST_F(ApplicationControllerTestFixture, UnalignedAddress_ShouldHalt)
+{
+	/*
+		Verifies execution halts if a jump targets a misaligned (odd) address.
+
+		Checks:
+		- Emulator transitions to Halted state.
+		- Displays correct halt reason.
+	*/
+
+	// Arrange
+	std::vector<uint8_t> romData = {
+		0x12, 0x23,  // JP 0x223 — invalid (unaligned address)
+		0x00, 0xE0
+	};
+	AppControllerDriverConfig config(romData);
+	{
+		testing::InSequence seq;
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kPleaseSelectRom));
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kWaitingForStepInput));
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(Strings::Notifications::kRunning));
+
+		std::string subString = Strings::ExecutionStatusToString(ExecutionStatus::InvalidAddressUnaligned);
+		EXPECT_CALL(*config.mUIManager, DisplayNotification(testing::HasSubstr(subString)));
+	}
+	auto driver = CreateAppControllerDriver(std::move(config));
+	driver->SelectRom(0);
+
+	// Act
+	driver->HandleCommand(Commands::kPlay);
+	driver->RunFrame();
+
+	// Assert
+	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kHalted);
 }

@@ -21,11 +21,13 @@ namespace Strings
 	{
 		switch (status)
 		{
-			case ExecutionStatus::Executed: return "Opcode Executed";
-			case ExecutionStatus::DecodeError: return "Opcode Decode Error";
-			case ExecutionStatus::NotImplemented: return "Opcode Not Implemented";
-			case ExecutionStatus::MissingHandler: return "Opcode Handler Missing";
-			default: return "Unknown";
+			case ExecutionStatus::Executed: return "Opcode executed";
+			case ExecutionStatus::DecodeError: return "Opcode decode error";
+			case ExecutionStatus::NotImplemented: return "Opcode not implemented";
+			case ExecutionStatus::MissingHandler: return "Opcode handler missing";
+			case ExecutionStatus::InvalidAddressUnaligned: return "Address is unaligned";
+			case ExecutionStatus::InvalidAddressOutOfBounds: return "Address out of bounds";
+			default: return "Unknown execution status";
 		}
 	}
 

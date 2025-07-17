@@ -44,9 +44,16 @@ protected:
     Instruction ExecuteInstruction()
     {
         CPU& cpu = mInterpreter.mCPU;
-        Instruction instruction = cpu.Decode(cpu.PeekNextOpcode());
+		
+        // Fetch
+        const FetchResult fetchResult = mInterpreter.mCPU.Fetch();
+        EXPECT_TRUE(fetchResult.mIsValidAddress) << "Fetch failed";
 
+        // Decode
+        Instruction instruction = cpu.Decode(fetchResult.mOpcode);
         EXPECT_TRUE(instruction.IsValid()) << "Decode failed";
+        
+		// Execute
         EXPECT_TRUE(mInterpreter.Step().mStatus == ExecutionStatus::Executed) << "Execution failed";
 
         return instruction;
