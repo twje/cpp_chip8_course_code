@@ -545,9 +545,23 @@ ExecutionStatus CPU::Execute_Fx1E_ADD_I_VX(const Instruction& instruction)
 }
 
 //--------------------------------------------------------------------------------
-ExecutionStatus CPU::Execute_Fx29_LD_F_VX(const Instruction&)
+ExecutionStatus CPU::Execute_Fx29_LD_F_VX(const Instruction& instruction)
 {
-    return ExecutionStatus::NotImplemented;
+    /*
+        Hint: Fx29 sets I to the address of the font sprite for digit in Vx (0x0–0xF).
+        Each digit's sprite is 5 bytes, starting at address 0x000.
+        See the unit test for example behavior.
+    */
+    
+    const size_t index = instruction.GetOperandX();
+    const uint8_t value = mState.mRegisters[index];
+
+    // validate value is within valid digit range (0–F)
+    assert(value <= 0x0F && "Fx29 expects Vx to contain a hexadecimal digit (0x0–0xF)");
+
+	mState.mIndexRegister = value * kFontSpriteSize;
+
+    return ExecutionStatus::Executed;
 }
 
 //--------------------------------------------------------------------------------

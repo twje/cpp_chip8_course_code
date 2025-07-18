@@ -12,6 +12,9 @@ namespace fs = std::filesystem;
 
 // Constants
 //--------------------------------------------------------------------------------
+// Misc
+inline constexpr uint16_t kFontSpriteSize = 5;
+
 // Screen config
 inline constexpr int32_t SCREEN_WIDTH = 452;
 inline constexpr int32_t SCREEN_HEIGHT = 323;

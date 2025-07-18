@@ -1126,12 +1126,24 @@ TEST_F(OpcodeTest, Fx1E_ADD_I_VX)
 
 // Set I = location of sprite for digit Vx.
 //--------------------------------------------------------------------------------
-TEST(OpcodeExecutionTests, DISABLED_Fx29_LD_F_VX)
+TEST_F(OpcodeTest, Fx29_LD_F_VX)
 {
-    /*
-        TODO: Implement test for opcode Fx29 (LD_F_VX).
-        Refer to: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
-    */
+    // Arrange
+    const uint8_t vxRegister = 8;
+	const uint8_t digit = 0xA; // Hexadecimal digit A (see Constants.h for font sprites)
+
+    const uint16_t opcode =
+        0xF029 |
+        (vxRegister << 8);
+
+    WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+	GetCPUStateRef().mRegisters[vxRegister] = digit;
+
+    // Act
+    ExecuteInstruction();
+
+	// Assert    
+    EXPECT_EQ(GetCPUStateRef().mIndexRegister, digit * kFontSpriteSize);
 }
 
 // Store BCD representation of Vx in memory locations I, I+1, and I+2.
