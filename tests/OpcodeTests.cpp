@@ -4,6 +4,7 @@
 //--------------------------------------------------------------------------------
 // Interpreter
 #include "Interfaces/IRandomProvider.h"
+#include "Interfaces/IKeyInputProvider.h"
 #include "Constants.h"
 #include "Interpreter/Interpreter.h"
 #include "Interpreter/Bus.h"
@@ -63,6 +64,11 @@ protected:
 
     Instruction ExecuteInstruction()
     {
+        return ExecuteInstruction(ExecutionStatus::Executed);
+    }
+
+    Instruction ExecuteInstruction(ExecutionStatus expectedStatus)
+    {
         CPU& cpu = mInterpreter.mCPU;
 		
         // Fetch
@@ -74,7 +80,7 @@ protected:
         EXPECT_TRUE(instruction.IsValid()) << "Decode failed";
         
 		// Execute
-        EXPECT_TRUE(mInterpreter.Step().mStatus == ExecutionStatus::Executed) << "Execution failed";
+        EXPECT_TRUE(mInterpreter.Step().mStatus == expectedStatus) << "Execution failed";
 
         return instruction;
     }
@@ -83,7 +89,7 @@ protected:
     CPUState& GetCPUStateRef() { return mInterpreter.mCPU.mState; }
     Bus& GetBusRef() { return mInterpreter.mBus; }
 
-	MockRandomProvider mRandomProvider;
+	MockRandomProvider mRandomProvider;	
     Interpreter mInterpreter;
 };
 
@@ -1032,12 +1038,34 @@ TEST_F(OpcodeTest, Fx07_LD_VX_DT)
 
 // Wait for a key press, store the value of the key in Vx.
 //--------------------------------------------------------------------------------
-TEST(OpcodeExecutionTests, DISABLED_Fx0A_LD_VX_K)
+TEST_F(OpcodeTest, Fx0A_LD_VX_K)
 {
-    /*
-        TODO: Implement test for opcode Fx0A (LD_VX_K).
-        Refer to: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
-    */
+    // Arrange
+    const uint8_t vxRegister = 0;
+    const auto key = Keypad::Key::Key2;
+
+    const uint16_t opcode =
+        0xF00A |
+        (vxRegister << 8);
+
+    WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+
+    // Act: execute without key press
+	ExecuteInstruction(ExecutionStatus::WaitingOnKeyPress);
+
+    // Assert: no change to register or PC
+    EXPECT_EQ(GetCPUStateRef().mRegisters[vxRegister], 0x00);
+    EXPECT_EQ(GetCPUStateRef().mProgramCounter, PROGRAM_START_ADDRESS);
+
+    // Arrange: simulate key press
+    GetBusRef().mKeypad.SetKeyPressed(key, true);
+
+    // Act: execute again with key press
+    ExecuteInstruction(ExecutionStatus::Executed);
+
+    // Assert: Vx set, PC advanced
+    EXPECT_EQ(GetCPUStateRef().mRegisters[vxRegister], Keypad::KeyToIndex(key));
+    EXPECT_EQ(GetCPUStateRef().mProgramCounter, PROGRAM_START_ADDRESS + INSTRUCTION_SIZE);
 }
 
 // Set delay timer = Vx.

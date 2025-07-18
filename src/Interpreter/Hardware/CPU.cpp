@@ -150,11 +150,15 @@ ExecutionStatus CPU::Execute(const Instruction& instruction)
         case OpcodeId::LD_VX_I:     status = Execute_Fx65_LD_VX_I(instruction); break;
     }
 
-    // Roll back PC on failure
-    if (status != ExecutionStatus::Executed)
+    // Roll back PC if instruction was not completed
+    const bool instructionDidNotExecute = (status != ExecutionStatus::Executed);
+    const bool isWaitingForInput = (status == ExecutionStatus::WaitingOnKeyPress);
+    const bool shouldRollbackPC = instructionDidNotExecute || isWaitingForInput;
+
+    if (shouldRollbackPC)
     {
         // No side effects occurred; since only PC was modified, rolling back is safe
-		mState.mProgramCounter -= INSTRUCTION_SIZE;
+        mState.mProgramCounter -= INSTRUCTION_SIZE;
     }
 
     return status;
@@ -489,9 +493,25 @@ ExecutionStatus CPU::Execute_Fx07_LD_VX_DT(const Instruction& instruction)
 }
 
 //--------------------------------------------------------------------------------
-ExecutionStatus CPU::Execute_Fx0A_LD_VX_K(const Instruction&)
+ExecutionStatus CPU::Execute_Fx0A_LD_VX_K(const Instruction& instruction)
 {
-    return ExecutionStatus::NotImplemented;
+    /*
+        Hint: Fx0A is the only opcode that waits for input.
+        Return WaitingOnKeyPress to pause execution and retry this instruction next cycle.
+		See the unit test for example behavior.
+    */
+
+    const size_t index = instruction.GetOperandX();    
+    auto keyPressed = mBus.mKeypad.GetFirstKeyPressed();
+        
+    if (!keyPressed.has_value())
+    {
+		// No key pressed; roll back PC to retry this instruction        
+        return ExecutionStatus::WaitingOnKeyPress;
+    }
+    
+	mState.mRegisters[index] = Keypad::KeyToIndex(keyPressed.value());        
+    return ExecutionStatus::Executed;
 }
 
 //--------------------------------------------------------------------------------

@@ -6,6 +6,7 @@
 #include "Interfaces/IKeyInputProvider.h"
 
 // System
+#include <optional>
 #include <array>
 #include <cassert>
 
@@ -62,6 +63,18 @@ public:
     bool IsKeyPressed(Key key) const
     {
         return mKeyStates[KeyToIndex(key)];
+    }
+
+    std::optional<Keypad::Key> GetFirstKeyPressed() const
+    {
+        for (uint8_t i = 0; i < mKeyStates.size(); ++i)
+        {
+            if (mKeyStates[i])
+            {
+                return IndexToKey(i);
+            }
+        }
+        return std::nullopt;
     }
 
     static Key IndexToKey(uint8_t index)

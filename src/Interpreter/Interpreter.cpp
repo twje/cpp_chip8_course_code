@@ -56,29 +56,39 @@ Snapshot Interpreter::PeekNextInstruction() const
 //--------------------------------------------------------------------------------
 StepResult Interpreter::Step()
 {
+	const bool kHaltOnFailure = true;
+
 	// Fetch
-	const FetchResult fetch = mCPU.Fetch();	
+	const FetchResult fetch = mCPU.Fetch();
 	if (!fetch.mIsValidAddress)
 	{
-		return { fetch.mStatus, true };
+		return { fetch.mStatus, kHaltOnFailure };
 	}
-	
+
 	// Decode
 	const Instruction instruction = mCPU.Decode(fetch.mOpcode);
 	if (!instruction.IsValid())
 	{
-		return { ExecutionStatus::DecodeError, true };
+		return { ExecutionStatus::DecodeError, kHaltOnFailure };
 	}
 
 	// Execute
 	const ExecutionStatus status = mCPU.Execute(instruction);
-	if (status != ExecutionStatus::Executed)
+	switch (status)
 	{
-		return { status, true };
-	}
+		// Waiting for input (no halt, no cycle count)
+		case ExecutionStatus::WaitingOnKeyPress:
+			return { status, !kHaltOnFailure };
+		
+		// Instruction executed (advance cycle, no halt)
+		case ExecutionStatus::Executed:
+			mCycleCount++;
+			return { status, !kHaltOnFailure };
 
-	mCycleCount++;
-	return { ExecutionStatus::Executed, false };
+		// Error or halt condition (halt, no cycle count)
+		default:
+			return { status, kHaltOnFailure };
+	}
 }
 
 //--------------------------------------------------------------------------------
