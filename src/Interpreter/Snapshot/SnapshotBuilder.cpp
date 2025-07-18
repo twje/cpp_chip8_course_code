@@ -16,7 +16,7 @@ SnapshotBuilder::SnapshotBuilder(const CPU& cpu, uint64_t cycleCount)
     : mCPU(cpu)
     , mCycleCount(cycleCount)
 {
-	const FetchResult fetch = cpu.Fetch();
+	FetchResult fetch = cpu.Peek();
     
     mSnapshot.mCPUState = cpu.GetState();
     mSnapshot.mAddress = mSnapshot.mCPUState.mProgramCounter;

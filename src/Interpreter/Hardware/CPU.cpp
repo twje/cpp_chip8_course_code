@@ -50,11 +50,11 @@ void CPU::DecrementTimers()
 }
 
 //--------------------------------------------------------------------------------
-FetchResult CPU::Fetch() const
+FetchResult CPU::Peek() const
 {
     FetchResult result;
 
-    const uint16_t address = mState.mProgramCounter;
+    const uint16_t address = mState.mProgramCounter;    
 
     if (address % 2 != 0)
     {
@@ -73,6 +73,15 @@ FetchResult CPU::Fetch() const
     const uint8_t highByte = mBus.mRAM.Read(address);
     const uint8_t lowByte = mBus.mRAM.Read(address + 1);
     result.mOpcode = (static_cast<uint16_t>(highByte) << 8) | lowByte;
+
+    return result;
+}
+
+//--------------------------------------------------------------------------------
+FetchResult CPU::Fetch()
+{
+	FetchResult result = Peek();
+	mState.mProgramCounter += INSTRUCTION_SIZE;
 
     return result;
 }
@@ -105,9 +114,6 @@ Instruction CPU::Decode(uint16_t opcode) const
 ExecutionStatus CPU::Execute(const Instruction& instruction)
 {
     assert(instruction.IsValid());
-
-    // Advance PC early; some instructions may override this
-    mState.mProgramCounter += INSTRUCTION_SIZE;
 
     ExecutionStatus status = ExecutionStatus::MissingHandler;
 
@@ -148,18 +154,7 @@ ExecutionStatus CPU::Execute(const Instruction& instruction)
         case OpcodeId::LD_B_VX:     status = Execute_Fx33_LD_B_VX(instruction); break;
         case OpcodeId::LD_I_VX:     status = Execute_Fx55_LD_I_VX(instruction); break;
         case OpcodeId::LD_VX_I:     status = Execute_Fx65_LD_VX_I(instruction); break;
-    }
-
-    // Roll back PC if instruction was not completed
-    const bool instructionDidNotExecute = (status != ExecutionStatus::Executed);
-    const bool isWaitingForInput = (status == ExecutionStatus::WaitingOnKeyPress);
-    const bool shouldRollbackPC = instructionDidNotExecute || isWaitingForInput;
-
-    if (shouldRollbackPC)
-    {
-        // No side effects occurred; since only PC was modified, rolling back is safe
-        mState.mProgramCounter -= INSTRUCTION_SIZE;
-    }
+    } 
 
     return status;
 }

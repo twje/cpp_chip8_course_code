@@ -52,13 +52,21 @@ Snapshot Interpreter::PeekNextInstruction() const
 	return builder.Build();
 }
 
-// Interpreter state remains unchanged if instruction fails to execute.
 //--------------------------------------------------------------------------------
 StepResult Interpreter::Step()
 {
-	const bool kHaltOnFailure = true;
+	/*
+		Performs one fetch-decode-execute step.
 
-	// Fetch
+		CPU state is only modified if execution succeeds. If decoding fails, execution is 
+		deferred (e.g. waiting for a key press), or execution fails, the program counter 
+		is rolled back to retry the same instruction.
+	*/
+
+	const bool kHaltOnFailure = true;
+	const uint16_t pcBeforeFetch = mCPU.GetProgramCounter();
+
+	// Fetch (increments PC)
 	const FetchResult fetch = mCPU.Fetch();
 	if (!fetch.mIsValidAddress)
 	{
@@ -69,23 +77,31 @@ StepResult Interpreter::Step()
 	const Instruction instruction = mCPU.Decode(fetch.mOpcode);
 	if (!instruction.IsValid())
 	{
+		// Decode failed, so we roll back to preserve CPU state.
+		mCPU.SetProgramCounter(pcBeforeFetch);
 		return { ExecutionStatus::DecodeError, kHaltOnFailure };
 	}
 
 	// Execute
 	const ExecutionStatus status = mCPU.Execute(instruction);
-	switch (status)
-	{
-		// Waiting for input (no halt, no cycle count)
-		case ExecutionStatus::WaitingOnKeyPress:
-			return { status, !kHaltOnFailure };
 		
-		// Instruction executed (advance cycle, no halt)
+	if (status != ExecutionStatus::Executed)
+	{
+		// Instruction failed or deferred — rollback PC to preserve CPU state
+		mCPU.SetProgramCounter(pcBeforeFetch);
+	}
+
+	// Handle result
+	switch (status)
+	{		
+		case ExecutionStatus::WaitingOnKeyPress:
+			mCycleCount++;
+			return { status, !kHaltOnFailure };			
+		
 		case ExecutionStatus::Executed:
 			mCycleCount++;
-			return { status, !kHaltOnFailure };
-
-		// Error or halt condition (halt, no cycle count)
+			return { status, !kHaltOnFailure };		
+		
 		default:
 			return { status, kHaltOnFailure };
 	}

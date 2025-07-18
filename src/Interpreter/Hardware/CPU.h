@@ -15,6 +15,7 @@
 //--------------------------------------------------------------------------------
 #define DECLARE_OPCODE_HANDLER(pattern, mnemonic) ExecutionStatus Execute_##pattern##_##mnemonic(const Instruction& instruction);
 
+// TODO: think organisation of methods
 //--------------------------------------------------------------------------------
 class CPU
 {
@@ -27,11 +28,15 @@ public:
 
 	void Reset();
 	void DecrementTimers();
-	const CPUState& GetState() const { return mState; }
-		
-	FetchResult Fetch() const;
+	
+	FetchResult Peek() const;
+	FetchResult Fetch();
 	Instruction Decode(uint16_t opcode) const;
 	ExecutionStatus Execute(const Instruction& instruction);
+
+	const CPUState& GetState() const { return mState; }	
+	uint16_t GetProgramCounter() const { return mState.mProgramCounter; }
+	void SetProgramCounter(uint16_t address) { mState.mProgramCounter = address; }
 
 private:
 	// One method per opcode

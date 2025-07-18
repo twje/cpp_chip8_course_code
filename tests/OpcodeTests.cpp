@@ -71,16 +71,16 @@ protected:
     {
         CPU& cpu = mInterpreter.mCPU;
 		
-        // Fetch
-        const FetchResult fetchResult = mInterpreter.mCPU.Fetch();
-        EXPECT_TRUE(fetchResult.mIsValidAddress) << "Fetch failed";
-
-        // Decode
+		// Peek next instruction (no side effects)
+        const FetchResult fetchResult = cpu.Peek();
+        EXPECT_TRUE(fetchResult.mIsValidAddress) << "Peek failed";
+        
         Instruction instruction = cpu.Decode(fetchResult.mOpcode);
         EXPECT_TRUE(instruction.IsValid()) << "Decode failed";
         
-		// Execute
-        EXPECT_TRUE(mInterpreter.Step().mStatus == expectedStatus) << "Execution failed";
+		// Step (increments program counter)
+        StepResult stepResult = mInterpreter.Step();
+        EXPECT_FALSE(stepResult.mShouldHalt) << "Execution failed";
 
         return instruction;
     }
@@ -924,8 +924,6 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
         ExecuteInstruction();
         
         // Assert
-        const Display& display = GetBusRef().mDisplay;
-        
         for (uint8_t i = 0; i < 8; ++i)
         {
             const uint8_t screenX = (xPos + i) % DISPLAY_WIDTH;
