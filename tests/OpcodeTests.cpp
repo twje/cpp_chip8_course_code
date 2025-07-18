@@ -793,7 +793,139 @@ TEST_F(OpcodeTest, Cxkk_RND_VX_KK)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
 {
-    // TODO: come back to
+    Display& display = GetBusRef().mDisplay;
+
+    // Test 1: Basic draw with no collision
+    {
+        // Arrange        
+        const uint8_t xPos = 0;
+        const uint8_t yPos = 0;
+        const uint8_t vxRegister = 0;
+        const uint8_t vyRegister = 1;
+        const uint8_t spriteHeight = 2;
+        const uint16_t spriteAddress = 0x202;
+
+        const uint8_t spriteData[spriteHeight] = {
+            0b11111111,
+            0b11111101,
+        };
+
+        const uint16_t opcode =
+            0xD000 |
+            (vxRegister << 8) |
+            (vyRegister << 4) |
+            spriteHeight;
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+
+        GetCPUStateRef().mIndexRegister = spriteAddress;
+        GetCPUStateRef().mRegisters[vxRegister] = xPos;
+        GetCPUStateRef().mRegisters[vyRegister] = yPos;
+
+        for (uint8_t i = 0; i < spriteHeight; ++i)
+        {
+            WriteByteToMemory(spriteAddress + i, spriteData[i]);
+        }
+        
+        // Act        
+        ExecuteInstruction();
+
+        // Assert        
+        const uint8_t collision = GetCPUStateRef().mRegisters[0xF];
+
+        ASSERT_EQ(0, collision);
+        ASSERT_TRUE(display.IsPixelSet(7, 1));
+        ASSERT_FALSE(display.IsPixelSet(6, 1));
+
+		// Clean up for next test
+        display.Clear();
+    }
+
+    // Test 2: Draw causes collision (overlapping pixels)
+    {
+		// Arrange		
+        const uint8_t xPos = 0;
+        const uint8_t yPos = 0;
+        const uint8_t vxRegister = 0;
+        const uint8_t vyRegister = 1;
+        const uint8_t spriteHeight = 1;
+        const uint16_t spriteAddress = 0x210;
+
+        const uint8_t spriteData[spriteHeight] = {
+            0b11111111,
+        };
+
+        const uint16_t opcode =
+            0xD000 |
+            (vxRegister << 8) |
+            (vyRegister << 4) |
+            spriteHeight;
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+
+        GetCPUStateRef().mIndexRegister = spriteAddress;
+        GetCPUStateRef().mRegisters[vxRegister] = xPos;
+        GetCPUStateRef().mRegisters[vyRegister] = yPos;
+
+        // First draw — no collision expected
+        WriteByteToMemory(spriteAddress, spriteData[0]);
+        ExecuteInstruction();
+
+        // Second draw at same location — should cause collision
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        ExecuteInstruction();
+        
+        // Assert
+        const uint8_t collision = GetCPUStateRef().mRegisters[0xF];
+
+        ASSERT_EQ(1, collision);
+        ASSERT_FALSE(display.IsPixelSet(0, 0));
+
+        // Clean up for next test
+        display.Clear();
+        GetCPUStateRef().mRegisters[0xF] = 0;
+    }
+
+    // Test 3: Sprite wraps around screen horizontally
+    {        
+        // Arrange        
+        const uint8_t xPos = DISPLAY_WIDTH - 4; // Near right edge (assuming 64x32 display)
+        const uint8_t yPos = 0;
+        const uint8_t vxRegister = 0;
+        const uint8_t vyRegister = 1;
+        const uint8_t spriteHeight = 1;
+        const uint16_t spriteAddress = 0x220;
+
+        const uint8_t spriteData[spriteHeight] = {
+            0b11111111, // 8 pixels wide
+        };
+
+        const uint16_t opcode =
+            0xD000 |
+            (vxRegister << 8) |
+            (vyRegister << 4) |
+            spriteHeight;
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+
+        GetCPUStateRef().mIndexRegister = spriteAddress;
+        GetCPUStateRef().mRegisters[vxRegister] = xPos;
+        GetCPUStateRef().mRegisters[vyRegister] = yPos;
+
+        WriteByteToMemory(spriteAddress, spriteData[0]);
+        
+        // Act
+        ExecuteInstruction();
+        
+        // Assert
+        const Display& display = GetBusRef().mDisplay;
+        
+        for (uint8_t i = 0; i < 8; ++i)
+        {
+            const uint8_t screenX = (xPos + i) % DISPLAY_WIDTH;
+            ASSERT_TRUE(display.IsPixelSet(screenX, yPos)) << "Pixel not set at wrapped X = " << screenX;
+        }
+    }
 }
 
 // Skip next instruction if key with the value of Vx is pressed.
