@@ -3,6 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Interpreter
+#include "Interfaces/IRandomProvider.h"
 #include "Constants.h"
 #include "Types/FetchResult.h"
 #include "Interpreter/Hardware/CPUState.h"
@@ -22,7 +23,7 @@ class CPU
 #endif
 
 public:
-	CPU(Bus& bus);
+	CPU(Bus& bus, IRandomProvider& randomProvider);
 
 	void Reset();
 	void DecrementTimers();
@@ -71,5 +72,6 @@ private:
 	DECLARE_OPCODE_HANDLER(Fx65, LD_VX_I)
 
 	Bus& mBus;
+	IRandomProvider& mRandomProvider;
 	CPUState mState;
 };

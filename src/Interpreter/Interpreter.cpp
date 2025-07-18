@@ -14,8 +14,8 @@
 #include <vector>
 
 //--------------------------------------------------------------------------------
-Interpreter::Interpreter()	
-	: mCPU(mBus)
+Interpreter::Interpreter(IRandomProvider& randomProvider)
+	: mCPU(mBus, randomProvider)
 	, mCycleCount(0)
 {
 	mBus.mRAM.WriteRange(0x000, CHAR_SET); // Load CHIP-8 character fontset into memory

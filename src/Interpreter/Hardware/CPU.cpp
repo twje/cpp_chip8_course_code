@@ -16,8 +16,9 @@
 #include <cassert>
 
 //--------------------------------------------------------------------------------
-CPU::CPU(Bus& bus)
+CPU::CPU(Bus& bus, IRandomProvider& randomProvider)
     : mBus{ bus }
+    , mRandomProvider(randomProvider)
 { 
     mState.mProgramCounter = PROGRAM_START_ADDRESS;
 }
@@ -421,9 +422,14 @@ ExecutionStatus CPU::Execute_Bnnn_JP_V0_ADDR(const Instruction& instruction)
 }
 
 //--------------------------------------------------------------------------------
-ExecutionStatus CPU::Execute_Cxkk_RND_VX_KK(const Instruction&)
+ExecutionStatus CPU::Execute_Cxkk_RND_VX_KK(const Instruction& instruction)
 {
-    return ExecutionStatus::NotImplemented;
+    const size_t index = instruction.GetOperandX();
+	const uint8_t value = instruction.GetOperandKK();
+
+	mState.mRegisters[index] = mRandomProvider.GetRandomByte() & value;
+
+    return ExecutionStatus::Executed;
 }
 
 //--------------------------------------------------------------------------------

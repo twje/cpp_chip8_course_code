@@ -5,11 +5,12 @@
 // Interpreter
 #include "Application/Timer.h"
 #include "Application/TextSpinner.h"
+#include "Application/RandomProvider.h"
 #include "Interfaces/IUIManager.h"
 #include "Interfaces/IRomLoader.h"
+#include "Utils/TextUtils.h"
 #include "Types/Commands.h"
 #include "Interpreter/Interpreter.h"
-#include "Utils/TextUtils.h"
 #include "Strings.h"
 
 // System
@@ -27,7 +28,8 @@ class ApplicationController
 
 public:
 	ApplicationController(std::unique_ptr<IRomLoader> romLoader, std::unique_ptr<IUIManager> uiManager)
-		: mRomLoader(std::move(romLoader))
+		: mInterpreter(mRandomProvider)
+		, mRomLoader(std::move(romLoader))
 		, mUIManager(std::move(uiManager))
 		, mState(ExecutionState::kNone)
 		, mInstructionTimer(CPU_FREQUENCY_HZ)
@@ -291,6 +293,7 @@ private:
 	// Dependencies
 	std::unique_ptr<IRomLoader> mRomLoader;
 	std::unique_ptr<IUIManager> mUIManager;
+	RandomProvider mRandomProvider;
 
 	// UI binding
 	ViewModel mViewModel;

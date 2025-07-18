@@ -1,4 +1,3 @@
-#include <gtest/gtest.h>
 #define UNIT_TESTING
 
 // Includes
@@ -6,6 +5,9 @@
 // Interpreter
 #include "Interpreter/Instruction/OpcodeTable.h"
 #include "Interpreter/Instruction/OpcodeId.h"
+
+// Third Party
+#include <gtest/gtest.h>
 
 // System
 #include <vector>

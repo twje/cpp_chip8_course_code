@@ -1,9 +1,9 @@
-#include <gtest/gtest.h>
 #define UNIT_TESTING
 
 // Includes
 //--------------------------------------------------------------------------------
 // Interpreter
+#include "Interfaces/IRandomProvider.h"
 #include "Constants.h"
 #include "Interpreter/Interpreter.h"
 #include "Interpreter/Bus.h"
@@ -11,13 +11,33 @@
 #include "Interpreter/Hardware/RAM.h"
 #include "Interpreter/Hardware/CPU.h"
 
-// System
-#include <optional>
+// Thir Party
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+//--------------------------------------------------------------------------------
+class MockRandomProvider : public IRandomProvider
+{
+public:
+    MOCK_METHOD(uint8_t, GetRandomByte, (), (override));
+};
 
 //--------------------------------------------------------------------------------
 class OpcodeTest : public ::testing::Test
 {
 protected:
+    static constexpr uint8_t kMockedRandomValue = 0xAB;
+    
+    OpcodeTest()
+		: mInterpreter(mRandomProvider)
+    { }
+
+    void SetUp() override
+    {
+        // Set default return value for GetRandomByte
+        ON_CALL(mRandomProvider, GetRandomByte).WillByDefault(::testing::Return(kMockedRandomValue));
+    }
+
     void WriteByteToMemory(uint16_t address, uint8_t byte)
     {
         RAM& ram = mInterpreter.mBus.mRAM;
@@ -63,7 +83,8 @@ protected:
     CPUState& GetCPUStateRef() { return mInterpreter.mCPU.mState; }
     Bus& GetBusRef() { return mInterpreter.mBus; }
 
-    Interpreter mInterpreter;  
+	MockRandomProvider mRandomProvider;
+    Interpreter mInterpreter;
 };
 
 // Clear the display.
@@ -739,19 +760,33 @@ TEST_F(OpcodeTest, Bnnn_JP_V0_ADDR)
     GetCPUStateRef().mRegisters[0] = 0x02;
 
     // Act
-    const Instruction& instruction = ExecuteInstruction();
+    ExecuteInstruction();
 
     // Assert
     ASSERT_EQ(0x204, GetCPUStateRef().mProgramCounter);
 }
 
+// Set Vx = random byte AND kk.
 //--------------------------------------------------------------------------------
-TEST(OpcodeExecutionTests, DISABLED_Cxkk_RND_VX_KK)
+TEST_F(OpcodeTest, Cxkk_RND_VX_KK)
 {
-    /*
-        TODO: Implement test for opcode Cxkk (RND_VX_KK).
-        Refer to: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
-    */
+    // Arrange
+    const uint8_t vxIndex = 2;
+    const uint8_t kk = 0x33;    
+    
+    EXPECT_CALL(mRandomProvider, GetRandomByte())
+        .Times(1)
+        .WillOnce(::testing::Return(kMockedRandomValue));
+    
+    WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xC200 | kk);
+
+    // Act
+    const Instruction& instruction = ExecuteInstruction();
+
+    // Assert
+    ASSERT_EQ(instruction.GetOperandX(), vxIndex);
+    ASSERT_EQ(instruction.GetOperandKK(), kk);
+    ASSERT_EQ(GetCPUStateRef().mRegisters[vxIndex], kMockedRandomValue & kk);
 }
 
 // Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
@@ -863,6 +898,7 @@ TEST_F(OpcodeTest, Fx07_LD_VX_DT)
     ASSERT_EQ(value, GetCPUStateRef().mRegisters[index]);
 }
 
+// Wait for a key press, store the value of the key in Vx.
 //--------------------------------------------------------------------------------
 TEST(OpcodeExecutionTests, DISABLED_Fx0A_LD_VX_K)
 {
@@ -928,6 +964,7 @@ TEST_F(OpcodeTest, Fx1E_ADD_I_VX)
 	ASSERT_EQ(initialIndex + value, GetCPUStateRef().mIndexRegister);
 }
 
+// Set I = location of sprite for digit Vx.
 //--------------------------------------------------------------------------------
 TEST(OpcodeExecutionTests, DISABLED_Fx29_LD_F_VX)
 {

@@ -3,6 +3,7 @@
 // Includes
 //--------------------------------------------------------------------------------
 // Interpreter
+#include "Interfaces/IRandomProvider.h"
 #include "Constants.h"
 #include "Interpreter/Bus.h"
 #include "Interpreter/Hardware/CPU.h"
@@ -22,7 +23,7 @@ class Interpreter
 #endif
 
 public:
-	Interpreter();	
+	Interpreter(IRandomProvider& randomProvider);
 
 	void Reset();
 	bool LoadRom(const std::vector<uint8_t>& data);
