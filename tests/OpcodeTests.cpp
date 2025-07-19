@@ -73,14 +73,16 @@ protected:
 		
 		// Peek next instruction (no side effects)
         const FetchResult fetchResult = cpu.Peek();
-        EXPECT_TRUE(fetchResult.mIsValidAddress) << "Peek failed";
+        EXPECT_TRUE(fetchResult.mIsValidAddress) << "Peek failed.";
         
         Instruction instruction = cpu.Decode(fetchResult.mOpcode);
-        EXPECT_TRUE(instruction.IsValid()) << "Decode failed";
+        EXPECT_TRUE(instruction.IsValid()) << "Decode failed.";
         
 		// Step (increments program counter)
         StepResult stepResult = mInterpreter.Step();
-        EXPECT_FALSE(stepResult.mShouldHalt) << "Execution failed";
+        EXPECT_EQ(expectedStatus, stepResult.mStatus) << "Unexpected execution status.";
+        EXPECT_FALSE(stepResult.mShouldHalt) 
+            << "Interpreter unexpectedly requested halt after execution.";
 
         return instruction;
     }
@@ -475,76 +477,99 @@ TEST_F(OpcodeTest, 8xy4_ADD_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy5_SUB_VX_VY)
 {
-    // Test VF = 1 (no borrow) for Vx > Vy
+    constexpr uint8_t kNoBorrow = 1;
+    constexpr uint8_t kBorrowOccurred = 0;
+    constexpr uint16_t kBaseOpcode = 0x8005;
+
+    // Test 1: No borrow when Vx > Vy
     {
-        // Arrange
+        // -- Arrange --
+        const uint8_t vxReg = 7;
+        const uint8_t vyReg = 6;
         const uint8_t vxValue = 75;
         const uint8_t vyValue = 45;
+        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8765);
-        GetCPUStateRef().mRegisters[7] = vxValue;
-        GetCPUStateRef().mRegisters[6] = vyValue;
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = vxValue;
+        GetCPUStateRef().mRegisters[vyReg] = vyValue;
 
-        // Act
+        // -- Act --
         const Instruction& instruction = ExecuteInstruction();
 
-        // Assert
-        const size_t vxIndex = instruction.GetOperandX();
-        const size_t vyIndex = instruction.GetOperandY();
-        const uint8_t subtraction = static_cast<uint8_t>(vxValue - vyValue);
+        // -- Assert --
+		const uint8_t expectedResult = vxValue - vyValue;
 
-        ASSERT_EQ(7, vxIndex);
-        ASSERT_EQ(6, vyIndex);
-        ASSERT_EQ(subtraction, GetCPUStateRef().mRegisters[vxIndex]);
-        ASSERT_EQ(1, GetCPUStateRef().mRegisters[0xF]);
+        ASSERT_EQ(expectedResult, GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(kNoBorrow, GetCPUStateRef().mRegisters[0xF]);
     }    
 
-    // Test VF = 0 (borrow) for Vx == Vy
+    // Test 2: No borrow (Vx == Vy)
     {
-        // Arrange
-        const uint8_t vxValue = 42;
-        const uint8_t vyValue = 42;
+        // -- Arrange --
+        const uint8_t vxReg = 7;
+        const uint8_t vyReg = 6;
+        const uint8_t value = 42;
+        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8765);
-        GetCPUStateRef().mRegisters[7] = vxValue;
-        GetCPUStateRef().mRegisters[6] = vyValue;
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = value;
+        GetCPUStateRef().mRegisters[vyReg] = value;
 
-        // Act
-        const Instruction& instruction = ExecuteInstruction();
+        // -- Act --
+        ExecuteInstruction();
 
-        // Assert
-        const size_t vxIndex = instruction.GetOperandX();
-        const size_t vyIndex = instruction.GetOperandY();
-        const uint8_t subtraction = static_cast<uint8_t>(vxValue - vyValue);
+        // -- Assert --
+        const uint8_t expectedResult = 0;
 
-        ASSERT_EQ(7, vxIndex);
-        ASSERT_EQ(6, vyIndex);
-        ASSERT_EQ(subtraction, GetCPUStateRef().mRegisters[vxIndex]);
-        ASSERT_EQ(0, GetCPUStateRef().mRegisters[0xF]);
+        ASSERT_EQ(expectedResult, GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(kNoBorrow, GetCPUStateRef().mRegisters[0xF]);
     }
 
-    // Test VF = 0 (borrow) for Vx < Vy
+    // Test 3: Borrow occurs (Vx < Vy)
     {
-        // Arrange
+        // -- Arrange --
+        const uint8_t vxReg = 7;
+        const uint8_t vyReg = 6;
         const uint8_t vxValue = 16;
         const uint8_t vyValue = 32;
+        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8765);
-        GetCPUStateRef().mRegisters[7] = vxValue;
-        GetCPUStateRef().mRegisters[6] = vyValue;
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = vxValue;
+        GetCPUStateRef().mRegisters[vyReg] = vyValue;
 
-        // Act
-        const Instruction& instruction = ExecuteInstruction();
+        // -- Act --
+        ExecuteInstruction();
 
-        // Assert
-        const size_t vxIndex = instruction.GetOperandX();
-        const size_t vyIndex = instruction.GetOperandY();
-		const uint8_t subtraction = static_cast<uint8_t>(vxValue - vyValue); // Wrapping expected
+        // -- Assert --
+        // Wraparound from unsigned underflow is expected
+		const uint8_t expectedResult = static_cast<uint8_t>(vxValue - vyValue);
 
-        ASSERT_EQ(7, vxIndex);
-        ASSERT_EQ(6, vyIndex);
-        ASSERT_EQ(subtraction, GetCPUStateRef().mRegisters[vxIndex]);
-        ASSERT_EQ(0, GetCPUStateRef().mRegisters[0xF]);
+        ASSERT_EQ(expectedResult, GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(kBorrowOccurred, GetCPUStateRef().mRegisters[0xF]);
+    }
+
+    // Test 4: x == 0xF — result must be the no-borrow flag, not the math result
+    {
+        // -- Arrange --
+        const uint8_t vxReg = 0xF; // x == VF
+        const uint8_t vyReg = 1;
+        const uint8_t vxValue = 100;
+        const uint8_t vyValue = 50;
+        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = vxValue;
+        GetCPUStateRef().mRegisters[vyReg] = vyValue;
+
+        // -- Act --
+        ExecuteInstruction();
+
+        // -- Assert --
+        // Since x == VF, the result must be the borrow flag, not the math result
+        ASSERT_EQ(kNoBorrow, GetCPUStateRef().mRegisters[0xF])
+            << "VF should contain the no-borrow flag (1), not the math result.";
     }
 }
 
@@ -593,76 +618,99 @@ TEST_F(OpcodeTest, 8xy6_SHR_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy7_SUBN_VX_VY)
 {
-    // Test VF = 1 (no borrow) for Vy > Vx
+    constexpr uint8_t kNoBorrow = 1;
+    constexpr uint8_t kBorrowOccurred = 0;
+    constexpr uint16_t kBaseOpcode = 0x8007;
+
+    // Test 1: No borrow when Vy > Vx
     {
-        // Arrange
+        // -- Arrange --
+        const uint8_t vxReg = 5;
+        const uint8_t vyReg = 4;
         const uint8_t vxValue = 45;
         const uint8_t vyValue = 75;
+        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8767);
-        GetCPUStateRef().mRegisters[7] = vxValue;
-        GetCPUStateRef().mRegisters[6] = vyValue;
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = vxValue;
+        GetCPUStateRef().mRegisters[vyReg] = vyValue;
 
-        // Act
-        const Instruction& instruction = ExecuteInstruction();
+        // -- Act --
+        ExecuteInstruction();
 
-        // Assert
-        const size_t vxIndex = instruction.GetOperandX();
-        const size_t vyIndex = instruction.GetOperandY();
-        const uint8_t subtraction = static_cast<uint8_t>(vyValue - vxValue);
+        // -- Assert --
+        const uint8_t expectedResult = vyValue - vxValue;
 
-        ASSERT_EQ(7, vxIndex);
-        ASSERT_EQ(6, vyIndex);
-        ASSERT_EQ(subtraction, GetCPUStateRef().mRegisters[vxIndex]);
-        ASSERT_EQ(1, GetCPUStateRef().mRegisters[0xF]);
+        ASSERT_EQ(expectedResult, GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(kNoBorrow, GetCPUStateRef().mRegisters[0xF]);
     }
 
-    // Test VF = 0 (borrow) for Vy == Vx
+    // Test 2: No borrow (Vy == Vx)
     {
-        // Arrange
-        const uint8_t vxValue = 42;
-        const uint8_t vyValue = 42;
+        // -- Arrange --
+        const uint8_t vxReg = 7;
+        const uint8_t vyReg = 6;
+        const uint8_t value = 42;
+        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8767);
-        GetCPUStateRef().mRegisters[7] = vxValue;
-        GetCPUStateRef().mRegisters[6] = vyValue;
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = value;
+        GetCPUStateRef().mRegisters[vyReg] = value;
 
-        // Act
-        const Instruction& instruction = ExecuteInstruction();
+        // -- Act --
+        ExecuteInstruction();
 
-        // Assert
-        const size_t vxIndex = instruction.GetOperandX();
-        const size_t vyIndex = instruction.GetOperandY();
-        const uint8_t subtraction = static_cast<uint8_t>(vyValue - vxValue);
+        // -- Assert --
+        const uint8_t expectedResult = 0;
 
-        ASSERT_EQ(7, vxIndex);
-        ASSERT_EQ(6, vyIndex);
-        ASSERT_EQ(subtraction, GetCPUStateRef().mRegisters[vxIndex]);
-        ASSERT_EQ(0, GetCPUStateRef().mRegisters[0xF]);
+        ASSERT_EQ(expectedResult, GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(kNoBorrow, GetCPUStateRef().mRegisters[0xF]);
     }
 
     // Test VF = 0 (borrow) for Vy < Vx
     {
-        // Arrange
+        // -- Arrange --
+        const uint8_t vxReg = 7;
+        const uint8_t vyReg = 6;
         const uint8_t vxValue = 32;
         const uint8_t vyValue = 16;
+        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8767);
-        GetCPUStateRef().mRegisters[7] = vxValue;
-        GetCPUStateRef().mRegisters[6] = vyValue;
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = vxValue;
+        GetCPUStateRef().mRegisters[vyReg] = vyValue;
 
-        // Act
-        const Instruction& instruction = ExecuteInstruction();
+        // -- Act --
+        ExecuteInstruction();
 
-        // Assert
-        const size_t vxIndex = instruction.GetOperandX();
-        const size_t vyIndex = instruction.GetOperandY();
-        const uint8_t subtraction = static_cast<uint8_t>(vyValue - vxValue); // Wrapping expected
+        // -- Assert --
+        // Wraparound from unsigned underflow is expected
+        const uint8_t expectedResult = static_cast<uint8_t>(vyValue - vxValue);
 
-        ASSERT_EQ(7, vxIndex);
-        ASSERT_EQ(6, vyIndex);
-        ASSERT_EQ(subtraction, GetCPUStateRef().mRegisters[vxIndex]);
-        ASSERT_EQ(0, GetCPUStateRef().mRegisters[0xF]);
+        ASSERT_EQ(expectedResult, GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(kBorrowOccurred, GetCPUStateRef().mRegisters[0xF]);        
+    }
+
+    // Test 4: x == 0xF — result must be the no-borrow flag, not the math result
+    {
+        // -- Arrange --
+        const uint8_t vxReg = 0xF; // x == VF
+        const uint8_t vyReg = 1;
+        const uint8_t vxValue = 50;
+        const uint8_t vyValue = 100;
+        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = vxValue;
+        GetCPUStateRef().mRegisters[vyReg] = vyValue;
+
+        // -- Act --
+        ExecuteInstruction();
+
+        // -- Assert --
+        // Since x == VF, the result must be the borrow flag, not the math result
+        ASSERT_EQ(kNoBorrow, GetCPUStateRef().mRegisters[0xF])
+            << "VF should contain the no-borrow flag (1), not the math result.";
     }
 }
 

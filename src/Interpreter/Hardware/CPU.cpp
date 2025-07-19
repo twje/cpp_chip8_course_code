@@ -331,15 +331,20 @@ ExecutionStatus CPU::Execute_8xy4_ADD_VX_VY(const Instruction& instruction)
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_8xy5_SUB_VX_VY(const Instruction& instruction)
 {
-    const size_t vxIndex = instruction.GetOperandX();
-    const size_t vyIndex = instruction.GetOperandY();
+    const size_t vxReg = instruction.GetOperandX();
+    const size_t vyReg = instruction.GetOperandY();
 
-	const uint16_t vxValue = mState.mRegisters[vxIndex];
-	const uint16_t vyValue = mState.mRegisters[vyIndex];
-    const uint8_t borrow = vxValue > vyValue ? 1 : 0;    
+	const uint16_t vxValue = mState.mRegisters[vxReg];
+	const uint16_t vyValue = mState.mRegisters[vyReg];
 
-	mState.mRegisters[vxIndex] = static_cast<uint8_t>(vxValue - vyValue);
-    mState.mRegisters[0xF] = borrow;
+    const uint8_t noBorrow = (vxValue >= vyValue) ? 1 : 0;
+
+    if (vxReg != 0xF)
+    {
+        mState.mRegisters[vxReg] = static_cast<uint8_t>(vxValue - vyValue);
+    }
+	
+    mState.mRegisters[0xF] = noBorrow;
 
     return ExecutionStatus::Executed;
 }
@@ -360,15 +365,20 @@ ExecutionStatus CPU::Execute_8xy6_SHR_VX_VY(const Instruction& instruction)
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_8xy7_SUBN_VX_VY(const Instruction& instruction)
 {
-    const size_t vxIndex = instruction.GetOperandX();
-    const size_t vyIndex = instruction.GetOperandY();
+    const size_t vxReg = instruction.GetOperandX();
+    const size_t vyReg = instruction.GetOperandY();
 
-    const uint16_t vxValue = mState.mRegisters[vxIndex];
-    const uint16_t vyValue = mState.mRegisters[vyIndex];
-    const uint8_t borrow = vyValue > vxValue ? 1 : 0;
+    const uint16_t vxValue = mState.mRegisters[vxReg];
+    const uint16_t vyValue = mState.mRegisters[vyReg];
+    
+    const uint8_t noBorrow = (vyValue >= vxValue) ? 1 : 0;
 
-    mState.mRegisters[vxIndex] = static_cast<uint8_t>(vyValue - vxValue);
-    mState.mRegisters[0xF] = borrow;
+    if (vxReg != 0xF)
+    {
+        mState.mRegisters[vxReg] = static_cast<uint8_t>(vyValue - vxValue);
+    }
+
+    mState.mRegisters[0xF] = noBorrow;
 
     return ExecutionStatus::Executed;
 }
