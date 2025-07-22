@@ -99,16 +99,16 @@ protected:
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 00E0_CLS)
 {
-	// Arrange
+	// -- Assert --
 	WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x00E0);    
     
     Display& display = GetBusRef().mDisplay;
 	display.SetPixel(0, 0, true);
 
-	// Act
+	// -- Act --
 	ExecuteInstruction();
 
-	// Assert	
+	// -- Assert --	
 	ASSERT_FALSE(display.IsPixelSet(0, 0));
 }
 
@@ -116,17 +116,17 @@ TEST_F(OpcodeTest, 00E0_CLS)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 00EE_RET)
 {    
-    // Arrange    
+    // -- Assert --    
     const uint16_t returnAdress = PROGRAM_START_ADDRESS + 10;
  
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x00EE);    
     GetCPUStateRef().mStack[0] = returnAdress;
     GetCPUStateRef().mStackPointer = 1;
 
-    // Act
+    // -- Act --
 	ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     ASSERT_EQ(0, GetCPUStateRef().mStackPointer);
     ASSERT_EQ(returnAdress, GetCPUStateRef().mProgramCounter);    
 }
@@ -135,13 +135,13 @@ TEST_F(OpcodeTest, 00EE_RET)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 1nnn_JP_ADDR)
 {
-    // Arrange
+    // -- Assert --
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x124E);
 
-    // Act
+    // -- Act --
 	const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     ASSERT_EQ(0x024E, GetCPUStateRef().mProgramCounter);
     const uint16_t address = instruction.GetOperandNNN();
     ASSERT_EQ(0x024E, address);
@@ -151,13 +151,13 @@ TEST_F(OpcodeTest, 1nnn_JP_ADDR)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 2nnn_CALL_ADDR)
 {
-    // Arrange
+    // -- Assert --
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x2F23);    
 
-    // Act
+    // -- Act --
     ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mStack[0]);
     ASSERT_EQ(1, GetCPUStateRef().mStackPointer);
     ASSERT_EQ(0x0F23, GetCPUStateRef().mProgramCounter);
@@ -169,28 +169,28 @@ TEST_F(OpcodeTest, 3xkk_SE_VX_KK)
 {
     // Positive case: skip next instruction
     {
-        // Arrange
+        // -- Assert --
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x3205);
         GetCPUStateRef().mRegisters[2] = 0x05;
 
-        // Act
+        // -- Act --
         ExecuteInstruction();
         
-        // Assert        
+        // -- Assert --        
         ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
     }
 
 	// Negative case: does not skip next instruction
     {
-        // Arrange
+        // -- Assert --
         mInterpreter.Reset();
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x3205);
         GetCPUStateRef().mRegisters[2] = 0x04;
 
-        // Act
+        // -- Act --
         ExecuteInstruction();
         
-        // Assert        
+        // -- Assert --        
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
     }    
 }
@@ -201,28 +201,28 @@ TEST_F(OpcodeTest, 4xkk_SNE_VX_KK)
 {
     // Positive case: does not skip next instruction
     {
-        // Arrange
+        // -- Assert --
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x452A);
         GetCPUStateRef().mRegisters[5] = 0x2B;
 
-        // Act
+        // -- Act --
         ExecuteInstruction();
 
-        // Assert        
+        // -- Assert --        
         ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
     }
 
     // Negative case: skip next instruction
     {
-        // Arrange
+        // -- Assert --
         mInterpreter.Reset();
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x452A);
         GetCPUStateRef().mRegisters[5] = 0x2A;
 
-        // Act
+        // -- Act --
         ExecuteInstruction();
 
-        // Assert        
+        // -- Assert --        
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
     }
 }
@@ -233,15 +233,15 @@ TEST_F(OpcodeTest, 5xy0_SE_VX_VY)
 {
     // Positive case: skip next instruction
     {
-        // Arrange
+        // -- Assert --
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x5560);
         GetCPUStateRef().mRegisters[5] = 0x01;
         GetCPUStateRef().mRegisters[6] = 0x01;
 
-        // Act
+        // -- Act --
         ExecuteInstruction();
 
-        // Assert        
+        // -- Assert --        
         ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
     }
 
@@ -249,15 +249,15 @@ TEST_F(OpcodeTest, 5xy0_SE_VX_VY)
     {
         mInterpreter.Reset();
         
-        // Arrange
+        // -- Assert --
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x5560);
         GetCPUStateRef().mRegisters[5] = 0x01;
         GetCPUStateRef().mRegisters[6] = 0x02;
 
-        // Act
+        // -- Act --
         ExecuteInstruction();
 
-        // Assert        
+        // -- Assert --        
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
     }
 }
@@ -266,13 +266,13 @@ TEST_F(OpcodeTest, 5xy0_SE_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 6xkk_LD_VX_KK)
 {
-    // Arrange
+    // -- Assert --
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x6206);
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
     
-    // Assert
+    // -- Assert --
 	const size_t index = instruction.GetOperandX();
     const uint8_t value = instruction.GetOperandKK();
 
@@ -283,14 +283,14 @@ TEST_F(OpcodeTest, 6xkk_LD_VX_KK)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 7xkk_ADD_VX_KK)
 {
-    // Arrange
+    // -- Assert --
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x76FE);
     GetCPUStateRef().mRegisters[6] = 1;
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     const size_t index = instruction.GetOperandX();
     const uint8_t value = instruction.GetOperandKK();
 
@@ -303,16 +303,16 @@ TEST_F(OpcodeTest, 7xkk_ADD_VX_KK)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy0_LD_VX_VY)
 {
-    // Arrange
+    // -- Assert --
     const uint8_t vyValue = 8;
 
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8750);    
     GetCPUStateRef().mRegisters[5] = vyValue;
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     const size_t vxIndex = instruction.GetOperandX();
     const size_t vyIndex = instruction.GetOperandY();
 
@@ -325,7 +325,7 @@ TEST_F(OpcodeTest, 8xy0_LD_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy1_OR_VX_VY)
 {
-    // Arrange
+    // -- Assert --
     const uint8_t vxValue = 0b00001111;
     const uint8_t vyValue = 0b11110000;
 
@@ -333,10 +333,10 @@ TEST_F(OpcodeTest, 8xy1_OR_VX_VY)
     GetCPUStateRef().mRegisters[7] = vxValue;
     GetCPUStateRef().mRegisters[3] = vyValue;
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     const size_t vxIndex = instruction.GetOperandX();
     const size_t vyIndex = instruction.GetOperandY();
     const uint8_t result = vxValue | vyValue; // 0b11111111
@@ -350,7 +350,7 @@ TEST_F(OpcodeTest, 8xy1_OR_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy2_AND_VX_VY)
 {
-    // Arrange
+    // -- Assert --
     const uint8_t vxValue = 0b01011010;
     const uint8_t vyValue = 0b00111100;
 
@@ -358,10 +358,10 @@ TEST_F(OpcodeTest, 8xy2_AND_VX_VY)
     GetCPUStateRef().mRegisters[7] = vxValue;
     GetCPUStateRef().mRegisters[3] = vyValue;
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     const size_t vxIndex = instruction.GetOperandX();
     const size_t vyIndex = instruction.GetOperandY();
     const uint8_t result = vxValue & vyValue; // 0b00011000
@@ -375,7 +375,7 @@ TEST_F(OpcodeTest, 8xy2_AND_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy3_XOR_VX_VY)
 {
-    // Arrange
+    // -- Assert --
     const uint8_t vxValue = 0b01011010;
     const uint8_t vyValue = 0b00111100;
 
@@ -383,10 +383,10 @@ TEST_F(OpcodeTest, 8xy3_XOR_VX_VY)
     GetCPUStateRef().mRegisters[7] = vxValue;
     GetCPUStateRef().mRegisters[3] = vyValue;
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     const size_t vxIndex = instruction.GetOperandX();
     const size_t vyIndex = instruction.GetOperandY();
     const uint8_t result = vxValue ^ vyValue; // 0b01100110
@@ -402,7 +402,7 @@ TEST_F(OpcodeTest, 8xy4_ADD_VX_VY)
 {    
     // Test VF = 1 (carry) for Vx + Vy > 255
     {
-        // Arrange
+        // -- Assert --
         const uint8_t vxValue = 200;
         const uint8_t vyValue = 100;
 
@@ -410,10 +410,10 @@ TEST_F(OpcodeTest, 8xy4_ADD_VX_VY)
         GetCPUStateRef().mRegisters[9] = vxValue;
         GetCPUStateRef().mRegisters[2] = vyValue;
 
-        // Act
+        // -- Act --
         const Instruction& instruction = ExecuteInstruction();
 
-        // Assert
+        // -- Assert --
         const size_t vxIndex = instruction.GetOperandX();
         const size_t vyIndex = instruction.GetOperandY();
         const uint16_t sum = vxValue + vyValue;
@@ -426,7 +426,7 @@ TEST_F(OpcodeTest, 8xy4_ADD_VX_VY)
 
     // Test VF = 0 (no carry) for Vx + Vy == 255
     {
-        // Arrange
+        // -- Assert --
         const uint8_t vxValue = 127;
         const uint8_t vyValue = 128;
 
@@ -434,10 +434,10 @@ TEST_F(OpcodeTest, 8xy4_ADD_VX_VY)
         GetCPUStateRef().mRegisters[5] = vxValue;
         GetCPUStateRef().mRegisters[4] = vyValue;
 
-        // Act
+        // -- Act --
         const Instruction& instruction = ExecuteInstruction();
 
-        // Assert
+        // -- Assert --
         const size_t vxIndex = instruction.GetOperandX();
         const size_t vyIndex = instruction.GetOperandY();
         const uint16_t sum = vxValue + vyValue;
@@ -450,7 +450,7 @@ TEST_F(OpcodeTest, 8xy4_ADD_VX_VY)
 
     // Test VF = 0 (no carry) for Vx + Vy < 255
     {
-        // Arrange
+        // -- Assert --
         const uint8_t vxValue = 16;
         const uint8_t vyValue = 32;
 
@@ -458,10 +458,10 @@ TEST_F(OpcodeTest, 8xy4_ADD_VX_VY)
         GetCPUStateRef().mRegisters[7] = vxValue;
         GetCPUStateRef().mRegisters[6] = vyValue;
 
-        // Act
+        // -- Act --
         const Instruction& instruction = ExecuteInstruction();
 
-        // Assert
+        // -- Assert --
         const size_t vxIndex = instruction.GetOperandX();
         const size_t vyIndex = instruction.GetOperandY();
         const uint16_t sum = vxValue + vyValue;
@@ -579,16 +579,16 @@ TEST_F(OpcodeTest, 8xy6_SHR_VX_VY)
 {
     // Test VF == 1 (least-significant bit is 1)
     {
-        // Arrange
+        // -- Assert --
         const uint8_t value = 0b00111111;
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8666);
         GetCPUStateRef().mRegisters[6] = value;
 
-        // Act
+        // -- Act --
         const Instruction& instruction = ExecuteInstruction();
 
-        // Assert
+        // -- Assert --
         const size_t index = instruction.GetOperandX();  // Operand Y is ignored    
 
         ASSERT_EQ(static_cast<uint8_t>(value / 2), GetCPUStateRef().mRegisters[index]);
@@ -597,16 +597,16 @@ TEST_F(OpcodeTest, 8xy6_SHR_VX_VY)
 
     // Test VF == 0 (least-significant bit is 0)
     {
-        // Arrange
+        // -- Assert --
         const uint8_t value = 0b00111110;
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8666);
         GetCPUStateRef().mRegisters[6] = value;
 
-        // Act
+        // -- Act --
         const Instruction& instruction = ExecuteInstruction();
 
-        // Assert
+        // -- Assert --
         const size_t index = instruction.GetOperandX();  // Operand Y is ignored    
 
         ASSERT_EQ(static_cast<uint8_t>(value / 2), GetCPUStateRef().mRegisters[index]);
@@ -720,16 +720,16 @@ TEST_F(OpcodeTest, 8xyE_SHL_VX_VY)
 {
     // Test VF == 1 (most-significant bit is 1)
     {
-        // Arrange
+        // -- Assert --
         const uint8_t value = 0b10111111;
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x866E);
         GetCPUStateRef().mRegisters[6] = value;
 
-        // Act
+        // -- Act --
         const Instruction& instruction = ExecuteInstruction();
 
-        // Assert
+        // -- Assert --
         const size_t index = instruction.GetOperandX();  // Operand Y is ignored    
     
         ASSERT_EQ(static_cast<uint8_t>(value * 2), GetCPUStateRef().mRegisters[index]);
@@ -738,16 +738,16 @@ TEST_F(OpcodeTest, 8xyE_SHL_VX_VY)
 
     // Test VF == 0 (most-significant bit is 0)
     {
-        // Arrange
+        // -- Assert --
         const uint8_t value = 0b00111110;
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x866E);
         GetCPUStateRef().mRegisters[6] = value;
 
-        // Act
+        // -- Act --
         const Instruction& instruction = ExecuteInstruction();
 
-        // Assert
+        // -- Assert --
         const size_t index = instruction.GetOperandX();  // Operand Y is ignored    
 
         ASSERT_EQ(static_cast<uint8_t>(value * 2), GetCPUStateRef().mRegisters[index]);
@@ -761,31 +761,31 @@ TEST_F(OpcodeTest, 9xy0_SNE_VX_VY)
 {
     // Positive case: skip next instruction
     {
-        // Arrange
+        // -- Assert --
         mInterpreter.Reset();
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x9560);
         GetCPUStateRef().mRegisters[5] = 0x04;
         GetCPUStateRef().mRegisters[6] = 0x05;
 
-        // Act
+        // -- Act --
         ExecuteInstruction();
 
-        // Assert        
+        // -- Assert --        
         ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
     }
     
     // Negative case: does not skip next instruction
     {
-        // Arrange
+        // -- Assert --
         mInterpreter.Reset();
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x9560);
         GetCPUStateRef().mRegisters[5] = 0x04;
         GetCPUStateRef().mRegisters[6] = 0x04;
 
-        // Act
+        // -- Act --
         ExecuteInstruction();
 
-        // Assert        
+        // -- Assert --        
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
     }
 }
@@ -794,13 +794,13 @@ TEST_F(OpcodeTest, 9xy0_SNE_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Annn_LD_I_ADDR)
 {
-    // Arrange
+    // -- Assert --
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xA215);
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     ASSERT_EQ(0x0215, instruction.GetOperandNNN());
     ASSERT_EQ(0x0215, GetCPUStateRef().mIndexRegister);	
 }
@@ -809,14 +809,14 @@ TEST_F(OpcodeTest, Annn_LD_I_ADDR)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Bnnn_JP_V0_ADDR)
 {
-    // Arrange
+    // -- Assert --
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xB202);
     GetCPUStateRef().mRegisters[0] = 0x02;
 
-    // Act
+    // -- Act --
     ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     ASSERT_EQ(0x204, GetCPUStateRef().mProgramCounter);
 }
 
@@ -824,7 +824,7 @@ TEST_F(OpcodeTest, Bnnn_JP_V0_ADDR)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Cxkk_RND_VX_KK)
 {
-    // Arrange
+    // -- Assert --
     const uint8_t vxIndex = 2;
     const uint8_t kk = 0x33;    
     
@@ -834,10 +834,10 @@ TEST_F(OpcodeTest, Cxkk_RND_VX_KK)
     
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xC200 | kk);
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     ASSERT_EQ(instruction.GetOperandX(), vxIndex);
     ASSERT_EQ(instruction.GetOperandKK(), kk);
     ASSERT_EQ(GetCPUStateRef().mRegisters[vxIndex], kMockedRandomValue & kk);
@@ -851,7 +851,7 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
 
     // Test 1: Basic draw with no collision
     {
-        // Arrange        
+        // -- Assert --        
         const uint8_t xPos = 0;
         const uint8_t yPos = 0;
         const uint8_t vxRegister = 0;
@@ -881,10 +881,10 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
             WriteByteToMemory(spriteAddress + i, spriteData[i]);
         }
         
-        // Act        
+        // -- Act --        
         ExecuteInstruction();
 
-        // Assert        
+        // -- Assert --        
         const uint8_t collision = GetCPUStateRef().mRegisters[0xF];
 
         ASSERT_EQ(0, collision);
@@ -897,7 +897,7 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
 
     // Test 2: Draw causes collision (overlapping pixels)
     {
-		// Arrange		
+		// -- Assert --		
         const uint8_t xPos = 0;
         const uint8_t yPos = 0;
         const uint8_t vxRegister = 0;
@@ -929,7 +929,7 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
         ExecuteInstruction();
         
-        // Assert
+        // -- Assert --
         const uint8_t collision = GetCPUStateRef().mRegisters[0xF];
 
         ASSERT_EQ(1, collision);
@@ -942,7 +942,7 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
 
     // Test 3: Sprite wraps around screen horizontally
     {        
-        // Arrange        
+        // -- Assert --        
         const uint8_t xPos = DISPLAY_WIDTH - 4; // Near right edge (assuming 64x32 display)
         const uint8_t yPos = 0;
         const uint8_t vxRegister = 0;
@@ -968,10 +968,10 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
 
         WriteByteToMemory(spriteAddress, spriteData[0]);
         
-        // Act
+        // -- Act --
         ExecuteInstruction();
         
-        // Assert
+        // -- Assert --
         for (uint8_t i = 0; i < 8; ++i)
         {
             const uint8_t screenX = (xPos + i) % DISPLAY_WIDTH;
@@ -986,7 +986,7 @@ TEST_F(OpcodeTest, Ex9E_SKP_VX)
 {
     // Test skip instruction when key is pressed
     {
-	    // Arrange
+	    // -- Assert --
 	    const Keypad::Key pressedKey = Keypad::Key::Key5;
 	    const uint8_t value = Keypad::KeyToIndex(pressedKey);
 
@@ -994,17 +994,17 @@ TEST_F(OpcodeTest, Ex9E_SKP_VX)
 	    GetCPUStateRef().mRegisters[1] = value;
 	    GetBusRef().mKeypad.SetKeyPressed(pressedKey, true);
 
-	    // Act
+	    // -- Act --
 	    const Instruction& instruction = ExecuteInstruction();
 
-	    // Assert
+	    // -- Assert --
 	    ASSERT_EQ(1, instruction.GetOperandX());
 	    ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
     }
 
     // Test do not skip instruction when key is not pressed
     {
-        // Arrange
+        // -- Assert --
         const Keypad::Key pressedKey = Keypad::Key::Key5;
         const uint8_t value = Keypad::KeyToIndex(pressedKey);
 
@@ -1012,10 +1012,10 @@ TEST_F(OpcodeTest, Ex9E_SKP_VX)
         GetCPUStateRef().mRegisters[1] = value;
         GetBusRef().mKeypad.SetKeyPressed(pressedKey, false);
 
-        // Act
+        // -- Act --
         const Instruction& instruction = ExecuteInstruction();
 
-        // Assert
+        // -- Assert --
         ASSERT_EQ(1, instruction.GetOperandX());
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
     }
@@ -1027,7 +1027,7 @@ TEST_F(OpcodeTest, ExA1_SKNP_VX)
 {
     // Test skip instruction when key is pressed
     {
-        // Arrange
+        // -- Assert --
         const Keypad::Key pressedKey = Keypad::Key::Key5;
         const uint8_t value = Keypad::KeyToIndex(pressedKey);
 
@@ -1035,17 +1035,17 @@ TEST_F(OpcodeTest, ExA1_SKNP_VX)
         GetCPUStateRef().mRegisters[1] = value;
         GetBusRef().mKeypad.SetKeyPressed(pressedKey, false);
 
-        // Act
+        // -- Act --
         const Instruction& instruction = ExecuteInstruction();
 
-        // Assert
+        // -- Assert --
         ASSERT_EQ(1, instruction.GetOperandX());
         ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
     }
 
     // Test do not skip instruction when key is not pressed
     {
-        // Arrange
+        // -- Assert --
         const Keypad::Key pressedKey = Keypad::Key::Key5;
         const uint8_t value = Keypad::KeyToIndex(pressedKey);
 
@@ -1053,10 +1053,10 @@ TEST_F(OpcodeTest, ExA1_SKNP_VX)
         GetCPUStateRef().mRegisters[1] = value;
         GetBusRef().mKeypad.SetKeyPressed(pressedKey, true);
 
-        // Act
+        // -- Act --
         const Instruction& instruction = ExecuteInstruction();
 
-        // Assert
+        // -- Assert --
         ASSERT_EQ(1, instruction.GetOperandX());
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
     }
@@ -1066,16 +1066,16 @@ TEST_F(OpcodeTest, ExA1_SKNP_VX)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Fx07_LD_VX_DT)
 {
-    // Arrange
+    // -- Assert --
     const uint8_t value = 120;
 
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xF407);
     GetCPUStateRef().mDelayTimer = value;
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     const size_t index = instruction.GetOperandX();
 
     ASSERT_EQ(4, index);
@@ -1086,7 +1086,7 @@ TEST_F(OpcodeTest, Fx07_LD_VX_DT)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Fx0A_LD_VX_K)
 {
-    // Arrange
+    // -- Assert --
     const uint8_t vxRegister = 0;
     const auto key = Keypad::Key::Key2;
 
@@ -1096,20 +1096,20 @@ TEST_F(OpcodeTest, Fx0A_LD_VX_K)
 
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
 
-    // Act: execute without key press
+    // -- Act --: execute without key press
 	ExecuteInstruction(ExecutionStatus::WaitingOnKeyPress);
 
-    // Assert: no change to register or PC
+    // -- Assert --: no change to register or PC
     EXPECT_EQ(GetCPUStateRef().mRegisters[vxRegister], 0x00);
     EXPECT_EQ(GetCPUStateRef().mProgramCounter, PROGRAM_START_ADDRESS);
 
-    // Arrange: simulate key press
+    // -- Assert --: simulate key press
     GetBusRef().mKeypad.SetKeyPressed(key, true);
 
-    // Act: execute again with key press
+    // -- Act --: execute again with key press
     ExecuteInstruction(ExecutionStatus::Executed);
 
-    // Assert: Vx set, PC advanced
+    // -- Assert --: Vx set, PC advanced
     EXPECT_EQ(GetCPUStateRef().mRegisters[vxRegister], Keypad::KeyToIndex(key));
     EXPECT_EQ(GetCPUStateRef().mProgramCounter, PROGRAM_START_ADDRESS + INSTRUCTION_SIZE);
 }
@@ -1118,16 +1118,16 @@ TEST_F(OpcodeTest, Fx0A_LD_VX_K)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Fx15_LD_DT_VX)
 {
-    // Arrange
+    // -- Assert --
     const uint8_t value = 120;
 
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xF315);
     GetCPUStateRef().mRegisters[3] = value;
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     ASSERT_EQ(3, instruction.GetOperandX());
     ASSERT_EQ(value, GetCPUStateRef().mDelayTimer);
 }
@@ -1136,16 +1136,16 @@ TEST_F(OpcodeTest, Fx15_LD_DT_VX)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Fx18_LD_ST_VX)
 {
-    // Arrange
+    // -- Assert --
     const uint8_t value = 120;
 
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xF318);
     GetCPUStateRef().mRegisters[3] = value;
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     ASSERT_EQ(3, instruction.GetOperandX());
     ASSERT_EQ(value, GetCPUStateRef().mSoundTimer);
 }
@@ -1154,7 +1154,7 @@ TEST_F(OpcodeTest, Fx18_LD_ST_VX)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Fx1E_ADD_I_VX)
 {
-	// Arrange
+	// -- Assert --
 	const uint16_t initialIndex = 0x100;
 	const uint8_t value = 0x20; // Vx value to add
 
@@ -1162,10 +1162,10 @@ TEST_F(OpcodeTest, Fx1E_ADD_I_VX)
 	GetCPUStateRef().mIndexRegister = initialIndex;
 	GetCPUStateRef().mRegisters[6] = value;
 
-	// Act
+	// -- Act --
 	const Instruction& instruction = ExecuteInstruction();
 
-	// Assert
+	// -- Assert --
 	ASSERT_EQ(6, instruction.GetOperandX());
 	ASSERT_EQ(initialIndex + value, GetCPUStateRef().mIndexRegister);
 }
@@ -1174,7 +1174,7 @@ TEST_F(OpcodeTest, Fx1E_ADD_I_VX)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Fx29_LD_F_VX)
 {
-    // Arrange
+    // -- Assert --
     const uint8_t vxRegister = 8;
 	const uint8_t digit = 0xA; // Hexadecimal digit A (see Constants.h for font sprites)
 
@@ -1185,10 +1185,10 @@ TEST_F(OpcodeTest, Fx29_LD_F_VX)
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
 	GetCPUStateRef().mRegisters[vxRegister] = digit;
 
-    // Act
+    // -- Act --
     ExecuteInstruction();
 
-	// Assert    
+	// -- Assert --    
     EXPECT_EQ(GetCPUStateRef().mIndexRegister, digit * kFontSpriteSize);
 }
 
@@ -1196,7 +1196,7 @@ TEST_F(OpcodeTest, Fx29_LD_F_VX)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Fx33_LD_B_VX)
 {
-	// Arrange
+	// -- Assert --
 	const uint8_t value = 123; // BCD representation: 1, 2, 3
 	const uint16_t memoryWriteStartAddress = PROGRAM_START_ADDRESS + 20;
 
@@ -1204,10 +1204,10 @@ TEST_F(OpcodeTest, Fx33_LD_B_VX)
 	GetCPUStateRef().mIndexRegister = memoryWriteStartAddress;
 	GetCPUStateRef().mRegisters[6] = value;
 
-	// Act
+	// -- Act --
 	const Instruction& instruction = ExecuteInstruction();
 
-	// Assert
+	// -- Assert --
 	ASSERT_EQ(6, instruction.GetOperandX());
 
 	ASSERT_EQ(1, ReadByteFromMemory(memoryWriteStartAddress + 0)); // Hundreds place
@@ -1221,7 +1221,7 @@ TEST_F(OpcodeTest, Fx55_LD_I_VX)
 {
     const uint16_t memoryWriteStartAddress = PROGRAM_START_ADDRESS + 20;
     
-    // Arrange
+    // -- Assert --
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xF655);
     GetCPUStateRef().mIndexRegister = memoryWriteStartAddress;
     
@@ -1230,10 +1230,10 @@ TEST_F(OpcodeTest, Fx55_LD_I_VX)
         GetCPUStateRef().mRegisters[i] = static_cast<uint8_t>(i * 10);
     }
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     const size_t lastRegisterIndex = instruction.GetOperandX();
     ASSERT_EQ(6, lastRegisterIndex);
 
@@ -1251,7 +1251,7 @@ TEST_F(OpcodeTest, Fx65_LD_VX_I)
 {
     const uint16_t memoryReadStartAddress = PROGRAM_START_ADDRESS + 20;
 
-    // Arrange
+    // -- Assert --
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xF665);
     GetCPUStateRef().mIndexRegister = memoryReadStartAddress;
 
@@ -1260,10 +1260,10 @@ TEST_F(OpcodeTest, Fx65_LD_VX_I)
 		WriteByteToMemory(memoryReadStartAddress + i, static_cast<uint8_t>(i * 10));        
     }
 
-    // Act
+    // -- Act --
     const Instruction& instruction = ExecuteInstruction();
 
-    // Assert
+    // -- Assert --
     const size_t lastRegisterIndex = instruction.GetOperandX();
     ASSERT_EQ(6, lastRegisterIndex);
 
