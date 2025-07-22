@@ -12,10 +12,21 @@
 #include <vector>
 
 //------------------------------------------------------------------------------
+enum class OperandType
+{
+    NNN,
+    KK,
+    N,
+    X,
+    Y
+};
+
+//------------------------------------------------------------------------------
 struct OperandSpec
 {
     uint16_t mMask = 0;
     uint8_t mShift = 0;
+    OperandType mKind = OperandType::NNN;
     const char* mLabel = nullptr; // e.g. "x", "nnn"
 };
 

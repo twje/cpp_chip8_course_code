@@ -57,16 +57,31 @@ std::vector<OperandInfo> SnapshotBuilder::ToOperandInfoList()
     OpcodeId opcodeId = mInstruction.GetOpcodeId();
     assert(opcodeId != OpcodeId::UNASSIGNED);
 
-    const std::vector<uint16_t>& operands = mInstruction.GetOperands();
     const OpcodeSpec& spec = OpcodeTable::Get(opcodeId);
-    assert(operands.size() == spec.mOperands.size());
+    if (spec.mOperands.empty())
+    {
+        // No operands for this opcode
+		return { };
+    }
 
     std::vector<OperandInfo> result;
-    result.reserve(operands.size());
+    result.reserve(spec.mOperands.size());
 
-    for (size_t i = 0; i < operands.size(); ++i)
+    for (size_t i = 0; i < spec.mOperands.size(); ++i)
     {
-        result.push_back({ spec.mOperands[i].mLabel, operands[i] });
+        OperandType kind = spec.mOperands[i].mKind;
+        uint16_t value = 0;
+
+        switch (kind)
+        {
+            case OperandType::NNN: value = mInstruction.GetOperandNNN(); break;
+            case OperandType::KK:  value = mInstruction.GetOperandKK();  break;
+            case OperandType::N:   value = mInstruction.GetOperandN();   break;
+            case OperandType::X:   value = static_cast<uint16_t>(mInstruction.GetOperandX()); break;
+            case OperandType::Y:   value = static_cast<uint16_t>(mInstruction.GetOperandY()); break;
+        }
+
+        result.push_back({ spec.mOperands[i].mLabel, value });
     }
 
     return result;

@@ -6,11 +6,11 @@
 #include <cassert>
 
 //------------------------------------------------------------------------------
-constexpr OperandSpec ARG_NNN{ 0x0FFF, 0, "nnn" };
-constexpr OperandSpec ARG_KK{ 0x00FF, 0, "kk" };
-constexpr OperandSpec ARG_N{ 0x000F, 0, "n" };
-constexpr OperandSpec ARG_X{ 0x0F00, 8, "x" };
-constexpr OperandSpec ARG_Y{ 0x00F0, 4, "y" };
+constexpr OperandSpec ARG_NNN{ 0x0FFF, 0, OperandType::NNN, "nnn" };
+constexpr OperandSpec ARG_KK{ 0x00FF, 0, OperandType::KK, "kk" };
+constexpr OperandSpec ARG_N{ 0x000F, 0, OperandType::N, "n" };
+constexpr OperandSpec ARG_X{ 0x0F00, 8, OperandType::X, "x" };
+constexpr OperandSpec ARG_Y{ 0x00F0, 4, OperandType::Y, "y" };
 
 //------------------------------------------------------------------------------
 const std::vector<OpcodeSpec> OpcodeTable::mTable = {
