@@ -11,17 +11,55 @@
 #include <cassert>
 
 //--------------------------------------------------------------------------------
+class Key
+{
+public:
+    static constexpr uint8_t Key0 = 0;
+    static constexpr uint8_t Key1 = 1;
+    static constexpr uint8_t Key2 = 2;
+    static constexpr uint8_t Key3 = 3;
+    static constexpr uint8_t Key4 = 4;
+    static constexpr uint8_t Key5 = 5;
+    static constexpr uint8_t Key6 = 6;
+    static constexpr uint8_t Key7 = 7;
+    static constexpr uint8_t Key8 = 8;
+    static constexpr uint8_t Key9 = 9;
+    static constexpr uint8_t KeyA = 10;
+    static constexpr uint8_t KeyB = 11;
+    static constexpr uint8_t KeyC = 12;
+    static constexpr uint8_t KeyD = 13;
+    static constexpr uint8_t KeyE = 14;
+    static constexpr uint8_t KeyF = 15;
+
+    static constexpr uint8_t Count = 16;
+
+    explicit Key(uint8_t key)
+        : mKey(key)
+    {
+        assert(key >= 0 && key < Count && "Key must be in range [0, 15]");
+	}
+
+    uint8_t GetValue() const { return mKey; }
+    std::string_view GetLabel() const { return GetLabel(mKey);}
+
+private:
+    static std::string_view GetLabel(int key)
+    {
+        static constexpr std::string_view labels[Count] = {
+            "0", "1", "2", "3", "4", "5", "6", "7",
+            "8", "9", "A", "B", "C", "D", "E", "F"
+        };
+
+        return (key >= 0 && key < Count) ? labels[key] : "?";
+    }
+
+    uint8_t mKey;
+};
+
+//--------------------------------------------------------------------------------
 class Keypad
 {
 public:
-    enum class Key : uint8_t
-    {
-        Key0, Key1, Key2, Key3,
-        Key4, Key5, Key6, Key7,
-        Key8, Key9, KeyA, KeyB,
-        KeyC, KeyD, KeyE, KeyF,
-    };
-
     explicit Keypad()
         : mCurrKeyStates{}
         , mPrevKeyStates{}
@@ -36,12 +74,7 @@ public:
 
     void SetKeyBinding(Key key, uint8_t physicalKey)
     {
-        mKeyMapping[KeyToIndex(key)] = physicalKey;
-    }
-
-    uint8_t GetKeyBinding(Key key) const
-    {
-        return mKeyMapping[KeyToIndex(key)];
+        mKeyMapping[key.GetValue()] = physicalKey;
     }
 
     void PollKeypad()
@@ -59,16 +92,16 @@ public:
 
     bool IsKeyPressed(Key key) const
     {
-        return mCurrKeyStates[KeyToIndex(key)];
+        return mCurrKeyStates[key.GetValue()];
     }    
 
-    std::optional<Keypad::Key> GetFirstKeyReleased() const
+    std::optional<Key> GetFirstKeyReleased() const
     {
-        for (uint8_t i = 0; i < mCurrKeyStates.size(); ++i)
+        for (uint8_t i = 0; i < Key::Count; ++i)
         {
             if (mPrevKeyStates[i] && !mCurrKeyStates[i])
             {
-                return IndexToKey(i);
+                return Key(i);
             }
         }
         return std::nullopt;
@@ -76,46 +109,11 @@ public:
 
     void SetKeyPressed(Key key, bool isPressed)
     {
-        uint8_t index = KeyToIndex(key);
+        uint8_t index = key.GetValue();
         mPrevKeyStates[index] = mCurrKeyStates[index];
         mCurrKeyStates[index] = isPressed;
     }
-
-    static Key IndexToKey(uint8_t index)
-    {
-        assert(index < 16 && "Index must be less than 16 for Keypad keys.");
-        return static_cast<Key>(index);
-    }
-
-    static uint8_t KeyToIndex(Key key)
-    {
-        return static_cast<uint8_t>(key);
-    }
-
-    static std::string_view GetLabelForKey(Key key)
-    {
-        switch (key)
-        {
-            case Key::Key0: return "0";
-            case Key::Key1: return "1";
-            case Key::Key2: return "2";
-            case Key::Key3: return "3";
-            case Key::Key4: return "4";
-            case Key::Key5: return "5";
-            case Key::Key6: return "6";
-            case Key::Key7: return "7";
-            case Key::Key8: return "8";
-            case Key::Key9: return "9";
-            case Key::KeyA: return "A";
-            case Key::KeyB: return "B";
-            case Key::KeyC: return "C";
-            case Key::KeyD: return "D";
-            case Key::KeyE: return "E";
-            case Key::KeyF: return "F";
-            default: return "?";
-        }
-    }
-
+   
 private:
     std::array<bool, 16> mCurrKeyStates;
     std::array<bool, 16> mPrevKeyStates;

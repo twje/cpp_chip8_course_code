@@ -478,9 +478,9 @@ ExecutionStatus CPU::Execute_Dxyn_DRW_VX_VY_N(const Instruction& instruction)
 ExecutionStatus CPU::Execute_Ex9E_SKP_VX(const Instruction& instruction)
 {
     const size_t reg = instruction.GetOperandX();
-	uint8_t key = mState.mRegisters[reg];
+	uint8_t keyId = mState.mRegisters[reg];
 	
-	if (mBus.mKeypad.IsKeyPressed(Keypad::IndexToKey(key)))
+    if (mBus.mKeypad.IsKeyPressed(Key{ keyId }))
 	{
 		mState.mProgramCounter += INSTRUCTION_SIZE; // Skip next instruction
 	}
@@ -492,9 +492,9 @@ ExecutionStatus CPU::Execute_Ex9E_SKP_VX(const Instruction& instruction)
 ExecutionStatus CPU::Execute_ExA1_SKNP_VX(const Instruction& instruction)
 {
     const size_t reg = instruction.GetOperandX();
-    uint8_t key = mState.mRegisters[reg];
+    uint8_t keyId = mState.mRegisters[reg];
 
-    if (!mBus.mKeypad.IsKeyPressed(Keypad::IndexToKey(key)))
+    if (!mBus.mKeypad.IsKeyPressed(Key{ keyId }))
     {
         mState.mProgramCounter += INSTRUCTION_SIZE; // Skip next instruction
     }
@@ -533,7 +533,7 @@ ExecutionStatus CPU::Execute_Fx0A_LD_VX_K(const Instruction& instruction)
         return ExecutionStatus::WaitingOnKeyPress;
     }
     
-	mState.mRegisters[reg] = Keypad::KeyToIndex(releasedKey.value());
+	mState.mRegisters[reg] = releasedKey->GetValue();
     return ExecutionStatus::Executed;
 }
 

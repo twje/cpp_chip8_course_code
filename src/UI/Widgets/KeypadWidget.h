@@ -21,11 +21,11 @@ class KeypadWidget : public FramedWidgetBase
 	static constexpr int32_t kCols = 4;
 
 	// Visual layout of CHIP-8 keys in 4x4 grid (directly using Keypad::Key)
-	inline static constexpr Keypad::Key KeyLayout[kRows][kCols] = {
-		{ Keypad::Key::Key1, Keypad::Key::Key2, Keypad::Key::Key3, Keypad::Key::KeyC },
-		{ Keypad::Key::Key4, Keypad::Key::Key5, Keypad::Key::Key6, Keypad::Key::KeyD },
-		{ Keypad::Key::Key7, Keypad::Key::Key8, Keypad::Key::Key9, Keypad::Key::KeyE },
-		{ Keypad::Key::KeyA, Keypad::Key::Key0, Keypad::Key::KeyB, Keypad::Key::KeyF }
+	inline static constexpr uint8_t KeyLayout[kRows][kCols] = {
+		{ Key::Key1, Key::Key2, Key::Key3, Key::KeyC },
+		{ Key::Key4, Key::Key5, Key::Key6, Key::KeyD },
+		{ Key::Key7, Key::Key8, Key::Key9, Key::KeyE },
+		{ Key::KeyA, Key::Key0, Key::KeyB, Key::KeyF }
 	};
 
 public:
@@ -52,8 +52,8 @@ public:
 					y * (UI_CHAR_SIZE + kKeySpacing)
 				};
 
-				Keypad::Key key = KeyLayout[y][x];
-				std::string_view label = Keypad::GetLabelForKey(key);
+				Key key = Key{ KeyLayout[y][x] };
+				std::string_view label = key.GetLabel();
 
 				const bool isPressed = keypad.IsKeyPressed(key);
 				const olc::Pixel color = isPressed ? UITheme::kColorHighlightText : UITheme::kColorText;

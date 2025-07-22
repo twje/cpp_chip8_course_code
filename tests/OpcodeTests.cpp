@@ -1220,8 +1220,7 @@ TEST_F(OpcodeTest, Ex9E_SKP_VX)
 {
     const uint16_t baseOpcode = 0xE09E;
     const uint8_t vxReg = 1;
-    const Keypad::Key key = Keypad::Key::Key5;
-    const uint8_t keyValue = Keypad::KeyToIndex(key);
+    const Key key{ Key::Key5 };
 
     // Test 1: Key is pressed -> skip
     {
@@ -1229,7 +1228,7 @@ TEST_F(OpcodeTest, Ex9E_SKP_VX)
         const uint16_t opcode = baseOpcode | (vxReg << 8);
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
-        GetCPUStateRef().mRegisters[vxReg] = keyValue;
+        GetCPUStateRef().mRegisters[vxReg] = key.GetValue();
         GetBusRef().mKeypad.SetKeyPressed(key, true);
 
         // -- Act --
@@ -1248,7 +1247,7 @@ TEST_F(OpcodeTest, Ex9E_SKP_VX)
         const uint16_t opcode = baseOpcode | (vxReg << 8);
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
-        GetCPUStateRef().mRegisters[vxReg] = keyValue;
+        GetCPUStateRef().mRegisters[vxReg] = key.GetValue();
         GetBusRef().mKeypad.SetKeyPressed(key, false);
 
         // -- Act --
@@ -1268,8 +1267,7 @@ TEST_F(OpcodeTest, ExA1_SKNP_VX)
 {
     const uint16_t baseOpcode = 0xE0A1;
     const uint8_t vxReg = 1;
-    const Keypad::Key key = Keypad::Key::Key5;
-    const uint8_t keyValue = Keypad::KeyToIndex(key);
+    const Key key{ Key::Key5 };	
 
     // Test 1: Key is not pressed -> skip
     {
@@ -1277,7 +1275,7 @@ TEST_F(OpcodeTest, ExA1_SKNP_VX)
         const uint16_t opcode = baseOpcode | (vxReg << 8);
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
-        GetCPUStateRef().mRegisters[vxReg] = keyValue;
+        GetCPUStateRef().mRegisters[vxReg] = key.GetValue();
         GetBusRef().mKeypad.SetKeyPressed(key, false);
 
         // -- Act --
@@ -1296,7 +1294,7 @@ TEST_F(OpcodeTest, ExA1_SKNP_VX)
         const uint16_t opcode = baseOpcode | (vxReg << 8);
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
-        GetCPUStateRef().mRegisters[vxReg] = keyValue;
+        GetCPUStateRef().mRegisters[vxReg] = key.GetValue();
         GetBusRef().mKeypad.SetKeyPressed(key, true);
 
         // -- Act --
@@ -1341,7 +1339,7 @@ TEST_F(OpcodeTest, Fx0A_LD_VX_K)
 
     // -- Assert --
     const uint8_t vxRegister = 0;
-    const auto key = Keypad::Key::Key2;
+    const Key key{ Key::Key2 };
 
     const uint16_t opcode =
         0xF00A |
@@ -1364,7 +1362,7 @@ TEST_F(OpcodeTest, Fx0A_LD_VX_K)
     ExecuteInstruction(ExecutionStatus::Executed);
 
     // -- Assert --: Vx set, PC advanced
-    EXPECT_EQ(GetCPUStateRef().mRegisters[vxRegister], Keypad::KeyToIndex(key));
+    EXPECT_EQ(GetCPUStateRef().mRegisters[vxRegister], key.GetValue());
     EXPECT_EQ(GetCPUStateRef().mProgramCounter, PROGRAM_START_ADDRESS + INSTRUCTION_SIZE);
 }
 
