@@ -24,6 +24,33 @@ public:
 };
 
 //--------------------------------------------------------------------------------
+class DisplayTestAccessor
+{
+public:
+    DisplayTestAccessor(Display& display)
+        : mDisplay(display)
+    { }
+
+    void SetPixel(uint32_t px, uint32_t py, bool value)
+    {
+		mDisplay.SetPixel(px, py, value);
+    }
+
+    bool IsPixelSet(uint32_t px, uint32_t py) const
+    {
+		return mDisplay.IsPixelSet(px, py);
+    }
+
+    void Clear()
+    {
+		mDisplay.Clear();
+    }
+
+private:
+    Display& mDisplay;
+};
+
+//--------------------------------------------------------------------------------
 class OpcodeTest : public ::testing::Test
 {
 protected:
@@ -102,7 +129,7 @@ TEST_F(OpcodeTest, 00E0_CLS)
 	// -- Assert --
 	WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x00E0);    
     
-    Display& display = GetBusRef().mDisplay;
+    DisplayTestAccessor display{ GetBusRef().mDisplay };
 	display.SetPixel(0, 0, true);
 
 	// -- Act --
@@ -1030,7 +1057,7 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
 
     const uint8_t vxReg = 0;
     const uint8_t vyReg = 1;
-    const Display& display = GetBusRef().mDisplay;
+    DisplayTestAccessor display{ GetBusRef().mDisplay };
 
     // Test 1: No overlapping pixels -> no collision
     {
@@ -1064,7 +1091,7 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
 
         // -- Reset --
         mInterpreter.Reset();
-        GetBusRef().mDisplay.Clear();
+        display.Clear();
     }
 
     // Test 2: Overlapping pixels -> collision
@@ -1095,24 +1122,78 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
 
         // -- Reset --
         mInterpreter.Reset();
-        GetBusRef().mDisplay.Clear();
+        display.Clear();
     }
-
-    // Test 3: Sprite wraps around screen horizontally
+    
+    // Test 3: Sprite clips when pixel exceeds display bounds
     {
         // -- Arrange --
-        const uint8_t xPos = DISPLAY_WIDTH - 4;
-        const uint8_t yPos = 0;
-        const uint8_t spriteHeight = 1;
+        const uint8_t visibleWidth = 4;  // Right 4 bits clipped
+        const uint8_t visibleHeight = 2; // 2 rows fit, 1 row clipped
+        const uint8_t xPos = DISPLAY_WIDTH - visibleWidth;
+        const uint8_t yPos = DISPLAY_HEIGHT - visibleHeight;
+        const uint8_t spriteHeight = 3;
         const uint16_t spriteAddress = 0x220;
         const uint16_t opcode = 0xD000 | (vxReg << 8) | (vyReg << 4) | spriteHeight;
 
-        const uint8_t spriteByte = 0b11111111;
+        const uint8_t spriteData[spriteHeight] = {
+            0b11111111, // row 0: partially visible
+            0b11111111, // row 1: partially visible
+            0b11111111  // row 2: completely clipped vertically
+        };
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
         GetCPUStateRef().mIndexRegister = spriteAddress;
         GetCPUStateRef().mRegisters[vxReg] = xPos;
         GetCPUStateRef().mRegisters[vyReg] = yPos;
+
+        for (uint8_t i = 0; i < spriteHeight; ++i)
+        {
+            WriteByteToMemory(spriteAddress + i, spriteData[i]);
+        }
+
+        // -- Act --
+        ExecuteInstruction();
+
+        // -- Assert --
+        for (uint8_t row = 0; row < spriteHeight; ++row)
+        {
+            for (uint8_t col = 0; col < 8; ++col)
+            {
+                const bool withinVisibleRegion = (col < visibleWidth) && (row < visibleHeight);
+                const uint8_t screenX = (xPos + col) % DISPLAY_WIDTH;
+                const uint8_t screenY = (yPos + row) % DISPLAY_HEIGHT;
+
+                ASSERT_EQ(withinVisibleRegion, display.IsPixelSet(screenX, screenY))
+                    << "Expected pixel at (" << static_cast<int>(screenX)
+                    << "," << static_cast<int>(screenY)
+                    << ") to be " << (withinVisibleRegion ? "set" : "clear");
+            }
+        }
+
+        // -- Reset --
+        mInterpreter.Reset();
+        display.Clear();
+    }
+
+    // Test 4: Sprite wraps around when X or Y position exceeds display bounds
+    {
+        // -- Arrange --
+        const uint8_t vxReg = 0;
+        const uint8_t vyReg = 1;
+        const uint8_t spriteHeight = 1;
+
+        const uint8_t xWrapInput = DISPLAY_WIDTH + 2;  // Will wrap to 2
+        const uint8_t yWrapInput = DISPLAY_HEIGHT + 1; // Will wrap to 1
+
+        const uint16_t spriteAddress = 0x230;
+        const uint8_t spriteByte = 0b11000000; // Only first two bits set
+        const uint16_t opcode = 0xD000 | (vxReg << 8) | (vyReg << 4) | spriteHeight;
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mIndexRegister = spriteAddress;
+        GetCPUStateRef().mRegisters[vxReg] = xWrapInput;
+        GetCPUStateRef().mRegisters[vyReg] = yWrapInput;
 
         WriteByteToMemory(spriteAddress, spriteByte);
 
@@ -1120,15 +1201,19 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
         ExecuteInstruction();
 
         // -- Assert --
-        for (uint8_t i = 0; i < 8; ++i)
-        {
-            const uint8_t screenX = (xPos + i) % DISPLAY_WIDTH;
-            ASSERT_TRUE(display.IsPixelSet(screenX, yPos)) << "Pixel not set at X=" << screenX;
-        }
+        const uint8_t expectedX = xWrapInput % DISPLAY_WIDTH;  // 2
+        const uint8_t expectedY = yWrapInput % DISPLAY_HEIGHT; // 1
+
+        ASSERT_TRUE(display.IsPixelSet(expectedX, expectedY)) << "Expected pixel at (2,1) to be set";
+        ASSERT_TRUE(display.IsPixelSet(expectedX + 1, expectedY)) << "Expected pixel at (3,1) to be set";
+
+        // Pixels beyond those two should remain unset
+        ASSERT_FALSE(display.IsPixelSet((expectedX + 2) % DISPLAY_WIDTH, expectedY))
+            << "Unexpected pixel set at x=" << (expectedX + 2) % DISPLAY_WIDTH;
 
         // -- Reset --
         mInterpreter.Reset();
-        GetBusRef().mDisplay.Clear();
+        display.Clear();
     }
 }
 
