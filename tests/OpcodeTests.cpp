@@ -167,63 +167,89 @@ TEST_F(OpcodeTest, 2nnn_CALL_ADDR)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 3xkk_SE_VX_KK)
 {
-    // Positive case: skip next instruction
+    const uint16_t baseOpcode = 0x3000;
+    const uint8_t vxReg = 2;
+    const uint8_t matchValue = 0x05;
+
+    // Test 1: Vx == kk -> skip
     {
-        // -- Assert --
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x3205);
-        GetCPUStateRef().mRegisters[2] = 0x05;
+		// -- Arrange --
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | matchValue;
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = matchValue;
 
         // -- Act --
         ExecuteInstruction();
-        
-        // -- Assert --        
+
+		// -- Assert --
         ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 
-	// Negative case: does not skip next instruction
+    // Test 2: Vx != kk -> no skip
     {
-        // -- Assert --
-        mInterpreter.Reset();
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x3205);
-        GetCPUStateRef().mRegisters[2] = 0x04;
+        // -- Arrange --
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | matchValue;
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = 0x04;
 
         // -- Act --
         ExecuteInstruction();
-        
-        // -- Assert --        
+
+        // -- Assert --
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
-    }    
+
+        // -- Reset --
+        mInterpreter.Reset();
+    }
 }
 
 // Skip next instruction if Vx != kk.
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 4xkk_SNE_VX_KK)
 {
-    // Positive case: does not skip next instruction
-    {
-        // -- Assert --
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x452A);
-        GetCPUStateRef().mRegisters[5] = 0x2B;
+    const uint16_t baseOpcode = 0x4000;
+    const uint8_t vxReg = 5;
+    const uint8_t targetValue = 0x2A;
 
-        // -- Act --
+    // Test 1: Vx != kk -> skip
+    {
+		// -- Arrange --
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | targetValue;
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = 0x2B;
+
+		// -- Act --
         ExecuteInstruction();
 
-        // -- Assert --        
+		// -- Assert --
         ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
+
+		// -- Reset --
+		mInterpreter.Reset();
     }
 
-    // Negative case: skip next instruction
+    // Test 2: Vx == kk -> no skip
     {
-        // -- Assert --
-        mInterpreter.Reset();
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x452A);
-        GetCPUStateRef().mRegisters[5] = 0x2A;
+		// -- Arrange --
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | targetValue;
 
-        // -- Act --
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = targetValue;
+
+		// -- Act --
         ExecuteInstruction();
 
-        // -- Assert --        
+		// -- Assert --
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 }
 
@@ -231,34 +257,47 @@ TEST_F(OpcodeTest, 4xkk_SNE_VX_KK)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 5xy0_SE_VX_VY)
 {
-    // Positive case: skip next instruction
-    {
-        // -- Assert --
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x5560);
-        GetCPUStateRef().mRegisters[5] = 0x01;
-        GetCPUStateRef().mRegisters[6] = 0x01;
+    const uint16_t baseOpcode = 0x5000;
+    const uint8_t vxReg = 5;
+    const uint8_t vyReg = 6;
+    const uint8_t matchValue = 0x01;
 
-        // -- Act --
+    // Test 1: Vx == Vy -> skip
+    {
+		// -- Arrange --
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = matchValue;
+        GetCPUStateRef().mRegisters[vyReg] = matchValue;
+
+		// -- Act --
         ExecuteInstruction();
 
-        // -- Assert --        
+		// -- Assert --
         ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
+
+		// -- Reset --
+        mInterpreter.Reset();
     }
 
-    // Negative case: does not skip next instruction
+    // Test 2: Vx != Vy -> no skip
     {
-        mInterpreter.Reset();
-        
-        // -- Assert --
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x5560);
-        GetCPUStateRef().mRegisters[5] = 0x01;
-        GetCPUStateRef().mRegisters[6] = 0x02;
+		// -- Arrange --
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
 
-        // -- Act --
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = 0x01;
+        GetCPUStateRef().mRegisters[vyReg] = 0x02;
+
+		// -- Act --
         ExecuteInstruction();
 
-        // -- Assert --        
+		// -- Assert --
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 }
 
@@ -400,76 +439,99 @@ TEST_F(OpcodeTest, 8xy3_XOR_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy4_ADD_VX_VY)
 {    
-    // Test VF = 1 (carry) for Vx + Vy > 255
+    const uint16_t baseOpcode = 0x8004;
+    const uint8_t vxReg = 7;
+    const uint8_t vyReg = 6;
+    const uint8_t carry = 1;
+    const uint8_t noCarry = 0;
+
+    // Test 1: Vx + Vy > 255 -> carry
     {
-        // -- Assert --
+        // -- Arrange --
         const uint8_t vxValue = 200;
         const uint8_t vyValue = 100;
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8924);
-        GetCPUStateRef().mRegisters[9] = vxValue;
-        GetCPUStateRef().mRegisters[2] = vyValue;
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = vxValue;
+        GetCPUStateRef().mRegisters[vyReg] = vyValue;
 
         // -- Act --
-        const Instruction& instruction = ExecuteInstruction();
+        ExecuteInstruction();
 
         // -- Assert --
-        const size_t vxIndex = instruction.GetOperandX();
-        const size_t vyIndex = instruction.GetOperandY();
-        const uint16_t sum = vxValue + vyValue;
+        ASSERT_EQ(static_cast<uint8_t>(vxValue + vyValue), GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(carry, GetCPUStateRef().mRegisters[0xF]);
 
-        ASSERT_EQ(9, vxIndex);
-        ASSERT_EQ(2, vyIndex);
-        ASSERT_EQ(static_cast<uint8_t>(sum & 0xFF), GetCPUStateRef().mRegisters[vxIndex]);
-        ASSERT_EQ(1, GetCPUStateRef().mRegisters[0xF]);
+        // -- Reset --
+        mInterpreter.Reset();
     }
 
-    // Test VF = 0 (no carry) for Vx + Vy == 255
+    // Test 2: Vx + Vy == 255 -> no carry
     {
-        // -- Assert --
+        // -- Arrange --
         const uint8_t vxValue = 127;
         const uint8_t vyValue = 128;
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8544);
-        GetCPUStateRef().mRegisters[5] = vxValue;
-        GetCPUStateRef().mRegisters[4] = vyValue;
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = vxValue;
+        GetCPUStateRef().mRegisters[vyReg] = vyValue;
 
         // -- Act --
-        const Instruction& instruction = ExecuteInstruction();
+        ExecuteInstruction();
 
         // -- Assert --
-        const size_t vxIndex = instruction.GetOperandX();
-        const size_t vyIndex = instruction.GetOperandY();
-        const uint16_t sum = vxValue + vyValue;
+        ASSERT_EQ(static_cast<uint8_t>(vxValue + vyValue), GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(noCarry, GetCPUStateRef().mRegisters[0xF]);
 
-        ASSERT_EQ(5, vxIndex);
-        ASSERT_EQ(4, vyIndex);
-        ASSERT_EQ(static_cast<uint8_t>(sum & 0xFF), GetCPUStateRef().mRegisters[vxIndex]);
-        ASSERT_EQ(0, GetCPUStateRef().mRegisters[0xF]);
+        // -- Reset --
+        mInterpreter.Reset();
     }
 
-    // Test VF = 0 (no carry) for Vx + Vy < 255
+    // Test 3: Vx + Vy < 255 -> no carry
     {
-        // -- Assert --
+        // -- Arrange --
         const uint8_t vxValue = 16;
         const uint8_t vyValue = 32;
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8764);
-        GetCPUStateRef().mRegisters[7] = vxValue;
-        GetCPUStateRef().mRegisters[6] = vyValue;
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = vxValue;
+        GetCPUStateRef().mRegisters[vyReg] = vyValue;
 
         // -- Act --
-        const Instruction& instruction = ExecuteInstruction();
+        ExecuteInstruction();
 
         // -- Assert --
-        const size_t vxIndex = instruction.GetOperandX();
-        const size_t vyIndex = instruction.GetOperandY();
-        const uint16_t sum = vxValue + vyValue;
+        ASSERT_EQ(static_cast<uint8_t>(vxValue + vyValue), GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(noCarry, GetCPUStateRef().mRegisters[0xF]);
 
-        ASSERT_EQ(7, vxIndex);
-        ASSERT_EQ(6, vyIndex);
-        ASSERT_EQ(static_cast<uint8_t>(sum & 0xFF), GetCPUStateRef().mRegisters[vxIndex]);
-        ASSERT_EQ(0, GetCPUStateRef().mRegisters[0xF]);
+        // -- Reset --
+        mInterpreter.Reset();
+    }
+
+    // Test 4: x == VF -> store flag, not result
+    {
+        // -- Arrange --
+        const uint8_t vxRegTest4 = 0xF;
+        const uint8_t vyRegTest4 = 1;
+        const uint8_t vxValue = 200;
+        const uint8_t vyValue = 100;
+        const uint16_t opcode = baseOpcode | (vxRegTest4 << 8) | (vyRegTest4 << 4);
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxRegTest4] = vxValue;
+        GetCPUStateRef().mRegisters[vyRegTest4] = vyValue;
+
+        // -- Act --
+        ExecuteInstruction();
+
+        // -- Assert --
+        ASSERT_EQ(carry, GetCPUStateRef().mRegisters[0xF]) << "VF should store carry flag, not arithmetic result.";
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 }
 
@@ -477,40 +539,39 @@ TEST_F(OpcodeTest, 8xy4_ADD_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy5_SUB_VX_VY)
 {
-    constexpr uint8_t kNoBorrow = 1;
-    constexpr uint8_t kBorrowOccurred = 0;
-    constexpr uint16_t kBaseOpcode = 0x8005;
+    const uint16_t baseOpcode = 0x8005;
+    const uint8_t vxReg = 7;
+    const uint8_t vyReg = 6;
+    const uint8_t noBorrow = 1;
+    const uint8_t borrow = 0;
 
-    // Test 1: No borrow when Vx > Vy
+    // Test 1: Vx > Vy -> no borrow
     {
         // -- Arrange --
-        const uint8_t vxReg = 7;
-        const uint8_t vyReg = 6;
         const uint8_t vxValue = 75;
         const uint8_t vyValue = 45;
-        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
         GetCPUStateRef().mRegisters[vxReg] = vxValue;
         GetCPUStateRef().mRegisters[vyReg] = vyValue;
 
         // -- Act --
-        const Instruction& instruction = ExecuteInstruction();
+        ExecuteInstruction();
 
         // -- Assert --
-		const uint8_t expectedResult = vxValue - vyValue;
+        ASSERT_EQ(vxValue - vyValue, GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(noBorrow, GetCPUStateRef().mRegisters[0xF]);
 
-        ASSERT_EQ(expectedResult, GetCPUStateRef().mRegisters[vxReg]);
-        ASSERT_EQ(kNoBorrow, GetCPUStateRef().mRegisters[0xF]);
-    }    
+        // -- Reset --
+        mInterpreter.Reset();
+    }
 
-    // Test 2: No borrow (Vx == Vy)
+    // Test 2: Vx == Vy -> no borrow
     {
         // -- Arrange --
-        const uint8_t vxReg = 7;
-        const uint8_t vyReg = 6;
         const uint8_t value = 42;
-        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
         GetCPUStateRef().mRegisters[vxReg] = value;
@@ -520,20 +581,19 @@ TEST_F(OpcodeTest, 8xy5_SUB_VX_VY)
         ExecuteInstruction();
 
         // -- Assert --
-        const uint8_t expectedResult = 0;
+        ASSERT_EQ(0, GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(noBorrow, GetCPUStateRef().mRegisters[0xF]);
 
-        ASSERT_EQ(expectedResult, GetCPUStateRef().mRegisters[vxReg]);
-        ASSERT_EQ(kNoBorrow, GetCPUStateRef().mRegisters[0xF]);
+        // -- Reset --
+        mInterpreter.Reset();
     }
 
-    // Test 3: Borrow occurs (Vx < Vy)
+    // Test 3: Vx < Vy -> borrow
     {
         // -- Arrange --
-        const uint8_t vxReg = 7;
-        const uint8_t vyReg = 6;
         const uint8_t vxValue = 16;
         const uint8_t vyValue = 32;
-        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
         GetCPUStateRef().mRegisters[vxReg] = vxValue;
@@ -543,33 +603,34 @@ TEST_F(OpcodeTest, 8xy5_SUB_VX_VY)
         ExecuteInstruction();
 
         // -- Assert --
-        // Wraparound from unsigned underflow is expected
-		const uint8_t expectedResult = static_cast<uint8_t>(vxValue - vyValue);
+        ASSERT_EQ(static_cast<uint8_t>(vxValue - vyValue), GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(borrow, GetCPUStateRef().mRegisters[0xF]);
 
-        ASSERT_EQ(expectedResult, GetCPUStateRef().mRegisters[vxReg]);
-        ASSERT_EQ(kBorrowOccurred, GetCPUStateRef().mRegisters[0xF]);
+        // -- Reset --
+        mInterpreter.Reset();
     }
 
-    // Test 4: x == 0xF — result must be the no-borrow flag, not the math result
+    // Test 4: x == VF -> store flag, not result
     {
         // -- Arrange --
-        const uint8_t vxReg = 0xF; // x == VF
-        const uint8_t vyReg = 1;
+        const uint8_t vxRegTest4 = 0xF;
+        const uint8_t vyRegTest4 = 1;
         const uint8_t vxValue = 100;
         const uint8_t vyValue = 50;
-        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
+        const uint16_t opcode = baseOpcode | (vxRegTest4 << 8) | (vyRegTest4 << 4);
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
-        GetCPUStateRef().mRegisters[vxReg] = vxValue;
-        GetCPUStateRef().mRegisters[vyReg] = vyValue;
+        GetCPUStateRef().mRegisters[vxRegTest4] = vxValue;
+        GetCPUStateRef().mRegisters[vyRegTest4] = vyValue;
 
         // -- Act --
         ExecuteInstruction();
 
         // -- Assert --
-        // Since x == VF, the result must be the borrow flag, not the math result
-        ASSERT_EQ(kNoBorrow, GetCPUStateRef().mRegisters[0xF])
-            << "VF should contain the no-borrow flag (1), not the math result.";
+        ASSERT_EQ(noBorrow, GetCPUStateRef().mRegisters[0xF]) << "VF should contain the no-borrow flag, not the result.";
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 }
 
@@ -577,40 +638,76 @@ TEST_F(OpcodeTest, 8xy5_SUB_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy6_SHR_VX_VY)
 {
-    // Test VF == 1 (least-significant bit is 1)
-    {
-        // -- Assert --
-        const uint8_t value = 0b00111111;
+    /*
+        NOTE: In original CHIP-8, Vy is ignored for 8xy6.
+        Vx is both the input and output register.
+    */
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8666);
-        GetCPUStateRef().mRegisters[6] = value;
+    const uint16_t baseOpcode = 0x8006;
+    const uint8_t vxReg = 6;
+    const uint8_t vyReg = 6;
+    const uint8_t lsb1 = 1;
+    const uint8_t lsb0 = 0;
+
+    // Test 1: LSB of Vx is 1 -> VF = 1
+    {
+        // -- Arrange --
+        const uint8_t value = 0b00111111;
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = value;
 
         // -- Act --
-        const Instruction& instruction = ExecuteInstruction();
+        ExecuteInstruction();
 
         // -- Assert --
-        const size_t index = instruction.GetOperandX();  // Operand Y is ignored    
+        ASSERT_EQ(value >> 1, GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(lsb1, GetCPUStateRef().mRegisters[0xF]);
 
-        ASSERT_EQ(static_cast<uint8_t>(value / 2), GetCPUStateRef().mRegisters[index]);
-        ASSERT_EQ(1, GetCPUStateRef().mRegisters[0xF]);
+        // -- Reset --
+        mInterpreter.Reset();
     }
 
-    // Test VF == 0 (least-significant bit is 0)
+    // Test 2: LSB of Vx is 0 -> VF = 0
     {
-        // -- Assert --
+        // -- Arrange --
         const uint8_t value = 0b00111110;
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x8666);
-        GetCPUStateRef().mRegisters[6] = value;
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = value;
 
         // -- Act --
-        const Instruction& instruction = ExecuteInstruction();
+        ExecuteInstruction();
 
         // -- Assert --
-        const size_t index = instruction.GetOperandX();  // Operand Y is ignored    
+        ASSERT_EQ(value >> 1, GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(lsb0, GetCPUStateRef().mRegisters[0xF]);
 
-        ASSERT_EQ(static_cast<uint8_t>(value / 2), GetCPUStateRef().mRegisters[index]);
-        ASSERT_EQ(0, GetCPUStateRef().mRegisters[0xF]);
+        // -- Reset --
+        mInterpreter.Reset();
+    }
+
+    // Test 3: x == VF -> store flag, not result
+    {
+        // -- Arrange --
+        const uint8_t vxRegTest3 = 0xF;
+        const uint8_t vyRegTest3 = 1;
+        const uint8_t value = 0b00000001;
+        const uint16_t opcode = baseOpcode | (vxRegTest3 << 8) | (vyRegTest3 << 4);
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxRegTest3] = value;
+
+        // -- Act --
+        ExecuteInstruction();
+
+        // -- Assert --
+        ASSERT_EQ(lsb1, GetCPUStateRef().mRegisters[0xF]) << "VF should store LSB flag, not result value.";
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 }
 
@@ -618,18 +715,18 @@ TEST_F(OpcodeTest, 8xy6_SHR_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy7_SUBN_VX_VY)
 {
-    constexpr uint8_t kNoBorrow = 1;
-    constexpr uint8_t kBorrowOccurred = 0;
-    constexpr uint16_t kBaseOpcode = 0x8007;
+    const uint16_t baseOpcode = 0x8007;
+    const uint8_t vxReg = 7;
+    const uint8_t vyReg = 6;
+    const uint8_t noBorrow = 1;
+    const uint8_t borrow = 0;
 
-    // Test 1: No borrow when Vy > Vx
+    // Test 1: Vy > Vx -> no borrow
     {
         // -- Arrange --
-        const uint8_t vxReg = 5;
-        const uint8_t vyReg = 4;
         const uint8_t vxValue = 45;
         const uint8_t vyValue = 75;
-        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
         GetCPUStateRef().mRegisters[vxReg] = vxValue;
@@ -639,19 +736,18 @@ TEST_F(OpcodeTest, 8xy7_SUBN_VX_VY)
         ExecuteInstruction();
 
         // -- Assert --
-        const uint8_t expectedResult = vyValue - vxValue;
+        ASSERT_EQ(vyValue - vxValue, GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(noBorrow, GetCPUStateRef().mRegisters[0xF]);
 
-        ASSERT_EQ(expectedResult, GetCPUStateRef().mRegisters[vxReg]);
-        ASSERT_EQ(kNoBorrow, GetCPUStateRef().mRegisters[0xF]);
+        // -- Reset --
+        mInterpreter.Reset();
     }
 
-    // Test 2: No borrow (Vy == Vx)
+    // Test 2: Vy == Vx -> no borrow
     {
         // -- Arrange --
-        const uint8_t vxReg = 7;
-        const uint8_t vyReg = 6;
         const uint8_t value = 42;
-        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
         GetCPUStateRef().mRegisters[vxReg] = value;
@@ -661,20 +757,19 @@ TEST_F(OpcodeTest, 8xy7_SUBN_VX_VY)
         ExecuteInstruction();
 
         // -- Assert --
-        const uint8_t expectedResult = 0;
+        ASSERT_EQ(0, GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(noBorrow, GetCPUStateRef().mRegisters[0xF]);
 
-        ASSERT_EQ(expectedResult, GetCPUStateRef().mRegisters[vxReg]);
-        ASSERT_EQ(kNoBorrow, GetCPUStateRef().mRegisters[0xF]);
+        // -- Reset --
+        mInterpreter.Reset();
     }
 
-    // Test VF = 0 (borrow) for Vy < Vx
+    // Test 3: Vy < Vx -> borrow
     {
         // -- Arrange --
-        const uint8_t vxReg = 7;
-        const uint8_t vyReg = 6;
         const uint8_t vxValue = 32;
         const uint8_t vyValue = 16;
-        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
         GetCPUStateRef().mRegisters[vxReg] = vxValue;
@@ -684,33 +779,34 @@ TEST_F(OpcodeTest, 8xy7_SUBN_VX_VY)
         ExecuteInstruction();
 
         // -- Assert --
-        // Wraparound from unsigned underflow is expected
-        const uint8_t expectedResult = static_cast<uint8_t>(vyValue - vxValue);
+        ASSERT_EQ(static_cast<uint8_t>(vyValue - vxValue), GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(borrow, GetCPUStateRef().mRegisters[0xF]);
 
-        ASSERT_EQ(expectedResult, GetCPUStateRef().mRegisters[vxReg]);
-        ASSERT_EQ(kBorrowOccurred, GetCPUStateRef().mRegisters[0xF]);        
+        // -- Reset --
+        mInterpreter.Reset();
     }
 
-    // Test 4: x == 0xF — result must be the no-borrow flag, not the math result
+    // Test 4: x == VF -> store flag, not result
     {
         // -- Arrange --
-        const uint8_t vxReg = 0xF; // x == VF
-        const uint8_t vyReg = 1;
+        const uint8_t vxRegTest4 = 0xF;
+        const uint8_t vyRegTest4 = 1;
         const uint8_t vxValue = 50;
         const uint8_t vyValue = 100;
-        const uint16_t opcode = kBaseOpcode | (vxReg << 8) | (vyReg << 4);
+        const uint16_t opcode = baseOpcode | (vxRegTest4 << 8) | (vyRegTest4 << 4);
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
-        GetCPUStateRef().mRegisters[vxReg] = vxValue;
-        GetCPUStateRef().mRegisters[vyReg] = vyValue;
+        GetCPUStateRef().mRegisters[vxRegTest4] = vxValue;
+        GetCPUStateRef().mRegisters[vyRegTest4] = vyValue;
 
         // -- Act --
         ExecuteInstruction();
 
         // -- Assert --
-        // Since x == VF, the result must be the borrow flag, not the math result
-        ASSERT_EQ(kNoBorrow, GetCPUStateRef().mRegisters[0xF])
-            << "VF should contain the no-borrow flag (1), not the math result.";
+        ASSERT_EQ(noBorrow, GetCPUStateRef().mRegisters[0xF]) << "VF should contain the no-borrow flag, not the result.";
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 }
 
@@ -718,40 +814,76 @@ TEST_F(OpcodeTest, 8xy7_SUBN_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xyE_SHL_VX_VY)
 {
-    // Test VF == 1 (most-significant bit is 1)
-    {
-        // -- Assert --
-        const uint8_t value = 0b10111111;
+    /*
+        NOTE: In original CHIP-8, Vy is ignored for 8xyE.
+        Vx is both the input and output register.
+    */
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x866E);
-        GetCPUStateRef().mRegisters[6] = value;
+    const uint16_t baseOpcode = 0x800E;
+    const uint8_t vxReg = 6;
+    const uint8_t vyReg = 6;
+    const uint8_t msb1 = 1;
+    const uint8_t msb0 = 0;
+
+    // Test 1: MSB of Vx is 1 -> VF = 1
+    {
+        // -- Arrange --
+        const uint8_t value = 0b10111111;
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = value;
 
         // -- Act --
-        const Instruction& instruction = ExecuteInstruction();
+        ExecuteInstruction();
 
         // -- Assert --
-        const size_t index = instruction.GetOperandX();  // Operand Y is ignored    
-    
-        ASSERT_EQ(static_cast<uint8_t>(value * 2), GetCPUStateRef().mRegisters[index]);
-        ASSERT_EQ(1, GetCPUStateRef().mRegisters[0xF]);
+        ASSERT_EQ(static_cast<uint8_t>(value << 1), GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(msb1, GetCPUStateRef().mRegisters[0xF]);
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 
-    // Test VF == 0 (most-significant bit is 0)
+    // Test 2: MSB of Vx is 0 -> VF = 0
     {
-        // -- Assert --
+        // -- Arrange --
         const uint8_t value = 0b00111110;
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x866E);
-        GetCPUStateRef().mRegisters[6] = value;
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = value;
 
         // -- Act --
-        const Instruction& instruction = ExecuteInstruction();
+        ExecuteInstruction();
 
         // -- Assert --
-        const size_t index = instruction.GetOperandX();  // Operand Y is ignored    
+        ASSERT_EQ(static_cast<uint8_t>(value << 1), GetCPUStateRef().mRegisters[vxReg]);
+        ASSERT_EQ(msb0, GetCPUStateRef().mRegisters[0xF]);
 
-        ASSERT_EQ(static_cast<uint8_t>(value * 2), GetCPUStateRef().mRegisters[index]);
-        ASSERT_EQ(0, GetCPUStateRef().mRegisters[0xF]);
+        // -- Reset --
+        mInterpreter.Reset();
+    }
+
+    // Test 3: x == VF -> store flag, not result
+    {
+        // -- Arrange --
+        const uint8_t vxRegTest3 = 0xF; // overrides vxReg to test x == VF
+        const uint8_t vyRegTest3 = 1;
+        const uint8_t value = 0b10000000;
+        const uint16_t opcode = baseOpcode | (vxRegTest3 << 8) | (vyRegTest3 << 4);
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxRegTest3] = value;
+
+        // -- Act --
+        ExecuteInstruction();
+
+        // -- Assert --
+        ASSERT_EQ(msb1, GetCPUStateRef().mRegisters[0xF]) << "VF should store MSB flag, not result value.";
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 }
 
@@ -759,34 +891,49 @@ TEST_F(OpcodeTest, 8xyE_SHL_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 9xy0_SNE_VX_VY)
 {
-    // Positive case: skip next instruction
+    const uint16_t baseOpcode = 0x9000;
+    const uint8_t vxReg = 5;
+    const uint8_t vyReg = 6;
+
+    // Test 1: Vx != Vy -> skip
     {
-        // -- Assert --
-        mInterpreter.Reset();
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x9560);
-        GetCPUStateRef().mRegisters[5] = 0x04;
-        GetCPUStateRef().mRegisters[6] = 0x05;
+        // -- Arrange --
+        const uint8_t vxValue = 0x04;
+        const uint8_t vyValue = 0x05;
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = vxValue;
+        GetCPUStateRef().mRegisters[vyReg] = vyValue;
 
         // -- Act --
         ExecuteInstruction();
 
-        // -- Assert --        
+        // -- Assert --
         ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
-    }
-    
-    // Negative case: does not skip next instruction
-    {
-        // -- Assert --
+
+        // -- Reset --
         mInterpreter.Reset();
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0x9560);
-        GetCPUStateRef().mRegisters[5] = 0x04;
-        GetCPUStateRef().mRegisters[6] = 0x04;
+    }
+
+    // Test 2: Vx == Vy -> no skip
+    {
+        // -- Arrange --
+        const uint8_t value = 0x04;
+        const uint16_t opcode = baseOpcode | (vxReg << 8) | (vyReg << 4);
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = value;
+        GetCPUStateRef().mRegisters[vyReg] = value;
 
         // -- Act --
         ExecuteInstruction();
 
-        // -- Assert --        
+        // -- Assert --
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 }
 
@@ -847,136 +994,107 @@ TEST_F(OpcodeTest, Cxkk_RND_VX_KK)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
 {
-    Display& display = GetBusRef().mDisplay;
+    const uint8_t vxReg = 0;
+    const uint8_t vyReg = 1;
+    const Display& display = GetBusRef().mDisplay;
 
-    // Test 1: Basic draw with no collision
+    // Test 1: No overlapping pixels -> no collision
     {
-        // -- Assert --        
+        // -- Arrange --
         const uint8_t xPos = 0;
         const uint8_t yPos = 0;
-        const uint8_t vxRegister = 0;
-        const uint8_t vyRegister = 1;
         const uint8_t spriteHeight = 2;
         const uint16_t spriteAddress = 0x202;
+        const uint16_t opcode = 0xD000 | (vxReg << 8) | (vyReg << 4) | spriteHeight;
 
         const uint8_t spriteData[spriteHeight] = {
             0b11111111,
             0b11111101,
         };
 
-        const uint16_t opcode =
-            0xD000 |
-            (vxRegister << 8) |
-            (vyRegister << 4) |
-            spriteHeight;
-
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
-
         GetCPUStateRef().mIndexRegister = spriteAddress;
-        GetCPUStateRef().mRegisters[vxRegister] = xPos;
-        GetCPUStateRef().mRegisters[vyRegister] = yPos;
+        GetCPUStateRef().mRegisters[vxReg] = xPos;
+        GetCPUStateRef().mRegisters[vyReg] = yPos;
 
         for (uint8_t i = 0; i < spriteHeight; ++i)
-        {
             WriteByteToMemory(spriteAddress + i, spriteData[i]);
-        }
-        
-        // -- Act --        
+
+        // -- Act --
         ExecuteInstruction();
 
-        // -- Assert --        
-        const uint8_t collision = GetCPUStateRef().mRegisters[0xF];
-
-        ASSERT_EQ(0, collision);
+        // -- Assert --
+        ASSERT_EQ(0, GetCPUStateRef().mRegisters[0xF]);
         ASSERT_TRUE(display.IsPixelSet(7, 1));
         ASSERT_FALSE(display.IsPixelSet(6, 1));
 
-		// Clean up for next test
-        display.Clear();
+        // -- Reset --
+        mInterpreter.Reset();
+        GetBusRef().mDisplay.Clear();
     }
 
-    // Test 2: Draw causes collision (overlapping pixels)
+    // Test 2: Overlapping pixels -> collision
     {
-		// -- Assert --		
+        // -- Arrange --
         const uint8_t xPos = 0;
         const uint8_t yPos = 0;
-        const uint8_t vxRegister = 0;
-        const uint8_t vyRegister = 1;
         const uint8_t spriteHeight = 1;
         const uint16_t spriteAddress = 0x210;
+        const uint16_t opcode = 0xD000 | (vxReg << 8) | (vyReg << 4) | spriteHeight;
 
-        const uint8_t spriteData[spriteHeight] = {
-            0b11111111,
-        };
-
-        const uint16_t opcode =
-            0xD000 |
-            (vxRegister << 8) |
-            (vyRegister << 4) |
-            spriteHeight;
+        const uint8_t spriteByte = 0b11111111;
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
-
         GetCPUStateRef().mIndexRegister = spriteAddress;
-        GetCPUStateRef().mRegisters[vxRegister] = xPos;
-        GetCPUStateRef().mRegisters[vyRegister] = yPos;
+        GetCPUStateRef().mRegisters[vxReg] = xPos;
+        GetCPUStateRef().mRegisters[vyReg] = yPos;
 
-        // First draw — no collision expected
-        WriteByteToMemory(spriteAddress, spriteData[0]);
-        ExecuteInstruction();
+        WriteByteToMemory(spriteAddress, spriteByte);
+        ExecuteInstruction(); // First draw, no collision
 
-        // Second draw at same location — should cause collision
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
-        ExecuteInstruction();
-        
-        // -- Assert --
-        const uint8_t collision = GetCPUStateRef().mRegisters[0xF];
+        ExecuteInstruction(); // Second draw, collision expected
 
-        ASSERT_EQ(1, collision);
+        // -- Assert --
+        ASSERT_EQ(1, GetCPUStateRef().mRegisters[0xF]);
         ASSERT_FALSE(display.IsPixelSet(0, 0));
 
-        // Clean up for next test
-        display.Clear();
-        GetCPUStateRef().mRegisters[0xF] = 0;
+        // -- Reset --
+        mInterpreter.Reset();
+        GetBusRef().mDisplay.Clear();
     }
 
     // Test 3: Sprite wraps around screen horizontally
-    {        
-        // -- Assert --        
-        const uint8_t xPos = DISPLAY_WIDTH - 4; // Near right edge (assuming 64x32 display)
+    {
+        // -- Arrange --
+        const uint8_t xPos = DISPLAY_WIDTH - 4;
         const uint8_t yPos = 0;
-        const uint8_t vxRegister = 0;
-        const uint8_t vyRegister = 1;
         const uint8_t spriteHeight = 1;
         const uint16_t spriteAddress = 0x220;
+        const uint16_t opcode = 0xD000 | (vxReg << 8) | (vyReg << 4) | spriteHeight;
 
-        const uint8_t spriteData[spriteHeight] = {
-            0b11111111, // 8 pixels wide
-        };
-
-        const uint16_t opcode =
-            0xD000 |
-            (vxRegister << 8) |
-            (vyRegister << 4) |
-            spriteHeight;
+        const uint8_t spriteByte = 0b11111111;
 
         WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
-
         GetCPUStateRef().mIndexRegister = spriteAddress;
-        GetCPUStateRef().mRegisters[vxRegister] = xPos;
-        GetCPUStateRef().mRegisters[vyRegister] = yPos;
+        GetCPUStateRef().mRegisters[vxReg] = xPos;
+        GetCPUStateRef().mRegisters[vyReg] = yPos;
 
-        WriteByteToMemory(spriteAddress, spriteData[0]);
-        
+        WriteByteToMemory(spriteAddress, spriteByte);
+
         // -- Act --
         ExecuteInstruction();
-        
+
         // -- Assert --
         for (uint8_t i = 0; i < 8; ++i)
         {
             const uint8_t screenX = (xPos + i) % DISPLAY_WIDTH;
-            ASSERT_TRUE(display.IsPixelSet(screenX, yPos)) << "Pixel not set at wrapped X = " << screenX;
+            ASSERT_TRUE(display.IsPixelSet(screenX, yPos)) << "Pixel not set at X=" << screenX;
         }
+
+        // -- Reset --
+        mInterpreter.Reset();
+        GetBusRef().mDisplay.Clear();
     }
 }
 
@@ -984,40 +1102,47 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Ex9E_SKP_VX)
 {
-    // Test skip instruction when key is pressed
+    const uint16_t baseOpcode = 0xE09E;
+    const uint8_t vxReg = 1;
+    const Keypad::Key key = Keypad::Key::Key5;
+    const uint8_t keyValue = Keypad::KeyToIndex(key);
+
+    // Test 1: Key is pressed -> skip
     {
-	    // -- Assert --
-	    const Keypad::Key pressedKey = Keypad::Key::Key5;
-	    const uint8_t value = Keypad::KeyToIndex(pressedKey);
+        // -- Arrange --
+        const uint16_t opcode = baseOpcode | (vxReg << 8);
 
-	    WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xE19E);
-	    GetCPUStateRef().mRegisters[1] = value;
-	    GetBusRef().mKeypad.SetKeyPressed(pressedKey, true);
-
-	    // -- Act --
-	    const Instruction& instruction = ExecuteInstruction();
-
-	    // -- Assert --
-	    ASSERT_EQ(1, instruction.GetOperandX());
-	    ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
-    }
-
-    // Test do not skip instruction when key is not pressed
-    {
-        // -- Assert --
-        const Keypad::Key pressedKey = Keypad::Key::Key5;
-        const uint8_t value = Keypad::KeyToIndex(pressedKey);
-
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xE19E);
-        GetCPUStateRef().mRegisters[1] = value;
-        GetBusRef().mKeypad.SetKeyPressed(pressedKey, false);
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = keyValue;
+        GetBusRef().mKeypad.SetKeyPressed(key, true);
 
         // -- Act --
-        const Instruction& instruction = ExecuteInstruction();
+        ExecuteInstruction();
 
         // -- Assert --
-        ASSERT_EQ(1, instruction.GetOperandX());
+        ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
+
+        // -- Reset --
+        mInterpreter.Reset();
+    }
+
+    // Test 2: Key is not pressed -> no skip
+    {
+        // -- Arrange --
+        const uint16_t opcode = baseOpcode | (vxReg << 8);
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = keyValue;
+        GetBusRef().mKeypad.SetKeyPressed(key, false);
+
+        // -- Act --
+        ExecuteInstruction();
+
+        // -- Assert --
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 }
 
@@ -1025,40 +1150,47 @@ TEST_F(OpcodeTest, Ex9E_SKP_VX)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, ExA1_SKNP_VX)
 {
-    // Test skip instruction when key is pressed
-    {
-        // -- Assert --
-        const Keypad::Key pressedKey = Keypad::Key::Key5;
-        const uint8_t value = Keypad::KeyToIndex(pressedKey);
+    const uint16_t baseOpcode = 0xE0A1;
+    const uint8_t vxReg = 1;
+    const Keypad::Key key = Keypad::Key::Key5;
+    const uint8_t keyValue = Keypad::KeyToIndex(key);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xE1A1);
-        GetCPUStateRef().mRegisters[1] = value;
-        GetBusRef().mKeypad.SetKeyPressed(pressedKey, false);
+    // Test 1: Key is not pressed -> skip
+    {
+        // -- Arrange --
+        const uint16_t opcode = baseOpcode | (vxReg << 8);
+
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = keyValue;
+        GetBusRef().mKeypad.SetKeyPressed(key, false);
 
         // -- Act --
-        const Instruction& instruction = ExecuteInstruction();
+        ExecuteInstruction();
 
         // -- Assert --
-        ASSERT_EQ(1, instruction.GetOperandX());
         ASSERT_EQ(PROGRAM_START_ADDRESS + 2 * INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 
-    // Test do not skip instruction when key is not pressed
+    // Test 2: Key is pressed -> no skip
     {
-        // -- Assert --
-        const Keypad::Key pressedKey = Keypad::Key::Key5;
-        const uint8_t value = Keypad::KeyToIndex(pressedKey);
+        // -- Arrange --
+        const uint16_t opcode = baseOpcode | (vxReg << 8);
 
-        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, 0xE1A1);
-        GetCPUStateRef().mRegisters[1] = value;
-        GetBusRef().mKeypad.SetKeyPressed(pressedKey, true);
+        WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
+        GetCPUStateRef().mRegisters[vxReg] = keyValue;
+        GetBusRef().mKeypad.SetKeyPressed(key, true);
 
         // -- Act --
-        const Instruction& instruction = ExecuteInstruction();
+        ExecuteInstruction();
 
         // -- Assert --
-        ASSERT_EQ(1, instruction.GetOperandX());
         ASSERT_EQ(PROGRAM_START_ADDRESS + INSTRUCTION_SIZE, GetCPUStateRef().mProgramCounter);
+
+        // -- Reset --
+        mInterpreter.Reset();
     }
 }
 
