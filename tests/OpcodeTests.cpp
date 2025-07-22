@@ -439,6 +439,11 @@ TEST_F(OpcodeTest, 8xy3_XOR_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy4_ADD_VX_VY)
 {    
+    /*
+        NOTE: Test 4 ensures flag is preserved when x == VF.
+        (See errata: https://github.com/gulrak/cadmium/wiki/CTR-Errata#math-opcodes)
+    */
+
     const uint16_t baseOpcode = 0x8004;
     const uint8_t vxReg = 7;
     const uint8_t vyReg = 6;
@@ -539,6 +544,13 @@ TEST_F(OpcodeTest, 8xy4_ADD_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy5_SUB_VX_VY)
 {
+    /*
+		 NOTE: 
+          - Only borrow flag is set when Vx < Vy.
+          - Test 4 ensures flag is preserved when x == VF.
+         (See errata: https://github.com/gulrak/cadmium/wiki/CTR-Errata#math-opcodes)
+    */
+
     const uint16_t baseOpcode = 0x8005;
     const uint8_t vxReg = 7;
     const uint8_t vyReg = 6;
@@ -643,6 +655,9 @@ TEST_F(OpcodeTest, 8xy6_SHR_VX_VY)
     /*
         NOTE: In original CHIP-8, Vy is ignored for 8xy6.
         Vx is both the input and output register.
+
+        Test 3 ensures flag is preserved when x == VF.
+        (See errata: https://github.com/gulrak/cadmium/wiki/CTR-Errata#math-opcodes)
     */
 
     const uint16_t baseOpcode = 0x8006;
@@ -717,6 +732,13 @@ TEST_F(OpcodeTest, 8xy6_SHR_VX_VY)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, 8xy7_SUBN_VX_VY)
 {
+    /*
+         NOTE:
+          - Only borrow flag is set when Vy < Vx.
+          - Test 4 ensures flag is preserved when x == VF.
+         (See errata: https://github.com/gulrak/cadmium/wiki/CTR-Errata#math-opcodes)
+    */
+
     const uint16_t baseOpcode = 0x8007;
     const uint8_t vxReg = 7;
     const uint8_t vyReg = 6;
@@ -821,6 +843,9 @@ TEST_F(OpcodeTest, 8xyE_SHL_VX_VY)
     /*
         NOTE: In original CHIP-8, Vy is ignored for 8xyE.
         Vx is both the input and output register.
+
+        Test 3 ensures flag is preserved when x == VF.
+        (See errata: https://github.com/gulrak/cadmium/wiki/CTR-Errata#math-opcodes)
     */
 
     const uint16_t baseOpcode = 0x800E;
@@ -998,6 +1023,11 @@ TEST_F(OpcodeTest, Cxkk_RND_VX_KK)
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
 {
+    /*
+         NOTE: Only the start position wraps; pixels beyond the screen are clipped.
+         (See errata: https://github.com/gulrak/cadmium/wiki/CTR-Errata#dxyn)
+    */
+
     const uint8_t vxReg = 0;
     const uint8_t vyReg = 1;
     const Display& display = GetBusRef().mDisplay;
