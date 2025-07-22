@@ -603,7 +603,9 @@ TEST_F(OpcodeTest, 8xy5_SUB_VX_VY)
         ExecuteInstruction();
 
         // -- Assert --
-        ASSERT_EQ(static_cast<uint8_t>(vxValue - vyValue), GetCPUStateRef().mRegisters[vxReg]);
+		const uint8_t wrappedValue = static_cast<uint8_t>(vxValue - vyValue);
+
+        ASSERT_EQ(wrappedValue, GetCPUStateRef().mRegisters[vxReg]);
         ASSERT_EQ(borrow, GetCPUStateRef().mRegisters[0xF]);
 
         // -- Reset --
@@ -779,7 +781,9 @@ TEST_F(OpcodeTest, 8xy7_SUBN_VX_VY)
         ExecuteInstruction();
 
         // -- Assert --
-        ASSERT_EQ(static_cast<uint8_t>(vyValue - vxValue), GetCPUStateRef().mRegisters[vxReg]);
+        const uint8_t wrappedValue = static_cast<uint8_t>(vyValue - vxValue);
+
+        ASSERT_EQ(wrappedValue, GetCPUStateRef().mRegisters[vxReg]);
         ASSERT_EQ(borrow, GetCPUStateRef().mRegisters[0xF]);
 
         // -- Reset --
