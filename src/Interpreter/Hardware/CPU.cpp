@@ -252,20 +252,6 @@ ExecutionStatus CPU::Execute_5xy0_SE_VX_VY(const Instruction& instruction)
 
     return ExecutionStatus::Executed;
 }
-// Skip next instruction if Vx = Vy.
-//--------------------------------------------------------------------------------
-ExecutionStatus CPU::Execute_5xy0_SE_VX_VY(const Instruction& instruction)
-{
-    const size_t vxReg = instruction.GetOperandX();
-    const size_t vyReg = instruction.GetOperandY();
-    
-    if (mState.mRegisters[vxReg] == mState.mRegisters[vyReg])
-    {
-        mState.mProgramCounter += INSTRUCTION_SIZE;
-    }
-
-    return ExecutionStatus::Executed;
-}
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_6xkk_LD_VX_KK(const Instruction& instruction)
@@ -502,7 +488,6 @@ ExecutionStatus CPU::Execute_Ex9E_SKP_VX(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
-// Skip next instruction if key with the value of Vx is not pressed.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_ExA1_SKNP_VX(const Instruction& instruction)
 {
