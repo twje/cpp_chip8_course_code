@@ -83,7 +83,7 @@ public:
 	{		
 		// Update
 		mUIManager->Update(elapsedTime);		
-		PollInput();		
+		PollInput(); // OLC input is frame-based (can't poll between instructions)
 		TickExecution(elapsedTime);
 		UpdateSystemTimer(elapsedTime);
 		
@@ -144,6 +144,8 @@ private:
 			return;
 		}
 
+		PollInput();
+
 		if (ExecuteStep())
 		{
 			CaptureNextInstruction();
@@ -190,8 +192,6 @@ private:
 
 	bool ExecuteStep()
 	{
-		PollInput();
-
 		const StepResult result = mInterpreter.Step();
 		if (result.mShouldHalt)
 		{

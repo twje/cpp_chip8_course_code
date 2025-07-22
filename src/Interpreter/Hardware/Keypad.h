@@ -23,9 +23,10 @@ public:
     };
 
     explicit Keypad()
-        : mKeyStates{ }
-        , mKeyMapping{ }
-		, mInputProvider(nullptr)
+        : mCurrKeyStates{}
+        , mPrevKeyStates{}
+        , mKeyMapping{}
+        , mInputProvider(nullptr)
     { }
 
     void SetInputProvider(std::unique_ptr<IKeyInputProvider> inputProvider)
@@ -45,36 +46,39 @@ public:
 
     void PollKeypad()
     {
-        for (uint8_t i = 0; i < mKeyStates.size(); ++i)
-        {
-            const Key key = IndexToKey(i);
-            const uint8_t physicalKey = mKeyMapping[i];            
+        mPrevKeyStates = mCurrKeyStates;
+
+        for (uint8_t i = 0; i < mCurrKeyStates.size(); ++i)
+        {            
+            const uint8_t physicalKey = mKeyMapping[i];
             const bool isHeld = mInputProvider->IsKeyPressed(physicalKey);
 
-            SetKeyPressed(key, isHeld);
+            mCurrKeyStates[i] = isHeld;
         }
-    }
-
-    void SetKeyPressed(Key key, bool isPressed)
-    {
-        mKeyStates[KeyToIndex(key)] = isPressed;
     }
 
     bool IsKeyPressed(Key key) const
     {
-        return mKeyStates[KeyToIndex(key)];
-    }
+        return mCurrKeyStates[KeyToIndex(key)];
+    }    
 
-    std::optional<Keypad::Key> GetFirstKeyPressed() const
+    std::optional<Keypad::Key> GetFirstKeyReleased() const
     {
-        for (uint8_t i = 0; i < mKeyStates.size(); ++i)
+        for (uint8_t i = 0; i < mCurrKeyStates.size(); ++i)
         {
-            if (mKeyStates[i])
+            if (mPrevKeyStates[i] && !mCurrKeyStates[i])
             {
                 return IndexToKey(i);
             }
         }
         return std::nullopt;
+    }
+
+    void SetKeyPressed(Key key, bool isPressed)
+    {
+        uint8_t index = KeyToIndex(key);
+        mPrevKeyStates[index] = mCurrKeyStates[index];
+        mCurrKeyStates[index] = isPressed;
     }
 
     static Key IndexToKey(uint8_t index)
@@ -113,7 +117,8 @@ public:
     }
 
 private:
-    std::array<bool, 16> mKeyStates;
-    std::array<uint8_t, 16> mKeyMapping;    
+    std::array<bool, 16> mCurrKeyStates;
+    std::array<bool, 16> mPrevKeyStates;
+    std::array<uint8_t, 16> mKeyMapping;
     std::unique_ptr<IKeyInputProvider> mInputProvider;
 };

@@ -1179,12 +1179,9 @@ TEST_F(OpcodeTest, Dxyn_DRW_VX_VY_N)
     // Test 4: Sprite wraps around when X or Y position exceeds display bounds
     {
         // -- Arrange --
-        const uint8_t vxReg = 0;
-        const uint8_t vyReg = 1;
-        const uint8_t spriteHeight = 1;
-
         const uint8_t xWrapInput = DISPLAY_WIDTH + 2;  // Will wrap to 2
         const uint8_t yWrapInput = DISPLAY_HEIGHT + 1; // Will wrap to 1
+        const uint8_t spriteHeight = 1;
 
         const uint16_t spriteAddress = 0x230;
         const uint8_t spriteByte = 0b11000000; // Only first two bits set
@@ -1333,10 +1330,15 @@ TEST_F(OpcodeTest, Fx07_LD_VX_DT)
     ASSERT_EQ(value, GetCPUStateRef().mRegisters[index]);
 }
 
-// Wait for a key press, store the value of the key in Vx.
+// Wait for a key release, store the value of the key in Vx.
 //--------------------------------------------------------------------------------
 TEST_F(OpcodeTest, Fx0A_LD_VX_K)
 {
+    /*
+         NOTE: Fx0A waits for a key release, not a key press.
+         (See errata: https://github.com/gulrak/cadmium/wiki/CTR-Errata#fx0a)
+    */
+
     // -- Assert --
     const uint8_t vxRegister = 0;
     const auto key = Keypad::Key::Key2;
@@ -1354,8 +1356,9 @@ TEST_F(OpcodeTest, Fx0A_LD_VX_K)
     EXPECT_EQ(GetCPUStateRef().mRegisters[vxRegister], 0x00);
     EXPECT_EQ(GetCPUStateRef().mProgramCounter, PROGRAM_START_ADDRESS);
 
-    // -- Assert --: simulate key press
+    // -- Assert --: simulate key release
     GetBusRef().mKeypad.SetKeyPressed(key, true);
+    GetBusRef().mKeypad.SetKeyPressed(key, false);
 
     // -- Act --: execute again with key press
     ExecuteInstruction(ExecutionStatus::Executed);

@@ -519,18 +519,21 @@ ExecutionStatus CPU::Execute_Fx0A_LD_VX_K(const Instruction& instruction)
         Hint: Fx0A is the only opcode that waits for input.
         Return WaitingOnKeyPress to pause execution and retry this instruction next cycle.
 		See the unit test for example behavior.
+
+        Note: Fx0A waits for a key release, not a key press.
+        (See errata: https://github.com/gulrak/cadmium/wiki/CTR-Errata#fx0a)
     */
 
     const size_t reg = instruction.GetOperandX();    
-    auto keyPressed = mBus.mKeypad.GetFirstKeyPressed();
+    auto releasedKey = mBus.mKeypad.GetFirstKeyReleased();
         
-    if (!keyPressed.has_value())
+    if (!releasedKey.has_value())
     {
 		// No key pressed; roll back PC to retry this instruction        
         return ExecutionStatus::WaitingOnKeyPress;
     }
     
-	mState.mRegisters[reg] = Keypad::KeyToIndex(keyPressed.value());        
+	mState.mRegisters[reg] = Keypad::KeyToIndex(releasedKey.value());
     return ExecutionStatus::Executed;
 }
 
