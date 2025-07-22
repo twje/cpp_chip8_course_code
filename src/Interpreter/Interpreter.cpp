@@ -100,7 +100,7 @@ StepResult Interpreter::Step()
 		
 		case ExecutionStatus::Executed:
 			mCycleCount++;
-			return { status, !kHaltOnFailure };		
+			return { status, !kHaltOnFailure };	
 		
 		default:
 			return { status, kHaltOnFailure };

@@ -338,12 +338,8 @@ ExecutionStatus CPU::Execute_8xy5_SUB_VX_VY(const Instruction& instruction)
 	const uint16_t vyValue = mState.mRegisters[vyReg];
 
     const uint8_t noBorrow = (vxValue >= vyValue) ? 1 : 0;
-
-    if (vxReg != 0xF)
-    {
-        mState.mRegisters[vxReg] = static_cast<uint8_t>(vxValue - vyValue);
-    }
-	
+    
+    mState.mRegisters[vxReg] = static_cast<uint8_t>(vxValue - vyValue);
     mState.mRegisters[0xF] = noBorrow;
 
     return ExecutionStatus::Executed;
@@ -372,12 +368,8 @@ ExecutionStatus CPU::Execute_8xy7_SUBN_VX_VY(const Instruction& instruction)
     const uint16_t vyValue = mState.mRegisters[vyReg];
     
     const uint8_t noBorrow = (vyValue >= vxValue) ? 1 : 0;
-
-    if (vxReg != 0xF)
-    {
-        mState.mRegisters[vxReg] = static_cast<uint8_t>(vyValue - vxValue);
-    }
-
+    
+    mState.mRegisters[vxReg] = static_cast<uint8_t>(vyValue - vxValue);
     mState.mRegisters[0xF] = noBorrow;
 
     return ExecutionStatus::Executed;
