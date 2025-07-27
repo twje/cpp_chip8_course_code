@@ -10,8 +10,9 @@
 
 // System
 #include <string>
+#include <string_view>
 
 //--------------------------------------------------------------------------------
-olc::vi2d GetMonospaceStringBlockSize(const std::string& sampleText, int32_t numLines);
+olc::vi2d GetMonospaceStringBlockSize(std::string_view sampleText, int32_t numLines);
 std::string ToHexString(uint32_t value, uint8_t width);
-std::string PadLeft(const std::string& text, size_t width);
+std::string PadLeft(std::string_view text, size_t width);

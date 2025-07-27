@@ -18,7 +18,9 @@ Interpreter::Interpreter(IRandomProvider& randomProvider)
 	: mCPU(mBus, randomProvider)
 	, mCycleCount(0)
 {
-	mBus.mRAM.WriteRange(0x000, CHAR_SET); // Load CHIP-8 character fontset into memory
+	bool success = mBus.mRAM.WriteRange(0x000, CHAR_SET);
+	assert(success && "Failed to load fontset into RAM");
+	
 	mBus.mDisplay.SetRAM(mBus.mRAM);
 }
 

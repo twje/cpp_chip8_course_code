@@ -50,7 +50,7 @@ void CPU::DecrementTimers()
 }
 
 //--------------------------------------------------------------------------------
-FetchResult CPU::Peek() const
+[[nodiscard]] FetchResult CPU::Peek() const
 {
     FetchResult result;
 
@@ -78,7 +78,7 @@ FetchResult CPU::Peek() const
 }
 
 //--------------------------------------------------------------------------------
-FetchResult CPU::Fetch()
+[[nodiscard]] FetchResult CPU::Fetch()
 {
 	FetchResult result = Peek();
 	mState.mProgramCounter += INSTRUCTION_SIZE;
@@ -87,7 +87,7 @@ FetchResult CPU::Fetch()
 }
 
 //--------------------------------------------------------------------------------
-Instruction CPU::Decode(uint16_t opcode) const
+[[nodiscard]] Instruction CPU::Decode(uint16_t opcode) const
 {
     for (const OpcodeSpec& opcodeSpec : OpcodeTable::All())
     {
@@ -111,7 +111,7 @@ Instruction CPU::Decode(uint16_t opcode) const
 }
 
 //--------------------------------------------------------------------------------
-ExecutionStatus CPU::Execute(const Instruction& instruction)
+[[nodiscard]] ExecutionStatus CPU::Execute(const Instruction& instruction)
 {
     assert(instruction.IsValid());
 
@@ -341,7 +341,7 @@ ExecutionStatus CPU::Execute_8xy4_ADD_VX_VY(const Instruction& instruction)
     const uint8_t carry = sum > 255 ? 1 : 0;
 
     mState.mRegisters[vxReg] = static_cast<uint8_t>(sum & 0xFF);
-    mState.mRegisters[0xF] = carry;
+    mState.mRegisters[FLAG_REGISTER_INDEX] = carry;
 
     return ExecutionStatus::Executed;
 }
@@ -359,7 +359,7 @@ ExecutionStatus CPU::Execute_8xy5_SUB_VX_VY(const Instruction& instruction)
     const uint8_t noBorrow = (vxValue >= vyValue) ? 1 : 0;
     
     mState.mRegisters[vxReg] = static_cast<uint8_t>(vxValue - vyValue);
-    mState.mRegisters[0xF] = noBorrow;
+    mState.mRegisters[FLAG_REGISTER_INDEX] = noBorrow;
 
     return ExecutionStatus::Executed;
 }
@@ -378,7 +378,7 @@ ExecutionStatus CPU::Execute_8xy6_SHR_VX_VY(const Instruction& instruction)
 	const uint8_t lsb = vxValue & 0x01;
 
     mState.mRegisters[vxReg] = vxValue >> 1;
-    mState.mRegisters[0xF] = lsb;
+    mState.mRegisters[FLAG_REGISTER_INDEX] = lsb;
 
     return ExecutionStatus::Executed;
 }
@@ -396,7 +396,7 @@ ExecutionStatus CPU::Execute_8xy7_SUBN_VX_VY(const Instruction& instruction)
     const uint8_t noBorrow = (vyValue >= vxValue) ? 1 : 0;
     
     mState.mRegisters[vxReg] = static_cast<uint8_t>(vyValue - vxValue);
-    mState.mRegisters[0xF] = noBorrow;
+    mState.mRegisters[FLAG_REGISTER_INDEX] = noBorrow;
 
     return ExecutionStatus::Executed;
 }
@@ -415,7 +415,7 @@ ExecutionStatus CPU::Execute_8xyE_SHL_VX_VY(const Instruction& instruction)
     const uint8_t msb = (vxValue & 0x80) >> 7;
 
 	mState.mRegisters[vxReg] = vxValue * 2;
-    mState.mRegisters[0xF] = msb;
+    mState.mRegisters[FLAG_REGISTER_INDEX] = msb;
 
     return ExecutionStatus::Executed;
 }
@@ -477,7 +477,7 @@ ExecutionStatus CPU::Execute_Dxyn_DRW_VX_VY_N(const Instruction& instruction)
     const size_t vyReg = instruction.GetOperandY();
     const uint8_t height = instruction.GetOperandN();
        
-    mState.mRegisters[0xF] = mBus.mDisplay.DrawSprite(
+    mState.mRegisters[FLAG_REGISTER_INDEX] = mBus.mDisplay.DrawSprite(
         mState.mRegisters[vxReg],
         mState.mRegisters[vyReg],
         mState.mIndexRegister,

@@ -29,10 +29,10 @@ public:
 	void Reset();
 	void DecrementTimers();
 	
-	FetchResult Peek() const;
-	FetchResult Fetch();
-	Instruction Decode(uint16_t opcode) const;
-	ExecutionStatus Execute(const Instruction& instruction);
+	[[nodiscard]] FetchResult Peek() const;
+	[[nodiscard]] FetchResult Fetch();
+	[[nodiscard]] Instruction Decode(uint16_t opcode) const;
+	[[nodiscard]] ExecutionStatus Execute(const Instruction& instruction);
 
 	const CPUState& GetState() const { return mState; }	
 	uint16_t GetProgramCounter() const { return mState.mProgramCounter; }

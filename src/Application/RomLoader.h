@@ -8,6 +8,7 @@
 // System
 #include <vector>
 #include <string>
+#include <string_view>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -38,9 +39,9 @@ public:
         return mRoms;
     }
 
-    std::vector<uint8_t> LoadRom(const std::string& romName) const override
+    std::vector<uint8_t> LoadRom(std::string_view romName) const override
     {
-        fs::path romPath = mRomsRoot / romName;
+        fs::path romPath = mRomsRoot / std::string(romName);
         std::ifstream file(romPath, std::ios::binary);
         if (!file)
         {

@@ -1,6 +1,15 @@
 #include "Utils/TextUtils.h"
 
 //--------------------------------------------------------------------------------
+olc::vi2d GetMonospaceStringBlockSize(std::string_view sampleText, int32_t numLines)
+{
+	return {
+		static_cast<int32_t>(sampleText.size()) * UI_CHAR_SIZE,
+		numLines * UI_CHAR_SIZE
+	};
+}
+
+//--------------------------------------------------------------------------------
 std::string ToHexString(uint32_t value, uint8_t width)
 {
 	std::string s(width, '0');
@@ -12,20 +21,11 @@ std::string ToHexString(uint32_t value, uint8_t width)
 }
 
 //--------------------------------------------------------------------------------
-std::string PadLeft(const std::string& label, size_t width)
+std::string PadLeft(std::string_view label, size_t width)
 {
 	if (label.size() >= width)
 	{
-		return label;
+		return std::string(label);
 	}
-	return std::string(width - label.size(), ' ') + label;
-}
-
-//--------------------------------------------------------------------------------
-olc::vi2d GetMonospaceStringBlockSize(const std::string& sampleText, int32_t numLines)
-{
-	return {
-		static_cast<int32_t>(sampleText.size()) * UI_CHAR_SIZE,
-		numLines * UI_CHAR_SIZE
-	};
+	return std::string(width - label.size(), ' ') + std::string(label);
 }

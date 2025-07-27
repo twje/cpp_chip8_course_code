@@ -25,7 +25,7 @@ class RomListWidget : public FramedWidgetBase
     inline static const olc::Pixel kArrowColor{ olc::VERY_DARK_GREY };
 
 public:
-    RomListWidget(olc::PixelGameEngine& pge)
+    explicit RomListWidget(olc::PixelGameEngine& pge)
         : FramedWidgetBase(pge, "Roms")        
         , mStartIndex(0)
         , mVisibleRows(5)

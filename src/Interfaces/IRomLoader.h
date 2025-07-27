@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <vector>
 
 //--------------------------------------------------------------------------------
@@ -16,5 +17,5 @@ public:
 
 	virtual size_t RomCount() const = 0;
 	virtual const std::vector<std::string>& GetRoms() const = 0;
-	virtual std::vector<uint8_t> LoadRom(const std::string& romName) const = 0;
+	virtual std::vector<uint8_t> LoadRom(std::string_view romName) const = 0;
 };

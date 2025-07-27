@@ -20,7 +20,7 @@ class MemoryWidget : public FramedWidgetBase
     static constexpr int16_t kNumLines = 7;
 
 public:
-    MemoryWidget(olc::PixelGameEngine& pge)        
+    explicit MemoryWidget(olc::PixelGameEngine& pge)
         : FramedWidgetBase(pge, "Memory")	
     {
 		mFrame.SetContentSize(GetInternalContentSize());

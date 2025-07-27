@@ -18,7 +18,7 @@
 class DisplayWidget : public FramedWidgetBase
 {
 public:
-	DisplayWidget(olc::PixelGameEngine& pge)
+	explicit DisplayWidget(olc::PixelGameEngine& pge)
 		: FramedWidgetBase(pge, "Display")
 		, mFramebuffer(DISPLAY_WIDTH, DISPLAY_HEIGHT)
 	{

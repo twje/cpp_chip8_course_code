@@ -17,7 +17,7 @@
 class StackWidget : public FramedWidgetBase
 {
 public:
-	StackWidget(olc::PixelGameEngine& pge)
+	explicit StackWidget(olc::PixelGameEngine& pge)
 		: FramedWidgetBase(pge, "Stack")		
 	{
 		mFrame.SetContentSize(GetInternalContentSize());

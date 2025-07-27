@@ -17,6 +17,7 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 //--------------------------------------------------------------------------------
@@ -233,16 +234,16 @@ private:
 			<< "  Mnemonic: " << (snapshot.mDecodeSucceeded ? snapshot.mMnemonic : "-") << "\n\n";
 	}
 
-	void DisplayNotification(const std::string& message, bool isError)
+	void DisplayNotification(std::string_view message, bool isError)
 	{
-		mViewModel.mNotficationText = message;
+		mViewModel.mNotficationText = std::string(message);
 		mViewModel.mIsNotificationError = isError;
 	}
 
 	//---------------
 	// ROM Management
 	//---------------
-	bool TrySelectRomByName(const std::string& romName)
+	bool TrySelectRomByName(std::string_view romName)
 	{
 		return mInterpreter.LoadRom(mRomLoader->LoadRom(romName));
 	}

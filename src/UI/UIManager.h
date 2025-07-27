@@ -23,7 +23,7 @@
 class UIManager : public IUIManager
 {
 public:
-	UIManager(olc::PixelGameEngine& pge)
+	explicit UIManager(olc::PixelGameEngine& pge)
 		: mControlsWidget(pge)
 		, mNotificationWidget(pge)
 		, mRomListWidget(pge)

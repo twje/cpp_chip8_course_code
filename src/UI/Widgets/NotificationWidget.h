@@ -16,7 +16,7 @@ class NotificationWidget : public FramedWidgetBase
 	static constexpr int32_t kPadding = 1;
 
 public:
-	NotificationWidget(olc::PixelGameEngine& pge)
+	explicit NotificationWidget(olc::PixelGameEngine& pge)
 		: FramedWidgetBase(pge)		
 	{
 		// Height is fixed; width is set by UIManager layout

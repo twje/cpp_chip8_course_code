@@ -25,7 +25,7 @@ public:
 
     void SetRAM(RAM& ram) { mRAM = &ram; }
 
-    uint8_t DrawSprite(uint32_t px, uint32_t py, uint16_t spriteAddress, uint32_t height)
+    [[nodiscard]] uint8_t DrawSprite(uint32_t px, uint32_t py, uint16_t spriteAddress, uint32_t height)
     {
         /*
             Draws an N-byte sprite from memory starting at address I to position (Vx, Vy).
@@ -43,7 +43,7 @@ public:
         for (uint16_t row = 0; row < height; ++row)
         {
             uint8_t byte = mRAM->Read(spriteAddress + row);
-            for (uint8_t bit = 0; bit < 8; ++bit)
+            for (uint8_t bit = 0; bit < SPRITE_ROW_WIDTH; ++bit)
             {
                 bool pixelSet = (byte & (0x80 >> bit)) != 0;
                 if (!pixelSet)

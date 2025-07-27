@@ -44,7 +44,7 @@ class MockRomLoader : public IRomLoader
 public:
 	MOCK_METHOD(size_t, RomCount, (), (const, override));
 	MOCK_METHOD(const std::vector<std::string>&, GetRoms, (), (const, override));
-	MOCK_METHOD(std::vector<uint8_t>, LoadRom, (const std::string& romName), (const, override));
+	MOCK_METHOD(std::vector<uint8_t>, LoadRom, (std::string_view romName), (const, override));
 };
 
 //--------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ public:
 	{
 		auto romLoader = std::make_unique<NiceMock<MockRomLoader>>();
 		ON_CALL(*romLoader, GetRoms()).WillByDefault(ReturnRef(mRomList));
-		ON_CALL(*romLoader, LoadRom(testing::_)).WillByDefault([this](const std::string&) {
+		ON_CALL(*romLoader, LoadRom(testing::_)).WillByDefault([this](std::string_view) {
 			return mRomData;
 		});
 

@@ -7,7 +7,7 @@
 #include <cassert>
 
 //--------------------------------------------------------------------------------
-uint8_t RAM::Read(uint16_t address) const
+[[nodiscard]] uint8_t RAM::Read(uint16_t address) const
 {
     assert(address < RAM_SIZE);
     return mData[address];
@@ -21,7 +21,7 @@ void RAM::Write(uint16_t address, uint8_t value)
 }
 
 //--------------------------------------------------------------------------------
-bool RAM::WriteRange(size_t start, std::span<const uint8_t> data)
+[[nodiscard]] bool RAM::WriteRange(size_t start, std::span<const uint8_t> data)
 {
     if (start + data.size() > mData.size()) 
     {

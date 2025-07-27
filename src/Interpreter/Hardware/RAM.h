@@ -14,9 +14,9 @@
 class RAM 
 {
 public:
-    uint8_t Read(uint16_t address) const;
+    [[nodiscard]] uint8_t Read(uint16_t address) const;
     void Write(uint16_t address, uint8_t value);
-    bool WriteRange(size_t start, std::span<const uint8_t> data);
+    [[nodiscard]] bool WriteRange(size_t start, std::span<const uint8_t> data);
     void ClearProgramMemory();
 
 private:

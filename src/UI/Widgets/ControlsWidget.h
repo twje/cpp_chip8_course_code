@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <string_view>
 
 //--------------------------------------------------------------------------------
 using Button = olc::QuickGUI::Button;
@@ -44,7 +45,7 @@ class ControlsWidget : public IWidget
 public:
 	using CommandCallback = std::function<void(Commands)>;
 
-	ControlsWidget(olc::PixelGameEngine& pge)
+	explicit ControlsWidget(olc::PixelGameEngine& pge)
 		: mPge(pge)
 	{
 		AddButton(ButtonId::PLAY, "Play", Commands::kPlay);
@@ -108,9 +109,9 @@ public:
 	}
 
 private:
-	void AddButton(ButtonId id, const std::string& text, Commands command)
+	void AddButton(ButtonId id, std::string_view text, Commands command)
 	{
-		Button* button = new Button(mGuiManager, text, { }, kButtonSize);
+		Button* button = new Button(mGuiManager, std::string(text), { }, kButtonSize);
 		mButtons[id] = { button, command };
 		mButtonOrder.push_back(id);
 	}

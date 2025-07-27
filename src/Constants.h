@@ -38,6 +38,8 @@ inline constexpr float SYSTEM_TIMER_HZ = 60.0f;
 
 // Input config
 inline constexpr uint8_t NUM_KEYS = 16;
+inline constexpr uint8_t SPRITE_ROW_WIDTH = 8;      // Width of a sprite row in bits
+inline constexpr uint8_t FLAG_REGISTER_INDEX = 0xF; // Index of VF register
 
 // Instruction config
 inline constexpr uint8_t INSTRUCTION_SIZE = 2;

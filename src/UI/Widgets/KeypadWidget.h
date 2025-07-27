@@ -29,7 +29,7 @@ class KeypadWidget : public FramedWidgetBase
 	};
 
 public:
-	KeypadWidget(olc::PixelGameEngine& pge)		
+	explicit KeypadWidget(olc::PixelGameEngine& pge)
 		: FramedWidgetBase(pge, "Keypad")		
 	{
 		mFrame.SetContentSize(GetInternalContentSize());
