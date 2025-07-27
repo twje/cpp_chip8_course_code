@@ -96,8 +96,8 @@ public:
 private:
 	void LayoutTopWidgets()
 	{
-		const int32_t contentWidth = SCREEN_WIDTH - UITheme::kWidgetSpacing * 2;
-		const olc::vi2d contentStart{ UITheme::kWidgetSpacing, UITheme::kWidgetSpacing };
+                constexpr int32_t contentWidth = SCREEN_WIDTH - UITheme::kWidgetSpacing * 2;
+                constexpr olc::vi2d contentStart{ UITheme::kWidgetSpacing, UITheme::kWidgetSpacing };
 
 		const int32_t controlsX = (contentWidth - mControlsWidget.GetSize().mX) / 2;
 		const olc::vi2d controlsPosition{ controlsX, 0 };
