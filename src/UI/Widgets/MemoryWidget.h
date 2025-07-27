@@ -8,7 +8,6 @@
 #include "Constants.h"
 #include "Utils/TextUtils.h"
 #include "Interpreter/Bus.h"
-#include "Interpreter/Instruction/Instruction.h"
 
 // System
 #include <cstdint>

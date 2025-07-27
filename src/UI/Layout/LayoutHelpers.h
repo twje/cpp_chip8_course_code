@@ -11,18 +11,18 @@
 //--------------------------------------------------------------------------------
 enum class VertAlign
 {
-    Top,
-    Bottom
+    TOP,
+    BOTTOM
 };
 
 //--------------------------------------------------------------------------------
 enum class HortAlign
 {
-    Left,
-    Right
+    LEFT,
+    RIGHT
 };
 
 //--------------------------------------------------------------------------------
-void PlaceRightOf(IWidget& target, const IWidget& anchor, int32_t spacing, VertAlign align);
-void PlaceLeftOf(IWidget& target, const IWidget& anchor, int32_t spacing, VertAlign align);
+void PlaceRIGHTOf(IWidget& target, const IWidget& anchor, int32_t spacing, VertAlign align);
+void PlaceLEFTOf(IWidget& target, const IWidget& anchor, int32_t spacing, VertAlign align);
 void PlaceBelow(IWidget& target, const IWidget& anchor, int32_t spacing, HortAlign align);

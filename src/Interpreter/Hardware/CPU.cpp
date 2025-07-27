@@ -58,14 +58,14 @@ FetchResult CPU::Peek() const
 
     if (address % 2 != 0)
     {
-        result.mStatus = ExecutionStatus::InvalidAddressUnaligned;
+        result.mStatus = ExecutionStatus::INVALID_ADDRESS_UNALIGNED;
         result.mIsValidAddress = false;
         return result;
     }
 
     if (address < PROGRAM_START_ADDRESS || (address + 1) >= RAM_SIZE)
     {
-        result.mStatus = ExecutionStatus::InvalidAddressOutOfBounds;
+        result.mStatus = ExecutionStatus::INVALID_ADDRESS_OUT_OF_BOUNDS;
         result.mIsValidAddress = false;
         return result;
     }
@@ -115,7 +115,7 @@ ExecutionStatus CPU::Execute(const Instruction& instruction)
 {
     assert(instruction.IsValid());
 
-    ExecutionStatus status = ExecutionStatus::MissingHandler;
+    ExecutionStatus status = ExecutionStatus::MISSING_HANDLER;
 
     switch (instruction.GetOpcodeId())
     {
@@ -166,7 +166,7 @@ ExecutionStatus CPU::Execute_0nnn_SYS_ADDR(const Instruction&)
         NOTE: Legacy SYS instruction (0nnn); ignored in modern interpreters.        
     */
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -175,7 +175,7 @@ ExecutionStatus CPU::Execute_00E0_CLS(const Instruction& instruction)
 	(void)instruction; // Unused parameter
 	mBus.mDisplay.Clear();
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -184,7 +184,7 @@ ExecutionStatus CPU::Execute_00EE_RET(const Instruction&)
     mState.mStackPointer--;
     mState.mProgramCounter = mState.mStack[mState.mStackPointer];    
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -193,7 +193,7 @@ ExecutionStatus CPU::Execute_1nnn_JP_ADDR(const Instruction& instruction)
     const uint16_t address = instruction.GetOperandNNN();
     mState.mProgramCounter = address;
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -205,7 +205,7 @@ ExecutionStatus CPU::Execute_2nnn_CALL_ADDR(const Instruction& instruction)
     mState.mStackPointer++;
     mState.mProgramCounter = address;
  
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 // Skip next instruction if Vx = kk.
@@ -220,7 +220,7 @@ ExecutionStatus CPU::Execute_3xkk_SE_VX_KK(const Instruction& instruction)
         mState.mProgramCounter += INSTRUCTION_SIZE;
     }
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 // Skip next instruction if Vx != kk.
@@ -235,7 +235,7 @@ ExecutionStatus CPU::Execute_4xkk_SNE_VX_KK(const Instruction& instruction)
         mState.mProgramCounter += INSTRUCTION_SIZE;
     }
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 // Skip next instruction if Vx = Vy.
@@ -250,7 +250,7 @@ ExecutionStatus CPU::Execute_5xy0_SE_VX_VY(const Instruction& instruction)
         mState.mProgramCounter += INSTRUCTION_SIZE;
     }
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -261,7 +261,7 @@ ExecutionStatus CPU::Execute_6xkk_LD_VX_KK(const Instruction& instruction)
     
     mState.mRegisters[reg] = value;
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -272,7 +272,7 @@ ExecutionStatus CPU::Execute_7xkk_ADD_VX_KK(const Instruction& instruction)
     
     mState.mRegisters[reg] += value;
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -283,7 +283,7 @@ ExecutionStatus CPU::Execute_8xy0_LD_VX_VY(const Instruction& instruction)
         
     mState.mRegisters[vxReg] = mState.mRegisters[vyReg];
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -294,7 +294,7 @@ ExecutionStatus CPU::Execute_8xy1_OR_VX_VY(const Instruction& instruction)
 
     mState.mRegisters[vxReg] = mState.mRegisters[vxReg] | mState.mRegisters[vyReg];
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -305,7 +305,7 @@ ExecutionStatus CPU::Execute_8xy2_AND_VX_VY(const Instruction& instruction)
 
     mState.mRegisters[vxReg] = mState.mRegisters[vxReg] & mState.mRegisters[vyReg];
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -316,7 +316,7 @@ ExecutionStatus CPU::Execute_8xy3_XOR_VX_VY(const Instruction& instruction)
 
     mState.mRegisters[vxReg] = mState.mRegisters[vxReg] ^ mState.mRegisters[vyReg];
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 // Set Vx = Vx + Vy, set VF = carry.
@@ -332,7 +332,7 @@ ExecutionStatus CPU::Execute_8xy4_ADD_VX_VY(const Instruction& instruction)
     mState.mRegisters[vxReg] = static_cast<uint8_t>(sum & 0xFF);
     mState.mRegisters[0xF] = carry;
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 // Set Vx = Vx - Vy, set VF = NOT borrow.
@@ -350,7 +350,7 @@ ExecutionStatus CPU::Execute_8xy5_SUB_VX_VY(const Instruction& instruction)
     mState.mRegisters[vxReg] = static_cast<uint8_t>(vxValue - vyValue);
     mState.mRegisters[0xF] = noBorrow;
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 // Set Vx = Vx SHR 1.
@@ -369,7 +369,7 @@ ExecutionStatus CPU::Execute_8xy6_SHR_VX_VY(const Instruction& instruction)
     mState.mRegisters[reg] = value >> 1;
     mState.mRegisters[0xF] = lsb;
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 // Set Vx = Vy - Vx, set VF = NOT borrow.
@@ -387,7 +387,7 @@ ExecutionStatus CPU::Execute_8xy7_SUBN_VX_VY(const Instruction& instruction)
     mState.mRegisters[vxReg] = static_cast<uint8_t>(vyValue - vxValue);
     mState.mRegisters[0xF] = noBorrow;
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 // Set Vx = Vx SHL 1.
@@ -406,7 +406,7 @@ ExecutionStatus CPU::Execute_8xyE_SHL_VX_VY(const Instruction& instruction)
 	mState.mRegisters[reg] = value << 1;
     mState.mRegisters[0xF] = msb;
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 // Skip next instruction if Vx != Vy.
@@ -421,7 +421,7 @@ ExecutionStatus CPU::Execute_9xy0_SNE_VX_VY(const Instruction& instruction)
         mState.mProgramCounter += INSTRUCTION_SIZE;
     }
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -430,7 +430,7 @@ ExecutionStatus CPU::Execute_Annn_LD_I_ADDR(const Instruction& instruction)
     const uint16_t value = instruction.GetOperandNNN();
     mState.mIndexRegister = value;
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -441,7 +441,7 @@ ExecutionStatus CPU::Execute_Bnnn_JP_V0_ADDR(const Instruction& instruction)
 
     mState.mProgramCounter = address + offset;
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -452,7 +452,7 @@ ExecutionStatus CPU::Execute_Cxkk_RND_VX_KK(const Instruction& instruction)
 
 	mState.mRegisters[reg] = mRandomProvider.GetRandomByte() & value;
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 // Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
@@ -470,7 +470,7 @@ ExecutionStatus CPU::Execute_Dxyn_DRW_VX_VY_N(const Instruction& instruction)
         height
     );    
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 // Skip next instruction if key with the value of Vx is pressed.
@@ -485,7 +485,7 @@ ExecutionStatus CPU::Execute_Ex9E_SKP_VX(const Instruction& instruction)
 		mState.mProgramCounter += INSTRUCTION_SIZE; // Skip next instruction
 	}
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -499,7 +499,7 @@ ExecutionStatus CPU::Execute_ExA1_SKNP_VX(const Instruction& instruction)
         mState.mProgramCounter += INSTRUCTION_SIZE; // Skip next instruction
     }
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -509,7 +509,7 @@ ExecutionStatus CPU::Execute_Fx07_LD_VX_DT(const Instruction& instruction)
 
     mState.mRegisters[reg] = mState.mDelayTimer;
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -530,11 +530,11 @@ ExecutionStatus CPU::Execute_Fx0A_LD_VX_K(const Instruction& instruction)
     if (!releasedKey.has_value())
     {
 		// No key pressed; roll back PC to retry this instruction        
-        return ExecutionStatus::WaitingOnKeyPress;
+        return ExecutionStatus::WAITING_ON_KEY_PRESS;
     }
     
 	mState.mRegisters[reg] = releasedKey->GetValue();
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -544,7 +544,7 @@ ExecutionStatus CPU::Execute_Fx15_LD_DT_VX(const Instruction& instruction)
 
     mState.mDelayTimer = mState.mRegisters[reg];
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -554,7 +554,7 @@ ExecutionStatus CPU::Execute_Fx18_LD_ST_VX(const Instruction& instruction)
 
     mState.mSoundTimer = mState.mRegisters[reg];
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
@@ -564,23 +564,23 @@ ExecutionStatus CPU::Execute_Fx1E_ADD_I_VX(const Instruction& instruction)
 	
     mState.mIndexRegister += mState.mRegisters[reg];
 
-    return ExecutionStatus::Executed;
+    return ExecutionStatus::EXECUTED;
 }
 
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Fx29_LD_F_VX(const Instruction& instruction)
 {
     /*
-        Hint: Fx29 sets I to the address of the font sprite for digit in Vx (0x0–0xF).
-        Each digit's sprite is 5 bytes, starting at address 0x000.
-        See the unit test for example behavior.
-    */
+    return ExecutionStatus::EXECUTED;
+    return ExecutionStatus::EXECUTED;
+    return ExecutionStatus::EXECUTED;
+    return ExecutionStatus::EXECUTED;
     
     const size_t reg = instruction.GetOperandX();
     const uint8_t value = mState.mRegisters[reg];
 
-    // validate value is within valid digit range (0–F)
-    assert(value <= 0x0F && "Fx29 expects Vx to contain a hexadecimal digit (0x0–0xF)");
+    // validate value is within valid digit range (0Â–F)
+    assert(value <= 0x0F && "Fx29 expects Vx to contain a hexadecimal digit (0x0Â–0xF)");
 
 	mState.mIndexRegister = value * kFontSpriteSize;
 

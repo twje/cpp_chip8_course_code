@@ -8,16 +8,13 @@
 #include "Application/RandomProvider.h"
 #include "Interfaces/IUIManager.h"
 #include "Interfaces/IRomLoader.h"
-#include "Utils/TextUtils.h"
 #include "Types/Commands.h"
 #include "Interpreter/Interpreter.h"
 #include "Strings.h"
 
 // System
-#include <functional>
 #include <iostream>
 #include <string>
-#include <vector>
 
 //--------------------------------------------------------------------------------
 class ApplicationController
@@ -31,7 +28,7 @@ public:
 		: mInterpreter(mRandomProvider)
 		, mRomLoader(std::move(romLoader))
 		, mUIManager(std::move(uiManager))
-		, mState(ExecutionState::kNone)
+		, mState(ExecutionState::NONE)
 		, mInstructionTimer(CPU_FREQUENCY_HZ)
 		, mSystemTimer(SYSTEM_TIMER_HZ)
 		, mTextSpinner({ ".", "..", "..." }, 0.5f)
@@ -44,7 +41,7 @@ public:
 		mInterpreter.GetBus().mKeypad.SetInputProvider(std::move(inputProvider));
 
 		// Set initial execution state and show ROM prompt
-		TransitionState(ExecutionState::kWaitingForRom);
+		TransitionState(ExecutionState::WAITING_FOR_ROM);
 		DisplayNotification(Strings::Notifications::kPleaseSelectRom, false);
 
 		// Initialize UI with ROM list
@@ -60,12 +57,12 @@ public:
 			const bool success = TrySelectRomByName(roms[index]);
 			if (success)
 			{
-				TransitionState(ExecutionState::kStepping);
+				TransitionState(ExecutionState::STEPPING);
 				DisplayNotification(Strings::Notifications::kWaitingForStepInput, false);
 			}
 			else
 			{
-				TransitionState(ExecutionState::kWaitingForRom);
+				TransitionState(ExecutionState::WAITING_FOR_ROM);
 				DisplayNotification("Unable to load ROM: " + roms[index], true);
 			}
 		});
@@ -106,16 +103,16 @@ private:
 	{
 		switch (command)
 		{
-			case Commands::kPlay: 
+			case Commands::PLAY: 
 				OnPlayCommand(); 
 				break;
-			case Commands::kPause:  
+			case Commands::PAUSE:  
 				OnPauseCommand(); 
 				break;
-			case Commands::kStep: 
+			case Commands::STEP: 
 				OnStepCommand(); 
 				break;
-			case Commands::kReset: 
+			case Commands::RESET: 
 				OnResetCommand(); 
 				break;
 			default:
@@ -126,19 +123,19 @@ private:
 
 	void OnPlayCommand()
 	{
-		TransitionState(ExecutionState::kPlaying);
+		TransitionState(ExecutionState::PLAYING);
 		DisplayNotification(Strings::Notifications::kRunning, false);
 	}
 
 	void OnPauseCommand()
 	{
-		TransitionState(ExecutionState::kStepping);
+		TransitionState(ExecutionState::STEPPING);
 		DisplayNotification(Strings::Notifications::kWaitingForStepInput, false);
 	}
 
 	void OnStepCommand()
 	{
-		if (mState != ExecutionState::kStepping)
+		if (mState != ExecutionState::STEPPING)
 		{
 			assert(false && "Step command is only valid in Stepping state");
 			return;
@@ -155,7 +152,7 @@ private:
 	void OnResetCommand()
 	{
 		mInterpreter.Reset();
-		TransitionState(ExecutionState::kStepping);
+		TransitionState(ExecutionState::STEPPING);
 		DisplayNotification(Strings::Notifications::kWaitingForStepInput, false);
 	}
 
@@ -164,7 +161,7 @@ private:
 	//-------------------
 	void TickExecution(float elapsedTime)
 	{
-		if (mState != ExecutionState::kPlaying)
+		if (mState != ExecutionState::PLAYING)
 		{
 			return;
 		}
@@ -192,16 +189,15 @@ private:
 
 	bool ExecuteStep()
 	{
-		const StepResult result = mInterpreter.Step();
-		if (result.mShouldHalt)
-		{
-			TransitionState(ExecutionState::kHalted);
-			DisplayNotification("Execution Halted (" + Strings::ExecutionStatusToString(result.mStatus) + ")", true);
-			return false;
-		}
+                const StepResult result = mInterpreter.Step();
+                if (result.mShouldHalt)
+                {
+                        TransitionState(ExecutionState::HALTED);
+                        DisplayNotification("Execution Halted (" + Strings::ExecutionStatusToString(result.mStatus) + ")", true);
+                }
 
-		return true;
-	}
+                return !result.mShouldHalt;
+        }
 
 	//-----------------
 	// UI & Interaction
@@ -219,7 +215,7 @@ private:
 
 	void SyncViewModel()  // TODO: comor back to
 	{
-		const bool isSteppingOrHalted = (mState == ExecutionState::kStepping || mState == ExecutionState::kHalted);
+		const bool isSteppingOrHalted = (mState == ExecutionState::STEPPING || mState == ExecutionState::HALTED);
 		mViewModel.mIsDisplayInteractive = isSteppingOrHalted;
 	}
 
@@ -255,7 +251,7 @@ private:
 		mState = newState;
 		std::cout << "Transitioning to state: " << Strings::ExecutionStateToString(mState) << std::endl;
 
-		for (Commands cmd : { Commands::kPlay, Commands::kPause, Commands::kStep, Commands::kReset })
+		for (Commands cmd : { Commands::PLAY, Commands::PAUSE, Commands::STEP, Commands::RESET })
 		{
 			mUIManager->SetCommandState(cmd, IsCommandAllowed(cmd));
 		}
@@ -263,7 +259,7 @@ private:
 		// Show next instruction for:
 		// 1. Stepping - preview before execution.
 		// 2. Halted - display the faulting instruction.
-		if (mState == ExecutionState::kStepping || mState == ExecutionState::kHalted)
+		if (mState == ExecutionState::STEPPING || mState == ExecutionState::HALTED)
 		{
 			CaptureNextInstruction();
 		}
@@ -275,12 +271,12 @@ private:
 	{
 		switch (mState)
 		{
-			case ExecutionState::kStepping:
-				return command == Commands::kPlay || command == Commands::kStep || command == Commands::kReset;
-			case ExecutionState::kPlaying:
-				return command == Commands::kPause || command == Commands::kReset;
-			case ExecutionState::kHalted:
-				return command == Commands::kReset;
+			case ExecutionState::STEPPING:
+				return command == Commands::PLAY || command == Commands::STEP || command == Commands::RESET;
+			case ExecutionState::PLAYING:
+				return command == Commands::PAUSE || command == Commands::RESET;
+			case ExecutionState::HALTED:
+				return command == Commands::RESET;
 			default:
 				return false;
 		}

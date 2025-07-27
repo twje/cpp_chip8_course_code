@@ -36,14 +36,14 @@ public:
 	{
 		LayoutTopWidgets();
 
-		PlaceBelow(mRomListWidget, mNotificationWidget, UITheme::kWidgetSpacing, HortAlign::Left);
-		PlaceBelow(mDisplayWidget, mRomListWidget, UITheme::kWidgetSpacing, HortAlign::Left);
-		PlaceBelow(mKeypadWidget, mDisplayWidget, UITheme::kWidgetSpacing, HortAlign::Left);
-		PlaceRightOf(mInstructionWidget, mKeypadWidget, UITheme::kWidgetSpacing, VertAlign::Top);
-		PlaceLeftOf(mKeypadWidget, mInstructionWidget, UITheme::kWidgetSpacing, VertAlign::Bottom);
-		PlaceRightOf(mStackWidget, mDisplayWidget, UITheme::kWidgetSpacing, VertAlign::Top);
-		PlaceBelow(mMemoryWidget, mStackWidget, UITheme::kWidgetSpacing, HortAlign::Right);
-		PlaceRightOf(mRegisterWidget, mStackWidget, UITheme::kWidgetSpacing, VertAlign::Top);
+		PlaceBelow(mRomListWidget, mNotificationWidget, UITheme::kWidgetSpacing, HortAlign::LEFT);
+		PlaceBelow(mDisplayWidget, mRomListWidget, UITheme::kWidgetSpacing, HortAlign::LEFT);
+		PlaceBelow(mKeypadWidget, mDisplayWidget, UITheme::kWidgetSpacing, HortAlign::LEFT);
+		PlaceRightOf(mInstructionWidget, mKeypadWidget, UITheme::kWidgetSpacing, VertAlign::TOP);
+		PlaceLeftOf(mKeypadWidget, mInstructionWidget, UITheme::kWidgetSpacing, VertAlign::BOTTOM);
+		PlaceRightOf(mStackWidget, mDisplayWidget, UITheme::kWidgetSpacing, VertAlign::TOP);
+		PlaceBelow(mMemoryWidget, mStackWidget, UITheme::kWidgetSpacing, HortAlign::RIGHT);
+		PlaceRightOf(mRegisterWidget, mStackWidget, UITheme::kWidgetSpacing, VertAlign::TOP);
 	}
 
 	//---------------------

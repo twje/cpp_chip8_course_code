@@ -7,11 +7,9 @@
 #include "Utils/TextUtils.h"
 #include "Platform/Olc/OlcVec.h"
 #include "UI/Layout/FramedWidgetBase.h"
-#include "Interpreter/Instruction/Instruction.h"
 
 // System
 #include <string>
-#include <vector>
 
 //--------------------------------------------------------------------------------
 class InstructionWidget : public FramedWidgetBase

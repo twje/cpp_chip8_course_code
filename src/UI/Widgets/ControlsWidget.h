@@ -33,7 +33,7 @@ enum class ButtonId
 struct ButtonEntry
 {
 	Button* mButton = nullptr;
-	Commands mCommand = Commands::kNone;
+	Commands mCommand = Commands::NONE;
 };
 
 //--------------------------------------------------------------------------------
@@ -47,10 +47,10 @@ public:
 	ControlsWidget(olc::PixelGameEngine& pge)
 		: mPge(pge)
 	{
-		AddButton(ButtonId::PLAY, "Play", Commands::kPlay);
-		AddButton(ButtonId::PAUSE, "Pause", Commands::kPause);
-		AddButton(ButtonId::STEP, "Step", Commands::kStep);
-		AddButton(ButtonId::RESET, "Reset", Commands::kReset);
+		AddButton(ButtonId::PLAY, "Play", Commands::PLAY);
+		AddButton(ButtonId::PAUSE, "Pause", Commands::PAUSE);
+		AddButton(ButtonId::STEP, "Step", Commands::STEP);
+		AddButton(ButtonId::RESET, "Reset", Commands::RESET);
 
 		LayoutButtons();
 	}

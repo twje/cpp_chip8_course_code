@@ -79,13 +79,13 @@ StepResult Interpreter::Step()
 	{
 		// Decode failed, so we roll back to preserve CPU state.
 		mCPU.SetProgramCounter(pcBeforeFetch);
-		return { ExecutionStatus::DecodeError, kHaltOnFailure };
+		return { ExecutionStatus::DECODE_ERROR, kHaltOnFailure };
 	}
 
 	// Execute
 	const ExecutionStatus status = mCPU.Execute(instruction);
 		
-	if (status != ExecutionStatus::Executed)
+	if (status != ExecutionStatus::EXECUTED)
 	{
 		// Instruction failed or deferred — rollback PC to preserve CPU state
 		mCPU.SetProgramCounter(pcBeforeFetch);
@@ -98,7 +98,7 @@ StepResult Interpreter::Step()
 			mCycleCount++;
 			return { status, !kHaltOnFailure };			
 		
-		case ExecutionStatus::Executed:
+		case ExecutionStatus::EXECUTED:
 			mCycleCount++;
 			return { status, !kHaltOnFailure };	
 		

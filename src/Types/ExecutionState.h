@@ -3,9 +3,9 @@
 //--------------------------------------------------------------------------------
 enum class ExecutionState
 {
-	kWaitingForRom, // No ROM or waiting for ROM
-	kStepping,		// Paused, manual stepping allowed
-	kPlaying,		// Running automatically
-	kHalted,		// Emulator error / stopped
-	kNone
+	WAITING_FOR_ROM, // No ROM or waiting for ROM
+	STEPPING,		// Paused, manual stepping allowed
+	PLAYING,		// Running automatically
+	HALTED,		// Emulator error / stopped
+	NONE
 };

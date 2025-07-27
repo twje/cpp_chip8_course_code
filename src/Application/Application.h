@@ -5,8 +5,6 @@
 // Core Application
 #include "Application/RomLoader.h"
 #include "Application/ApplicationController.h"
-#include "Types/ExecutionState.h"
-#include "Platform/Olc/OlcVec.h"
 #include "Platform/Olc/OlcKeyInputProvider.h"
 #include "UI/UIManager.h"
 
@@ -55,11 +53,10 @@ public:
 			{ Key::KeyF, olc::Key::V  },
 		} };
 
-		for (uint8_t i = 0; i < defaultBindings.size(); ++i)
-		{
-			const auto& [keyId, olcKey] = defaultBindings[i];
-			keypad.SetKeyBinding(Key(keyId), static_cast<uint8_t>(olcKey));
-		}
+                for (const auto& [keyId, olcKey] : defaultBindings)
+                {
+                        keypad.SetKeyBinding(Key(keyId), static_cast<uint8_t>(olcKey));
+                }
 
 		return mController->Initialize(std::make_unique<OlcKeyInputProvider>(*this));
 	}

@@ -4,11 +4,6 @@
 //--------------------------------------------------------------------------------
 #include "Platform/Olc/OlcVec.h"
 #include "UI/Layout/FramedWidgetBase.h"
-#include "Platform/Olc/OlcVec.h"
-#include "Interfaces/IWidget.h"
-
-// System
-#include <string>
 
 //--------------------------------------------------------------------------------
 class NotificationWidget : public FramedWidgetBase

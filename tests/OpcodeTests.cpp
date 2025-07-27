@@ -91,7 +91,7 @@ protected:
 
     Instruction ExecuteInstruction()
     {
-        return ExecuteInstruction(ExecutionStatus::Executed);
+        return ExecuteInstruction(ExecutionStatus::EXECUTED);
     }
 
     Instruction ExecuteInstruction(ExecutionStatus expectedStatus)
@@ -1348,7 +1348,7 @@ TEST_F(OpcodeTest, Fx0A_LD_VX_K)
     WriteOpcodeAndSetPC(PROGRAM_START_ADDRESS, opcode);
 
     // -- Act --: execute without key press
-	ExecuteInstruction(ExecutionStatus::WaitingOnKeyPress);
+	ExecuteInstruction(ExecutionStatus::WAITING_ON_KEY_PRESS);
 
     // -- Assert --: no change to register or PC
     EXPECT_EQ(GetCPUStateRef().mRegisters[vxRegister], 0x00);
@@ -1359,7 +1359,7 @@ TEST_F(OpcodeTest, Fx0A_LD_VX_K)
     GetBusRef().mKeypad.SetKeyPressed(key, false);
 
     // -- Act --: execute again with key press
-    ExecuteInstruction(ExecutionStatus::Executed);
+    ExecuteInstruction(ExecutionStatus::EXECUTED);
 
     // -- Assert --: Vx set, PC advanced
     EXPECT_EQ(GetCPUStateRef().mRegisters[vxRegister], key.GetValue());

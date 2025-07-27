@@ -411,8 +411,7 @@ int main()
 */
 #pragma endregion
 
-#ifndef OLC_PGE_DEF
-#define OLC_PGE_DEF
+#pragma once
 
 #pragma region std_includes
 // O------------------------------------------------------------------------------O
@@ -1797,7 +1796,6 @@ namespace olc
 #pragma endregion
 
 
-#endif // OLC_PGE_DEF
 
 
 // O------------------------------------------------------------------------------O

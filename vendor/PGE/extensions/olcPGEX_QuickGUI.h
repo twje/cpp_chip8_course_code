@@ -56,8 +56,7 @@
 
 	Author
 	~~~~~~
-	David Barr, aka javidx9, ©OneLoneCoder 2019, 2020, 2021, 2022, 2023, 2024
-
+#pragma once
 	Changes
 	~~~~~~~
 	v1.01	+Moved Slider::fGrabRad into "theme"
@@ -1176,4 +1175,3 @@ namespace olc::QuickGUI
 
 }
 #endif // OLC_PGEX_QUICKGUI
-#endif // OLC_PGEX_QUICKGUI_H

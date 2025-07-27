@@ -8,7 +8,7 @@ void PlaceRightOf(IWidget& target, const IWidget& anchor, int32_t spacing, VertA
     const IntVec2 targetSize = target.GetSize();
 
     int32_t y = anchorPosition.mY;
-    if (align == VertAlign::Bottom)
+    if (align == VertAlign::BOTTOM)
     {
         y += anchorSize.mY - targetSize.mY;
     }
@@ -24,7 +24,7 @@ void PlaceLeftOf(IWidget& target, const IWidget& anchor, int32_t spacing, VertAl
     const IntVec2 targetSize = target.GetSize();
 
     int32_t y = anchorPosition.mY;
-    if (align == VertAlign::Bottom)
+    if (align == VertAlign::BOTTOM)
     {
         y += anchorSize.mY - targetSize.mY;
     }
@@ -40,7 +40,7 @@ void PlaceBelow(IWidget& target, const IWidget& anchor, int32_t spacing, HortAli
     const IntVec2 targetSize = target.GetSize();
 
     int32_t x = anchorPosition.mX;
-    if (align == HortAlign::Right)
+    if (align == HortAlign::RIGHT)
     {
         x += anchorSize.mX - targetSize.mX;
     }

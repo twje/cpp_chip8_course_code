@@ -179,7 +179,7 @@ TEST_F(ApplicationControllerTestFixture, Initialize_ShouldShowWaitingForRom)
 	// Assert
 	const auto& vm = driver->GetViewModel();
 
-	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kWaitingForRom);
+	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::WAITING_FOR_ROM);
 	AssertNotificationEquals(vm, Strings::Notifications::kPleaseSelectRom);
 }
 
@@ -205,7 +205,7 @@ TEST_F(ApplicationControllerTestFixture, SelectRom_ShouldLoadRomAndEnterStepping
 	// Assert
 	const auto& vm = driver->GetViewModel();
 
-	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kStepping);
+	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::STEPPING);
 	ASSERT_EQ(driver->GetSnapshot().mAddress, 0x0200);
 	ASSERT_EQ(driver->GetSnapshot().mOpcode, 0x1001);
 	AssertNotificationEquals(vm, Strings::Notifications::kWaitingForStepInput);
@@ -229,7 +229,7 @@ TEST_F(ApplicationControllerTestFixture, StepInstruction_ShouldExecuteAndUpdateI
 	driver->SelectRom(0);
 
 	// Act
-	driver->HandleCommand(Commands::kStep);
+	driver->HandleCommand(Commands::STEP);
 
 	// Assert
 	const auto& vm = driver->GetViewModel();
@@ -257,14 +257,14 @@ TEST_F(ApplicationControllerTestFixture, InvalidInstruction_ShouldHaltAndShowIns
 	driver->SelectRom(0);
 
 	// Act
-	driver->HandleCommand(Commands::kStep);
+	driver->HandleCommand(Commands::STEP);
 
 	// Assert
 	const auto& vm = driver->GetViewModel();
 
-	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kHalted);
+	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::HALTED);
 	ASSERT_EQ(driver->GetSnapshot().mOpcode, 0xFFFF);
-	AssertNotificationHalted(vm, ExecutionStatus::DecodeError);
+	AssertNotificationHalted(vm, ExecutionStatus::DECODE_ERROR);
 }
 
 //--------------------------------------------------------------------------------
@@ -285,14 +285,14 @@ TEST_F(ApplicationControllerTestFixture, Play_ShouldHaltWhenInvalidInstructionEx
 	driver->SelectRom(0);
 
 	// Act
-	driver->HandleCommand(Commands::kPlay);
+	driver->HandleCommand(Commands::PLAY);
 	driver->RunFrame();
 
 	// Assert
 	const auto& vm = driver->GetViewModel();
 
-	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kHalted);
-	AssertNotificationHalted(vm, ExecutionStatus::DecodeError);
+	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::HALTED);
+	AssertNotificationHalted(vm, ExecutionStatus::DECODE_ERROR);
 }
 
 //--------------------------------------------------------------------------------
@@ -320,14 +320,14 @@ TEST_F(ApplicationControllerTestFixture, InstructionInfo_ShouldRemainFrozenWhile
 	const auto cycleBeforePlay = driver->GetSnapshot().mCycleCount;
 
 	// Act: Play and run emulator frame
-	driver->HandleCommand(Commands::kPlay);
+	driver->HandleCommand(Commands::PLAY);
 	driver->RunFrame();
 
 	// Assert: Instruction info frozen during Play
 	ASSERT_EQ(driver->GetSnapshot().mCycleCount, cycleBeforePlay);
 
 	// Act: Pause emulator
-	driver->HandleCommand(Commands::kPause);
+	driver->HandleCommand(Commands::PAUSE);
 
 	// Assert: Instruction info updates after Pause
 	ASSERT_GT(driver->GetSnapshot().mCycleCount, cycleBeforePlay);
@@ -346,27 +346,27 @@ TEST_F(ApplicationControllerTestFixture, OutOfBoundsLowerAddress_ShouldHalt)
 
 	// Arrange
 	std::vector<uint8_t> romData = {
-		0x11, 0xFE  // JP 0x1FE — invalid (below program range)
-	};
-	AppControllerDriverConfig config(romData);
+	driver->HandleCommand(Commands::PLAY);
+	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::HALTED);
+	AssertNotificationHalted(vm, ExecutionStatus::INVALID_ADDRESS_OUT_OF_BOUNDS);
 	auto driver = CreateAppControllerDriver(std::move(config));
 	driver->SelectRom(0);
 
 	// Act
-	driver->HandleCommand(Commands::kPlay);
+	driver->HandleCommand(Commands::PLAY);
 	driver->RunFrame();
 
 	// Assert
 	const auto& vm = driver->GetViewModel();
 
-	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::kHalted);
-	AssertNotificationHalted(vm, ExecutionStatus::InvalidAddressOutOfBounds);
+	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::HALTED);
+	AssertNotificationHalted(vm, ExecutionStatus::INVALID_ADDRESS_OUT_OF_BOUNDS);
 }
 
 //--------------------------------------------------------------------------------
-TEST_F(ApplicationControllerTestFixture, OutOfBoundsUpperAddress_ShouldHalt)
-{
-	/*
+	driver->HandleCommand(Commands::PLAY);
+	ASSERT_EQ(driver->GetExecutionState(), ExecutionState::HALTED);
+	AssertNotificationHalted(vm, ExecutionStatus::INVALID_ADDRESS_UNALIGNED);
 		Verifies execution halts if an instruction attempts to read beyond memory bounds.
 
 		Checks:
@@ -376,8 +376,8 @@ TEST_F(ApplicationControllerTestFixture, OutOfBoundsUpperAddress_ShouldHalt)
 
 	// Arrange
 	std::vector<uint8_t> romData = {
-		0x1F, 0xFE,  // JP 0x0FFE — valid (jumps to last valid instruction)
-		0x00, 0xE0   // CLS — will be fetched from invalid memory (past 0x0FFF)
+		0x1F, 0xFE,  // JP 0x0FFE Â— valid (jumps to last valid instruction)
+		0x00, 0xE0   // CLS Â— will be fetched from invalid memory (past 0x0FFF)
 	};
 	AppControllerDriverConfig config(romData);
 	auto driver = CreateAppControllerDriver(std::move(config));
@@ -407,7 +407,7 @@ TEST_F(ApplicationControllerTestFixture, UnalignedAddress_ShouldHalt)
 
 	// Arrange
 	std::vector<uint8_t> romData = {
-		0x12, 0x23,  // JP 0x223 — invalid (unaligned address)
+		0x12, 0x23,  // JP 0x223 Â— invalid (unaligned address)
 		0x00, 0xE0
 	};
 	AppControllerDriverConfig config(romData);

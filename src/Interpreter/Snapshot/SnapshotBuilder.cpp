@@ -67,9 +67,9 @@ std::vector<OperandInfo> SnapshotBuilder::ToOperandInfoList()
     std::vector<OperandInfo> result;
     result.reserve(spec.mOperands.size());
 
-    for (size_t i = 0; i < spec.mOperands.size(); ++i)
+    for (const auto& operandSpec : spec.mOperands)
     {
-        OperandType kind = spec.mOperands[i].mKind;
+        OperandType kind = operandSpec.mKind;
         uint16_t value = 0;
 
         switch (kind)
@@ -81,7 +81,7 @@ std::vector<OperandInfo> SnapshotBuilder::ToOperandInfoList()
             case OperandType::Y:   value = static_cast<uint16_t>(mInstruction.GetOperandY()); break;
         }
 
-        result.push_back({ spec.mOperands[i].mLabel, value });
+        result.push_back({ operandSpec.mLabel, value });
     }
 
     return result;

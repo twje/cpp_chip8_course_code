@@ -21,12 +21,12 @@ namespace Strings
 	{
 		switch (status)
 		{
-			case ExecutionStatus::Executed: return "Opcode executed";
-			case ExecutionStatus::DecodeError: return "Opcode decode error";
-			case ExecutionStatus::NotImplemented: return "Opcode not implemented";
-			case ExecutionStatus::MissingHandler: return "Opcode handler missing";
-			case ExecutionStatus::InvalidAddressUnaligned: return "Address is unaligned";
-			case ExecutionStatus::InvalidAddressOutOfBounds: return "Address out of bounds";
+			case ExecutionStatus::EXECUTED: return "Opcode executed";
+			case ExecutionStatus::DECODE_ERROR: return "Opcode decode error";
+			case ExecutionStatus::NOT_IMPLEMENTED: return "Opcode not implemented";
+			case ExecutionStatus::MISSING_HANDLER: return "Opcode handler missing";
+			case ExecutionStatus::INVALID_ADDRESS_UNALIGNED: return "Address is unaligned";
+			case ExecutionStatus::INVALID_ADDRESS_OUT_OF_BOUNDS: return "Address out of bounds";
 			default: return "Unknown execution status";
 		}
 	}
@@ -36,11 +36,11 @@ namespace Strings
 	{
 		switch (state)
 		{
-			case ExecutionState::kWaitingForRom: return "WaitingForRom";
-			case ExecutionState::kStepping: return "Stepping";
-			case ExecutionState::kPlaying: return "Playing";
-			case ExecutionState::kHalted: return "Halted";
-			case ExecutionState::kNone: return "None";
+			case ExecutionState::WAITING_FOR_ROM: return "WaitingForRom";
+			case ExecutionState::STEPPING: return "Stepping";
+			case ExecutionState::PLAYING: return "Playing";
+			case ExecutionState::HALTED: return "Halted";
+			case ExecutionState::NONE: return "None";
 			default: return "Unknown";
 		}
 	}
