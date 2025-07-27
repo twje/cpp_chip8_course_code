@@ -159,6 +159,7 @@ ExecutionStatus CPU::Execute(const Instruction& instruction)
     return status;
 }
 
+// Jump to a machine code routine at nnn.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_0nnn_SYS_ADDR(const Instruction&)
 {
@@ -169,6 +170,7 @@ ExecutionStatus CPU::Execute_0nnn_SYS_ADDR(const Instruction&)
     return ExecutionStatus::Executed;
 }
 
+// Clear the display.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_00E0_CLS(const Instruction& instruction)
 {
@@ -178,6 +180,7 @@ ExecutionStatus CPU::Execute_00E0_CLS(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+// Return from a subroutine.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_00EE_RET(const Instruction&)
 {   
@@ -187,6 +190,7 @@ ExecutionStatus CPU::Execute_00EE_RET(const Instruction&)
     return ExecutionStatus::Executed;
 }
 
+// Jump to location nnn.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_1nnn_JP_ADDR(const Instruction& instruction)
 {
@@ -196,6 +200,7 @@ ExecutionStatus CPU::Execute_1nnn_JP_ADDR(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+// Call subroutine at nnn.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_2nnn_CALL_ADDR(const Instruction& instruction)
 {
@@ -212,10 +217,10 @@ ExecutionStatus CPU::Execute_2nnn_CALL_ADDR(const Instruction& instruction)
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_3xkk_SE_VX_KK(const Instruction& instruction)
 {
-    const size_t reg = instruction.GetOperandX();
-    const uint8_t value = instruction.GetOperandKK();
+    const size_t vxReg = instruction.GetOperandX();
+    const uint8_t kkValue = instruction.GetOperandKK();
         
-    if (mState.mRegisters.at(reg) == value)
+    if (mState.mRegisters.at(vxReg) == kkValue)
     {
         mState.mProgramCounter += INSTRUCTION_SIZE;
     }
@@ -227,10 +232,10 @@ ExecutionStatus CPU::Execute_3xkk_SE_VX_KK(const Instruction& instruction)
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_4xkk_SNE_VX_KK(const Instruction& instruction)
 {
-    const size_t reg = instruction.GetOperandX();
-    const uint8_t value = instruction.GetOperandKK();    
+    const size_t vxReg = instruction.GetOperandX();
+    const uint8_t kkValue = instruction.GetOperandKK();    
 
-    if (mState.mRegisters.at(reg) != value)
+    if (mState.mRegisters.at(vxReg) != kkValue)
     {
         mState.mProgramCounter += INSTRUCTION_SIZE;
     }
@@ -253,28 +258,31 @@ ExecutionStatus CPU::Execute_5xy0_SE_VX_VY(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+// Set Vx = kk.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_6xkk_LD_VX_KK(const Instruction& instruction)
 {
-    const size_t reg = instruction.GetOperandX();
-    const uint8_t value = instruction.GetOperandKK();
+    const size_t vxReg = instruction.GetOperandX();
+    const uint8_t kkValue = instruction.GetOperandKK();
     
-    mState.mRegisters[reg] = value;
+    mState.mRegisters[vxReg] = kkValue;
 
     return ExecutionStatus::Executed;
 }
 
+// Set Vx = Vx + kk.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_7xkk_ADD_VX_KK(const Instruction& instruction)
 {
-    const size_t reg = instruction.GetOperandX();
-    const uint8_t value = instruction.GetOperandKK();
+    const size_t vxReg = instruction.GetOperandX();
+    const uint8_t kkValue = instruction.GetOperandKK();
     
-    mState.mRegisters[reg] += value;
+    mState.mRegisters[vxReg] += kkValue;
 
     return ExecutionStatus::Executed;
 }
 
+// Set Vx = Vy.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_8xy0_LD_VX_VY(const Instruction& instruction)
 {
@@ -286,6 +294,7 @@ ExecutionStatus CPU::Execute_8xy0_LD_VX_VY(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+// Set Vx = Vx OR Vy.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_8xy1_OR_VX_VY(const Instruction& instruction)
 {
@@ -297,6 +306,7 @@ ExecutionStatus CPU::Execute_8xy1_OR_VX_VY(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+// Set Vx = Vx AND Vy.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_8xy2_AND_VX_VY(const Instruction& instruction)
 {
@@ -308,6 +318,7 @@ ExecutionStatus CPU::Execute_8xy2_AND_VX_VY(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+// Set Vx = Vx XOR Vy.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_8xy3_XOR_VX_VY(const Instruction& instruction)
 {
@@ -362,11 +373,11 @@ ExecutionStatus CPU::Execute_8xy6_SHR_VX_VY(const Instruction& instruction)
         Vx is both the input and output register.
     */
 
-    const size_t reg = instruction.GetOperandX();
-    const uint8_t value = mState.mRegisters[reg];
-	const uint8_t lsb = value & 0x01;
+    const size_t vxReg = instruction.GetOperandX();
+    const uint8_t vxValue = mState.mRegisters[vxReg];
+	const uint8_t lsb = vxValue & 0x01;
 
-    mState.mRegisters[reg] = value >> 1;
+    mState.mRegisters[vxReg] = vxValue >> 1;
     mState.mRegisters[0xF] = lsb;
 
     return ExecutionStatus::Executed;
@@ -399,11 +410,11 @@ ExecutionStatus CPU::Execute_8xyE_SHL_VX_VY(const Instruction& instruction)
         Vx is both the input and output register.
     */
 
-    const size_t reg = instruction.GetOperandX();    
-    const uint8_t value = mState.mRegisters[reg];	
-    const uint8_t msb = (value & 0x80) >> 7;
+    const size_t vxReg = instruction.GetOperandX();    
+    const uint8_t vxValue = mState.mRegisters[vxReg];
+    const uint8_t msb = (vxValue & 0x80) >> 7;
 
-	mState.mRegisters[reg] = value << 1;
+	mState.mRegisters[vxReg] = vxValue * 2;
     mState.mRegisters[0xF] = msb;
 
     return ExecutionStatus::Executed;
@@ -424,15 +435,17 @@ ExecutionStatus CPU::Execute_9xy0_SNE_VX_VY(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+// Set I = nnn.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Annn_LD_I_ADDR(const Instruction& instruction)
 {
-    const uint16_t value = instruction.GetOperandNNN();
-    mState.mIndexRegister = value;
+    const uint16_t address = instruction.GetOperandNNN();
+    mState.mIndexRegister = address;
 
     return ExecutionStatus::Executed;
 }
 
+// Jump to location nnn + V0.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Bnnn_JP_V0_ADDR(const Instruction& instruction)
 {
@@ -444,13 +457,14 @@ ExecutionStatus CPU::Execute_Bnnn_JP_V0_ADDR(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+// Set Vx = random byte AND kk.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Cxkk_RND_VX_KK(const Instruction& instruction)
 {
-    const size_t reg = instruction.GetOperandX();
-	const uint8_t value = instruction.GetOperandKK();
+    const size_t vxReg = instruction.GetOperandX();
+	const uint8_t kkValue = instruction.GetOperandKK();
 
-	mState.mRegisters[reg] = mRandomProvider.GetRandomByte() & value;
+	mState.mRegisters[vxReg] = mRandomProvider.GetRandomByte() & kkValue;
 
     return ExecutionStatus::Executed;
 }
@@ -477,8 +491,8 @@ ExecutionStatus CPU::Execute_Dxyn_DRW_VX_VY_N(const Instruction& instruction)
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Ex9E_SKP_VX(const Instruction& instruction)
 {
-    const size_t reg = instruction.GetOperandX();
-	uint8_t keyId = mState.mRegisters[reg];
+    const size_t vxReg = instruction.GetOperandX();
+	uint8_t keyId = mState.mRegisters[vxReg];
 	
     if (mBus.mKeypad.IsKeyPressed(Key{ keyId }))
 	{
@@ -488,11 +502,12 @@ ExecutionStatus CPU::Execute_Ex9E_SKP_VX(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+// Skip next instruction if key with the value of Vx is not pressed.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_ExA1_SKNP_VX(const Instruction& instruction)
 {
-    const size_t reg = instruction.GetOperandX();
-    uint8_t keyId = mState.mRegisters[reg];
+    const size_t vxReg = instruction.GetOperandX();
+    uint8_t keyId = mState.mRegisters[vxReg];
 
     if (!mBus.mKeypad.IsKeyPressed(Key{ keyId }))
     {
@@ -502,16 +517,18 @@ ExecutionStatus CPU::Execute_ExA1_SKNP_VX(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+// Set Vx = delay timer value.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Fx07_LD_VX_DT(const Instruction& instruction)
 {
-    const size_t reg = instruction.GetOperandX();
+    const size_t vxReg = instruction.GetOperandX();
 
-    mState.mRegisters[reg] = mState.mDelayTimer;
+    mState.mRegisters[vxReg] = mState.mDelayTimer;
 
     return ExecutionStatus::Executed;
 }
 
+// Wait for a key release, store the value of the key in Vx.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Fx0A_LD_VX_K(const Instruction& instruction)
 {
@@ -524,49 +541,53 @@ ExecutionStatus CPU::Execute_Fx0A_LD_VX_K(const Instruction& instruction)
         (See errata: https://github.com/gulrak/cadmium/wiki/CTR-Errata#fx0a)
     */
 
-    const size_t reg = instruction.GetOperandX();    
-    auto releasedKey = mBus.mKeypad.GetFirstKeyReleased();
+    const size_t vxReg = instruction.GetOperandX();    
+    auto keyValue = mBus.mKeypad.GetFirstKeyReleased();
         
-    if (!releasedKey.has_value())
+    if (!keyValue.has_value())
     {
-		// No key pressed; roll back PC to retry this instruction        
+		// No key released; roll back PC to retry this instruction        
         return ExecutionStatus::WaitingOnKeyPress;
     }
     
-	mState.mRegisters[reg] = releasedKey->GetValue();
+	mState.mRegisters[vxReg] = keyValue->GetValue();
     return ExecutionStatus::Executed;
 }
 
+// Set delay timer = Vx.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Fx15_LD_DT_VX(const Instruction& instruction)
 {
-    const size_t reg = instruction.GetOperandX();
+    const size_t vxReg = instruction.GetOperandX();
 
-    mState.mDelayTimer = mState.mRegisters[reg];
+    mState.mDelayTimer = mState.mRegisters[vxReg];
 
     return ExecutionStatus::Executed;
 }
 
+// Set sound timer = Vx.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Fx18_LD_ST_VX(const Instruction& instruction)
 {
-    const size_t reg = instruction.GetOperandX();
+    const size_t vxReg = instruction.GetOperandX();
 
-    mState.mSoundTimer = mState.mRegisters[reg];
+    mState.mSoundTimer = mState.mRegisters[vxReg];
 
     return ExecutionStatus::Executed;
 }
 
+// Set I = I + Vx.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Fx1E_ADD_I_VX(const Instruction& instruction)
 {
-    const size_t reg = instruction.GetOperandX();    
+    const size_t vxReg = instruction.GetOperandX();
 	
-    mState.mIndexRegister += mState.mRegisters[reg];
+    mState.mIndexRegister += mState.mRegisters[vxReg];
 
     return ExecutionStatus::Executed;
 }
 
+// Set I = location of sprite for digit Vx.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Fx29_LD_F_VX(const Instruction& instruction)
 {
@@ -576,8 +597,8 @@ ExecutionStatus CPU::Execute_Fx29_LD_F_VX(const Instruction& instruction)
         See the unit test for example behavior.
     */
     
-    const size_t reg = instruction.GetOperandX();
-    const uint8_t value = mState.mRegisters[reg];
+    const size_t vxReg = instruction.GetOperandX();
+    const uint8_t value = mState.mRegisters[vxReg];
 
     // validate value is within valid digit range (0–F)
     assert(value <= 0x0F && "Fx29 expects Vx to contain a hexadecimal digit (0x0–0xF)");
@@ -587,11 +608,12 @@ ExecutionStatus CPU::Execute_Fx29_LD_F_VX(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+// Store BCD representation of Vx in memory locations I, I+1, and I+2.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Fx33_LD_B_VX(const Instruction& instruction)
 {    
-    const size_t reg = instruction.GetOperandX();
-	const uint8_t value = mState.mRegisters[reg];
+    const size_t vxReg = instruction.GetOperandX();
+	const uint8_t value = mState.mRegisters[vxReg];
 	const uint16_t address = mState.mIndexRegister;
 
     const uint8_t hundreds = value / 100;
@@ -605,29 +627,31 @@ ExecutionStatus CPU::Execute_Fx33_LD_B_VX(const Instruction& instruction)
     return ExecutionStatus::Executed;
 }
 
+// Store registers V0 through Vx in memory starting at location I.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Fx55_LD_I_VX(const Instruction& instruction)
 {
     const size_t lastRegisterIndex = instruction.GetOperandX();
 
-    for (size_t reg = 0; reg <= lastRegisterIndex; ++reg)
+    for (size_t vxReg = 0; vxReg <= lastRegisterIndex; ++vxReg)
     {
-        const uint16_t address = mState.mIndexRegister + static_cast<uint16_t>(reg);
-        mBus.mRAM.Write(address, mState.mRegisters[reg]);
+        const uint16_t address = mState.mIndexRegister + static_cast<uint16_t>(vxReg);
+        mBus.mRAM.Write(address, mState.mRegisters[vxReg]);
     }
 
     return ExecutionStatus::Executed;
 }
 
+// Read registers V0 through Vx from memory starting at location I.
 //--------------------------------------------------------------------------------
 ExecutionStatus CPU::Execute_Fx65_LD_VX_I(const Instruction& instruction)
 {
     const size_t lastRegisterIndex = instruction.GetOperandX();
 
-    for (size_t reg = 0; reg <= lastRegisterIndex; ++reg)
+    for (size_t vxReg = 0; vxReg <= lastRegisterIndex; ++vxReg)
     {
-        const uint16_t address = mState.mIndexRegister + static_cast<uint16_t>(reg);
-        mState.mRegisters[reg] = mBus.mRAM.Read(address);
+        const uint16_t address = mState.mIndexRegister + static_cast<uint16_t>(vxReg);
+        mState.mRegisters[vxReg] = mBus.mRAM.Read(address);
     }
 
     return ExecutionStatus::Executed;
