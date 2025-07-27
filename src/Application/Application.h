@@ -36,7 +36,7 @@ public:
 	{	
 		Keypad& keypad = mController->GetKeypad();
 
-		const std::array<std::pair<uint8_t, olc::Key>, 16> defaultBindings = { {
+                constexpr std::array<std::pair<uint8_t, olc::Key>, 16> defaultBindings = { {
 			{ Key::Key1, olc::Key::K1 },
 			{ Key::Key2, olc::Key::K2 },
 			{ Key::Key3, olc::Key::K3 },

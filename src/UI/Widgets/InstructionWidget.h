@@ -30,9 +30,9 @@ public:
 		mFrame.Draw(mPge);		
 
 		const olc::vi2d offset = ToOLCVecInt(mFrame.GetContentOffset());
-		const int labelWidth = 10;
+                constexpr int labelWidth = 10;
 		const olc::Pixel textColor = viewModel.mIsDisplayInteractive ? olc::WHITE : olc::Pixel(192, 192, 192);  // White / Light Gray
-		const int lineHeight = UI_CHAR_SIZE;
+                constexpr int lineHeight = UI_CHAR_SIZE;
 
 		auto drawField = [&](int line, const std::string& label, const std::string& value) {
 			const olc::vi2d pos = offset + olc::vi2d{ 0, line * lineHeight };

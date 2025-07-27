@@ -63,7 +63,7 @@ StepResult Interpreter::Step()
 		is rolled back to retry the same instruction.
 	*/
 
-	const bool kHaltOnFailure = true;
+	constexpr bool kHaltOnFailure = true;
 	const uint16_t pcBeforeFetch = mCPU.GetProgramCounter();
 
 	// Fetch (increments PC)
@@ -87,7 +87,7 @@ StepResult Interpreter::Step()
 		
 	if (status != ExecutionStatus::Executed)
 	{
-		// Instruction failed or deferred — rollback PC to preserve CPU state
+		// Instruction failed or deferred â€” rollback PC to preserve CPU state
 		mCPU.SetProgramCounter(pcBeforeFetch);
 	}
 

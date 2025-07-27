@@ -30,7 +30,7 @@ public:
 		mFrame.Draw(mPge);		
 		
 		const olc::vi2d offset = ToOLCVecInt(mFrame.GetContentOffset());
-		const int32_t lineHeight = UI_CHAR_SIZE;
+                constexpr int32_t lineHeight = UI_CHAR_SIZE;
 
 		for (uint8_t i = 0; i < STACK_SIZE; ++i)
 		{

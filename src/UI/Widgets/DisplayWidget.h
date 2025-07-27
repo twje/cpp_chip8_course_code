@@ -54,7 +54,7 @@ private:
 		mFrame.Draw(mPge);
 
 		const olc::vi2d position = ToOLCVecInt(mFrame.GetContentOffset());
-		const int32_t scale = UITheme::kPixelScale;		
+                constexpr int32_t scale = UITheme::kPixelScale;
 
 		mPge.DrawSprite(position, &mFramebuffer, scale);
 	}

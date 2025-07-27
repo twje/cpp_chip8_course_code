@@ -34,7 +34,7 @@ public:
 
 		const olc::vi2d offset = ToOLCVecInt(mFrame.GetContentOffset());
 		const olc::Pixel textColor = viewModel.mIsDisplayInteractive ? olc::WHITE : olc::Pixel(192, 192, 192);
-		const int lineHeight = UI_CHAR_SIZE;
+                constexpr int lineHeight = UI_CHAR_SIZE;
 
 		// Draw general-purpose registers V0-VF
 		for (uint8_t i = 0; i < REGISTER_COUNT; ++i)
@@ -50,7 +50,7 @@ public:
 			mPge.DrawString(pos, PadLeft(label, 3) + " " + value, textColor);
 		};
 
-		const int baseLine = REGISTER_COUNT + 1;
+                constexpr int baseLine = REGISTER_COUNT + 1;
 		drawField(baseLine + 0, "PC:", "0x" + ToHexString(state.mProgramCounter, 4));
 		drawField(baseLine + 1, "I:", "0x" + ToHexString(state.mIndexRegister, 4));
 		drawField(baseLine + 2, "SP:", "0x" + ToHexString(state.mStackPointer, 1));
@@ -61,7 +61,7 @@ public:
 private:
 	olc::vi2d GetInternalContentSize() const
 	{
-		const char* sample = "PC: 0x0200";  // Longest label + value string
+                constexpr const char* sample = "PC: 0x0200";  // Longest label + value string
 		return GetMonospaceStringBlockSize(sample, REGISTER_COUNT + 6);
 	}
 };
