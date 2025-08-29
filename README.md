@@ -1,4 +1,4 @@
-# CHIP-8 Course Code
+# Description
 
 A CHIP-8 emulator built with the [OneLoneCoder PixelGameEngine](https://github.com/OneLoneCoder/olcPixelGameEngine).  
 The project leans into retro aesthetics and provides straightforward debug menus that make emulator behavior easy to explore.
